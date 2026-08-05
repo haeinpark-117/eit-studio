@@ -116,7 +116,7 @@
   <h1>Why elicited imitation is worth using.</h1>
   <p>Elicited imitation tasks are among the most extensively validated efficient measures of
     second language proficiency available to researchers. This page summarizes what the
-    evidence supports, and what it does not.</p>
+    evidence supports.</p>
 </div></header>
 
 <main>
@@ -208,16 +208,6 @@
     with an independent proficiency measure (the DELE), supporting the task's utility with this
     population.</p>
 
-  <h3>It extends beyond global proficiency</h3>
-  <p>McGuire (2026) compared spoken elicited imitation with written transcription as measures of
-    listening accuracy for connected speech. In a crossover design with 115 Japanese university
-    students and 50 English sentences, the two methods produced closely similar performance
-    (<span class="num">71.39 %</span> for elicited imitation, <span class="num">72.84 %</span>
-    for written transcription), correlated at <span class="num">r = .832</span>, 95 % CI
-    [.766, .881], and showed no significant difference in method effects. Elicited imitation
-    therefore appears usable where a written response would introduce construct-irrelevant
-    variance or be unsuitable for the population — and, as that study notes, it lends itself to
-    remote collection through automated web-based administration.</p>
 </div></section>
 
 <section><div class="wrap narrow">
@@ -252,7 +242,8 @@
           <span class="num">.80</span></td></tr>
       <tr><td>Kim et al. (2024)</td>
         <td>English EI data; commercial NLP services applied to form-based scoring of the
-          be-passive and third person singular -s</td>
+          be-passive (<span class="num">N = 140</span>) and third person singular -s
+          (<span class="num">137 responses</span>)</td>
         <td>A step-by-step automated pipeline for speech-to-text, morphosyntactic identification,
           and scoring, validated against human ratings</td></tr>
     </tbody>
@@ -317,6 +308,40 @@
     </tbody>
   </table>
 
+
+  <h3>How it performs on learner speech</h3>
+  <p>The claim can be checked directly. McGuire (2026) compared five current speech recognition
+    systems on 2,400 recordings of read English from the L2-ARCTIC corpus — 24 speakers across
+    six first-language backgrounds (Arabic, Chinese, Hindi, Korean, Spanish, Vietnamese), with
+    four US English speakers as a control — scoring each with match error rate.</p>
+  <table class="ev">
+    <thead><tr><th>System</th><th>Mean MER (SD)</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>Whisper large-v3</td><td class="num">.054 (.117)</td>
+        <td>Lowest error rate of the five</td></tr>
+      <tr><td>AssemblyAI Universal-2</td><td class="num">.056 (.112)</td>
+        <td>Not significantly different from Whisper</td></tr>
+      <tr><td>Speechmatics Ursa-2</td><td class="num">.074 (.132)</td>
+        <td rowspan="3">Significantly worse than both Whisper and AssemblyAI</td></tr>
+      <tr><td>Deepgram Nova-2</td><td class="num">.080 (.138)</td></tr>
+      <tr><td>RevAI V2</td><td class="num">.086 (.136)</td></tr>
+    </tbody>
+  </table>
+  <p>Whisper and AssemblyAI performed significantly better than the remaining systems, with no
+    significant difference between the two (Friedman χ² = 471.93, <em>df</em> = 4,
+    <em>p</em> &lt; .001). Whisper is thus at the front of the field on exactly the kind of data
+    an elicited imitation study collects, and it is the only one of the two that is open and can
+    be run without an account. Error rates for all five systems were substantially lower than
+    those reported for the systems used in earlier work.</p>
+  <p>Performance did vary by first language. With Whisper, US English controls produced a mean
+    MER of <span class="num">.007</span>, Hindi <span class="num">.021</span>, Korean
+    <span class="num">.033</span>, Spanish <span class="num">.046</span>, Arabic
+    <span class="num">.047</span>, Chinese <span class="num">.053</span>, and Vietnamese
+    <span class="num">.124</span>. The ordering was consistent across all five systems, which
+    suggests it reflects the availability of similarly accented training data rather than
+    anything peculiar to Whisper. It is worth knowing which end of that range your participants
+    are likely to fall on.</p>
+
   <h3>Why the turbo variant</h3>
   <p>Whisper large-v3-turbo is large-v3 with its decoder layers reduced, retaining the same
     encoder and, per its model card, only minor quality degradation while running several times
@@ -375,8 +400,9 @@
     <li>Graham, C., &amp; Roll, N. (2024). Evaluating OpenAI's Whisper ASR: Performance analysis
       across diverse accents and speaker traits. <em>JASA Express Letters, 4</em>(2), 025206.
       <a href="https://pubs.aip.org/asa/jel/article/4/2/025206/3267247/Evaluating-OpenAI-s-Whisper-ASR-Performance">Publisher page</a></li>
-    <li>McGuire, M. (2026). <em>Validating elicited imitation for L2 listening accuracy
-      assessment: A comparison with written transcription</em> [Manuscript].</li>
+    <li>McGuire, M. (2026). Comparing ASR system accuracy on non-native English read speech
+      across L1 backgrounds. <em>JALT CALL Trends, 2</em>(1), Article 103250.
+      <a href="https://doi.org/10.29140/jct.v2n1.103250">https://doi.org/10.29140/jct.v2n1.103250</a></li>
     <li>Ortega, L., Iwashita, N., Norris, J. M., &amp; Rabie, S. (2002, October).
       <em>An investigation of elicited imitation tasks in crosslinguistic SLA research</em>
       [Paper presentation]. Second Language Research Forum, Toronto, Canada.</li>
