@@ -146,33 +146,24 @@
   <h2>What to report in your methods section</h2>
   <pre class="cite">Responses were transcribed automatically using Whisper large-v3-turbo
 running locally in the browser via EIT Studio (Park, 2026). Accuracy was
-operationalized as one minus the word error rate, computed over a word-level
-minimum-edit alignment as (S + D + I) / N and truncated at 1.0. Decoding was
-greedy (do_sample = false, num_beams = 1, temperature = 0) with the language
-fixed to English; no prompt or target-sentence bias was supplied, and each
-recording was decoded independently. Prior to
-comparison, both the target sentence and the transcription were lowercased,
-stripped of punctuation, and normalized by [expanding numbers to words /
-expanding contractions / applying the lexical variants listed in the
-scoring configuration]; possessive 's was preserved. The full scoring
-configuration is available at [repository link]. A randomly selected
-[N] % subsample was transcribed and scored by a human rater; agreement
-was [statistic].</pre>
+operationalized as one minus the word error rate, computed over a
+word-level minimum-edit alignment as (S + D + I) / N and truncated at
+1.0. Decoding was greedy (do_sample = false, num_beams = 1,
+temperature = 0) with the language fixed to English; no prompt or
+target-sentence bias was supplied, and each recording was decoded
+independently. Prior to comparison, both the target sentence and the
+transcription were lowercased, stripped of punctuation, and normalized by
+[expanding numbers to words / expanding contractions / applying the
+lexical variants listed in the scoring configuration]; possessive 's was
+preserved. The full scoring configuration is available at [repository
+link]. A randomly selected [N] % subsample was transcribed and scored by
+a human rater; agreement was [statistic].</pre>
   <p>The recognition settings referred to in that paragraph are documented in full on the
     <a href="asr.html">speech recognition page</a>, and should be reported alongside it.</p>
   <p>Automatic transcription does not replace human verification. Reporting a human-verified
     subsample lets readers judge how much the automated procedure contributed to the results.</p>
-  <p>EIT Studio is scoring software, not an instrument. Cite the task separately — Ortega et al.
-    (2002) for the included English preset, or the source of your own sentence set.</p>
-</div></section>
-
-<section><div class="wrap narrow">
-  <h3 style="margin-top:0">Reference</h3>
-  <p style="font-size:14.5px; line-height:1.75; color:var(--muted); margin:0">
-    Ortega, L., Iwashita, N., Norris, J. M., &amp; Rabie, S. (2002, October).
-    <em>An investigation of elicited imitation tasks in crosslinguistic SLA research</em>
-    [Paper presentation]. Second Language Research Forum, Toronto, Canada.
-  </p>
+  <p>EIT Studio is scoring software, not an instrument. Cite the task separately, using the
+    source of your own sentence set.</p>
 </div></section>
 
 <div class="endcta"><div class="wrap">
