@@ -104,6 +104,44 @@
     flex:0 0 auto}
   .stp .mini .fl{display:flex; justify-content:space-between; gap:10px}
 
+
+  /* reading the scoring table — accordion */
+  .acc{margin-top:34px; border-top:1px solid var(--line)}
+  .acc details{border-bottom:1px solid var(--line)}
+  .acc summary{cursor:pointer; list-style:none; display:flex; align-items:center; gap:12px;
+    padding:18px 2px; font-weight:700; font-size:16.5px; letter-spacing:-.3px}
+  .acc summary::-webkit-details-marker{display:none}
+  .acc summary:hover{color:var(--accent)}
+  .acc .chev{color:var(--accent); font-size:18px; font-weight:700; line-height:1;
+    transition:transform .15s; display:inline-block; width:12px}
+  .acc details[open] .chev{transform:rotate(90deg)}
+  .acc .body{padding:0 2px 26px 26px; max-width:820px}
+  .acc .body p{margin:0 0 15px; color:var(--muted); font-size:14.5px; line-height:1.72}
+  .acc .body p b, .acc .body p strong{color:var(--ink)}
+  .acc h4{margin:22px 0 8px; font-size:15px; letter-spacing:-.2px}
+  table.def{width:100%; border-collapse:collapse; margin:6px 0 18px; font-size:14px}
+  table.def td{padding:11px 12px; border-bottom:1px solid var(--line); vertical-align:top;
+    line-height:1.65; color:var(--muted)}
+  table.def td:first-child{white-space:nowrap; font-weight:650; color:var(--ink); width:150px}
+  table.def tr:last-child td{border-bottom:0}
+  .sw{display:inline-block; border-radius:3px; padding:1px 7px; font-family:var(--mono);
+    font-size:13px}
+  .sw-sub{background:#cffafe} .sw-ins{background:#fbcfe8}
+  .sw-om{color:#db2777; font-weight:700}
+  .exbox{border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin:6px 0 18px;
+    background:#fafafb}
+  .exbox .k{font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--muted); margin-bottom:4px}
+  .exbox .ln{font-family:var(--mono); font-size:13px; line-height:2}
+  .exbox .calc{margin:10px 0 0; font-size:13.5px; color:var(--muted)}
+  .acc figure{margin:4px 0 18px}
+  .acc figure img{width:100%; display:block; border:1px solid var(--line); border-radius:10px}
+  .acc figcaption{margin-top:9px; font-size:13px; color:var(--muted); line-height:1.6}
+  .soon{display:inline-block; font-family:var(--mono); font-size:10px; letter-spacing:.12em;
+    text-transform:uppercase; background:var(--accent); color:#fff; border-radius:999px;
+    padding:4px 10px; margin-right:8px}
+  .mono2{font-family:var(--mono); font-size:12.5px}
+
   /* privacy band */
   .band{background:var(--ink); color:#fff; border:0}
   .band h2{color:#fff}
@@ -144,7 +182,6 @@
   <div class="navlinks">
     <a href="about.html">About</a>
     <a href="#how">How it works</a>
-    <a href="results.html">Scoring table</a>
     <a href="why-eit.html">Why elicited imitation</a>
     <a href="asr.html">Speech recognition</a>
     <a href="cite.html">How to cite</a>
@@ -280,6 +317,147 @@
     <a href="segment.html" style="color:var(--accent); font-weight:650">Split it into items
     first →</a> &nbsp;·&nbsp; Not sure which of those you are ready for?
     <a href="start.html" style="color:var(--accent); font-weight:650">Start here →</a></p>
+
+  <div class="acc" id="reading">
+    <details>
+      <summary><span class="chev">›</span>Reading the scoring table — column by column</summary>
+      <div class="body">
+        <p>One row per recording. Rows can be sorted by participant and item, by lowest accuracy,
+          or by lowest confidence; the last two are the fastest way into the items that need
+          checking.</p>
+        <figure>
+          <img src="scoring-table.png" alt="The EIT Studio scoring table, with participant, item,
+            target, the Whisper transcription with its alignment marked, accuracy, word error
+            rate, confidence, and an audio button on each row.">
+          <figcaption>Item 06 shows what a low-accuracy row looks like: several substituted words,
+            an accuracy of 30.0 %, and a confidence figure well below the others — the combination
+            that usually means the audio is worth listening to.</figcaption>
+        </figure>
+        <table class="def"><tbody>
+          <tr><td>Participant</td><td>Read from the file name when it follows
+            <span class="mono2">participantID_itemNN</span>; otherwise whatever you assigned by
+            hand in the file table.</td></tr>
+          <tr><td>Item</td><td>The item number, which is what links the recording to a target
+            sentence.</td></tr>
+          <tr><td>Target</td><td>Your target sentence <em>after</em> normalization — lowercased,
+            punctuation stripped, scoring rules applied. This is the string the comparison
+            actually uses, not the string you pasted in.</td></tr>
+          <tr><td>Whisper</td><td>The transcription after the same normalization, with the
+            alignment against the target marked. Hovering a marked word shows what it was aligned
+            to.</td></tr>
+          <tr><td>Accuracy</td><td>100 × (1 − WER), in percent.</td></tr>
+          <tr><td>WER</td><td>Word error rate: (S + D + I) / N over a word-level minimum-edit
+            alignment, where N is the number of words in the normalized target. Truncated at
+            1.0.</td></tr>
+          <tr><td>Confidence</td><td>The mean probability of the tokens the model selected, shown
+            as a percentage with the raw mean log probability beneath it.</td></tr>
+          <tr><td>Audio</td><td>Plays that recording, so a questionable item can be checked
+            without leaving the table.</td></tr>
+        </tbody></table>
+        <figure>
+          <img src="summary-table.png" alt="The per-participant summary row, showing items scored,
+            mean accuracy, mean word error rate, and mean confidence.">
+          <figcaption>Above the scoring table, one row per participant reports the number of items
+            scored, and the mean accuracy, word error rate, and confidence across them. The means
+            cover only the items that were actually scored, so check the count before comparing
+            participants.</figcaption>
+        </figure>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="chev">›</span>How the alignment is marked</summary>
+      <div class="body">
+        <p>The three edit types that enter the word error rate are marked in the transcription
+          itself, so a score can be traced to the words that produced it.</p>
+        <table class="def"><tbody>
+          <tr><td><span class="sw sw-sub">white</span></td>
+            <td><b>Substitution.</b> A word produced in place of a target word. Hover to see the
+              target word it replaced.</td></tr>
+          <tr><td><span class="sw sw-ins">of</span></td>
+            <td><b>Insertion.</b> A word in the transcription with no counterpart in the
+              target.</td></tr>
+          <tr><td><span class="sw sw-om">▲</span></td>
+            <td><b>Omission.</b> A target word with no counterpart in the transcription. Hover to
+              see which word is missing.</td></tr>
+          <tr><td>unmarked</td><td>A match, which contributes nothing to the error rate.</td></tr>
+        </tbody></table>
+        <div class="exbox">
+          <div class="k">Target (7 words)</div>
+          <div class="ln">the streets in this city are wide</div>
+          <div class="k" style="margin-top:10px">Whisper</div>
+          <div class="ln">the streets in <span class="sw sw-sub">the</span> city are
+            <span class="sw sw-sub">white</span></div>
+          <p class="calc">Two substitutions, no insertions, no omissions, over seven target words:
+            WER = 2 / 7 = .286, accuracy = 71.4 %.</p>
+        </div>
+        <p>Because normalization is applied to both strings before comparison, capitalization,
+          punctuation, and whichever variants you configured never affect the score. A response
+          that is correct but differently punctuated scores as a match; a response that
+          substitutes a grammatical morpheme does not.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="chev">›</span>What the numbers do and do not license</summary>
+      <div class="body">
+        <h4>Accuracy has a floor</h4>
+        <p>Word error rate is truncated at 1.0, following the standard definition. A response with
+          more errors than there are target words therefore scores 0 % rather than a negative
+          value, so very disfluent responses are not distinguished from silent ones by the score
+          alone.</p>
+        <h4>Confidence is not a probability of being correct</h4>
+        <p>Confidence is internal to the model: the mean probability assigned to the tokens it
+          chose. It is comparable across items processed in the same session with the same model
+          and decoding settings, and not comparable across checkpoints or decoding strategies. A
+          high figure means the model was not hesitating, which is not the same as being right.</p>
+        <p>The combination is what is informative. Low accuracy with high confidence usually means
+          the participant really did produce something different from the target. Low accuracy
+          with low confidence more often points to the recording — background noise, a clipped
+          onset, a boundary in the wrong place. Those are the rows to open the audio on.</p>
+        <h4>An empty transcription is ambiguous</h4>
+        <p>An item with no recognized speech is scored WER 1.0 and 0 % accuracy. That is correct if
+          the participant said nothing, and wrong if a segment boundary was misplaced. Inspect
+          these directly rather than reading them as non-responses.</p>
+        <h4>Automatic scores still need a human subsample</h4>
+        <p>Whisper transcribes toward an intended reading and can normalize morphosyntactic detail
+          toward more expected forms — precisely the deviations an elicited imitation task
+          measures. The <a href="asr.html" style="color:var(--accent); font-weight:650">speech
+          recognition page</a> sets out the evidence, and the
+          <a href="cite.html" style="color:var(--accent); font-weight:650">citation page</a> gives
+          a methods-section template that includes reporting the agreement with a human-verified
+          subsample.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="chev">›</span>Checking efficiently, and what the exports contain</summary>
+      <div class="body">
+        <p>The table is built for triage rather than for reading every row. Sort by lowest
+          accuracy to see where the transcription and the target diverge most, and by lowest
+          confidence to see where the model itself was least certain; the two orderings surface
+          different problems. Play the audio for any row you are unsure about.</p>
+        <p>Export to JSON when you intend to correct by hand: each item carries a
+          <span class="mono2">transcription_corrected</span> field, a
+          <span class="mono2">flag</span> field, and a <span class="mono2">reviewed</span> marker,
+          so a corrected transcription is recorded alongside the automatic one rather than
+          replacing it.</p>
+        <h4>CSV</h4>
+        <p class="mono2" style="color:var(--muted)">participant, item, target, whisper, wer,
+          accuracy_pct, confidence, avg_logprob, duration_s, file, model, rules</p>
+        <h4>JSON</h4>
+        <p>The same item-level fields, plus the alignment operations under
+          <span class="mono2">ops</span>, and a <span class="mono2">meta</span> block recording
+          the Whisper model, the decoding description, how confidence was computed, the full
+          scoring-rule configuration, the number of target items, and a timestamp.</p>
+      </div>
+    </details>
+  </div>
+
+  <p style="margin:26px 0 0; color:var(--muted); font-size:14px">
+    <span class="soon">Coming soon</span> A short demonstration video, showing a set of recordings
+    scored from beginning to end and the table read row by row.</p>
+
 </div></section>
 
 <section id="privacy" class="band"><div class="wrap">
@@ -338,7 +516,9 @@
     <p style="margin-top:12px"><a href="why-eit.html" style="color:var(--accent); font-weight:650">
       Read the evidence base for elicited imitation →</a><br>
       <a href="asr.html" style="color:var(--accent); font-weight:650">
-      See why Whisper, and the recognition settings in full →</a></p>
+      See why Whisper, and the recognition settings in full →</a><br>
+      <a href="#reading" style="color:var(--accent); font-weight:650">
+      Read the scoring table, column by column →</a></p>
   </div>
 </div></section>
 
