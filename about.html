@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>About &amp; citation — EIT Studio</title>
-<meta name="description" content="The vision behind EIT Studio, how to cite it, and how to contribute published elicited imitation materials in other languages.">
+<title>About — EIT Studio</title>
+<meta name="description" content="The vision behind EIT Studio, what is planned next, and how to contribute published elicited imitation materials in other languages.">
 <style>
   :root{
     --ink:#08080f; --muted:#6a6a7d; --line:#e8e8ef;
@@ -99,11 +99,12 @@
 <div class="nav"><div class="wrap">
   <a class="logo" href="index.html">EIT <span>Studio</span></a>
   <div class="navlinks">
+    <a href="about.html" class="on">About</a>
+    <a href="start.html">How it works</a>
     <a href="why-eit.html">Why elicited imitation</a>
-    <a href="about.html" class="on">About &amp; citation</a>
-    <a href="index.html#how">How it works</a>
+    <a href="cite.html">How to cite</a>
   </div>
-  <a class="btn" href="app.html">Open the tool</a>
+  <a class="btn" href="start.html">Start here</a>
 </div></div>
 
 <header class="pg"><div class="wrap">
@@ -114,14 +115,13 @@
 </div></header>
 
 <section><div class="wrap narrow">
-  <h2>Why elicited imitation</h2>
+  <h2>The problem</h2>
   <p class="lead">Elicited imitation is efficient, language-general, and unusually well
-    validated. It discriminates sharply across proficiency levels, converges with other
-    proficiency measures, and holds up under operational test development. The
-    <a href="why-eit.html">evidence page</a> sets out the figures.</p>
-  <p>Its weaknesses are practical rather than psychometric. Scoring oral responses by hand is
-    slow, and procedures vary across studies in ways that make findings hard to compare. Both
-    problems are addressable.</p>
+    validated, but its weaknesses are practical rather than psychometric: scoring oral responses
+    by hand is slow, and procedures vary across studies in ways that make findings hard to
+    compare. Both problems are addressable.</p>
+  <p><a href="why-eit.html">The evidence page</a> sets out what the validation literature
+    reports, with figures.</p>
 </div></section>
 
 <section><div class="wrap narrow">
@@ -140,6 +140,9 @@
     <p>The wider aim is straightforward: research conclusions are only as good as the
       measurement behind them. Making a precise instrument quick to score removes one reason to
       settle for a rougher one.</p>
+    <p>The recognition settings are fixed rather than exposed as options, so that scores remain
+      comparable across studies. They are documented in full on the
+      <a href="cite.html">citation page</a>, together with a methods-section template.</p>
   </div>
 </div></section>
 
@@ -193,107 +196,6 @@
 </div></section>
 
 <section><div class="wrap narrow">
-  <h2>How to cite</h2>
-  <div class="callout">
-    <p><strong>For now, please cite the website itself.</strong> No article describing EIT Studio
-      has been published yet, so there is no journal reference to point to; citing the site as
-      software is the appropriate practice in the meantime.</p>
-    <p>A publication describing the tool and its validation is in preparation. A citable
-      reference will be added here once it appears, and users will be asked to cite it instead.</p>
-  </div>
-
-  <div class="tabs"><span class="tab">APA 7</span></div>
-  <pre class="cite">Park, H. I. (2026). <em>EIT Studio</em> [Computer software].
-    https://haeinpark-117.github.io/eit-studio/</pre>
-
-  <div class="tabs"><span class="tab">BibTeX</span></div>
-  <pre class="cite">@misc{park2026eitstudio,
-  author = {Park, Hae In},
-  title  = {{EIT} {Studio}},
-  year   = {2026},
-  note   = {Computer software},
-  url    = {https://haeinpark-117.github.io/eit-studio/}
-}</pre>
-
-  <h3>The recognition settings, in full</h3>
-  <p>These are fixed rather than exposed as options, because varying them would make
-    scores incomparable across studies. Reporting them is what allows a reader to
-    reproduce the procedure.</p>
-  <table style="width:100%; border-collapse:collapse; font-size:14.5px; margin:0 0 18px">
-    <tbody>
-      <tr><td style="padding:11px 0; border-bottom:1px solid var(--line); width:190px;
-        font-weight:650; vertical-align:top">Model</td>
-        <td style="padding:11px 0; border-bottom:1px solid var(--line)">
-        <span style="font-family:var(--mono); font-size:13px">onnx-community/whisper-large-v3-turbo</span>,
-        run in the browser through transformers.js. Encoder in fp16 and decoder quantised to
-        q4 on WebGPU; WASM at q8 where WebGPU is unavailable.</td></tr>
-      <tr><td style="padding:11px 0; border-bottom:1px solid var(--line); font-weight:650;
-        vertical-align:top">Decoding</td>
-        <td style="padding:11px 0; border-bottom:1px solid var(--line)">Greedy search —
-        <span style="font-family:var(--mono); font-size:13px">do_sample = false</span>,
-        <span style="font-family:var(--mono); font-size:13px">num_beams = 1</span>,
-        <span style="font-family:var(--mono); font-size:13px">temperature = 0</span>. The task
-        calls for verbatim repetition of what the participant produced, so the decoding must be
-        deterministic: the same recording yields the same transcription every time. Sampling
-        would introduce run-to-run variation into the score itself, and beam search would let a
-        globally more fluent hypothesis override a locally accurate one.</td></tr>
-      <tr><td style="padding:11px 0; border-bottom:1px solid var(--line); font-weight:650;
-        vertical-align:top">No prompt, no bias</td>
-        <td style="padding:11px 0; border-bottom:1px solid var(--line)">The recognizer is never
-        given the target sentence, and no vocabulary or initial prompt is supplied. This is the
-        single most important setting: constraining recognition toward the expected words would
-        make the transcription converge on the target and erase the deviations that constitute
-        the measurement.</td></tr>
-      <tr><td style="padding:11px 0; border-bottom:1px solid var(--line); font-weight:650;
-        vertical-align:top">No cross-item context</td>
-        <td style="padding:11px 0; border-bottom:1px solid var(--line)">Each recording is decoded
-        independently, with no conditioning on previously decoded text. One item's transcription
-        therefore cannot influence the next, and the order in which files are processed does not
-        affect the result.</td></tr>
-      <tr><td style="padding:11px 0; border-bottom:1px solid var(--line); font-weight:650;
-        vertical-align:top">Language</td>
-        <td style="padding:11px 0; border-bottom:1px solid var(--line)">Fixed to English
-        (<span style="font-family:var(--mono); font-size:13px">language = "en"</span>,
-        <span style="font-family:var(--mono); font-size:13px">task = "transcribe"</span>).
-        Leaving language detection to the model risks it identifying a strongly accented
-        response as the speaker's first language; fixing it removes that failure mode. The
-        translate task is never used.</td></tr>
-      <tr><td style="padding:11px 0; border-bottom:1px solid var(--line); font-weight:650;
-        vertical-align:top">Audio</td>
-        <td style="padding:11px 0; border-bottom:1px solid var(--line)">Resampled to 16 kHz mono,
-        the rate Whisper operates at, with a cap of 128 generated tokens — ample for a
-        single-sentence response and a guard against runaway repetition.</td></tr>
-      <tr><td style="padding:11px 0; font-weight:650; vertical-align:top">Confidence</td>
-        <td style="padding:11px 0">Not produced by the model directly. A logits processor records
-        the distribution at each decoding step, and the reported figure is the mean log
-        probability of the tokens actually chosen, shown both as a probability and in raw form.
-        It is comparable within a session but not across checkpoints or decoding
-        strategies.</td></tr>
-    </tbody>
-  </table>
-
-  <h3>What to report in your methods section</h3>
-  <pre class="cite">Responses were transcribed automatically using Whisper large-v3-turbo
-running locally in the browser via EIT Studio (Park, 2026). Accuracy was
-operationalized as one minus the word error rate, computed over a word-level
-minimum-edit alignment as (S + D + I) / N and truncated at 1.0. Decoding was
-greedy (do_sample = false, num_beams = 1, temperature = 0) with the language
-fixed to English; no prompt or target-sentence bias was supplied, and each
-recording was decoded independently. Prior to
-comparison, both the target sentence and the transcription were lowercased,
-stripped of punctuation, and normalized by [expanding numbers to words /
-expanding contractions / applying the lexical variants listed in the
-scoring configuration]; possessive 's was preserved. The full scoring
-configuration is available at [repository link]. A randomly selected
-[N] % subsample was transcribed and scored by a human rater; agreement
-was [statistic].</pre>
-  <p>Automatic transcription does not replace human verification. Reporting a human-verified
-    subsample lets readers judge how much the automated procedure contributed to the results.</p>
-  <p>EIT Studio is scoring software, not an instrument. Cite the task separately — Ortega et al.
-    (2002) for the included English preset, or the source of your own sentence set.</p>
-</div></section>
-
-<section><div class="wrap narrow">
   <h2>Contact</h2>
   <p>EIT Studio is developed and maintained by Hae In (Lauren) Park, Associate Professor and
     Chair of the Department of Applied English Linguistics and Translation Studies at Kyung Hee
@@ -333,10 +235,7 @@ was [statistic].</pre>
     McGuire, M., &amp; Larson-Hall, J. (2025). Assessing Whisper automatic speech recognition and
     WER scoring for elicited imitation: Steps toward automation. <em>Research Methods in Applied
     Linguistics, 4</em>(2), Article 100197.
-    <a href="https://doi.org/10.1016/j.rmal.2025.100197">https://doi.org/10.1016/j.rmal.2025.100197</a><br>
-    Ortega, L., Iwashita, N., Norris, J. M., &amp; Rabie, S. (2002, October).
-    <em>An investigation of elicited imitation tasks in crosslinguistic SLA research</em>
-    [Paper presentation]. Second Language Research Forum, Toronto, Canada.
+    <a href="https://doi.org/10.1016/j.rmal.2025.100197">https://doi.org/10.1016/j.rmal.2025.100197</a>
   </p>
 </div></section>
 

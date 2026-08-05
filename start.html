@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Start here — EIT Studio</title>
+<title>How it works — EIT Studio</title>
 <meta name="description" content="What you need to start transcribing and scoring an elicited imitation task in EIT Studio.">
 <style>
   :root{
@@ -24,11 +24,11 @@
   .hd .t a{text-decoration:none; color:inherit}
   .hd .t span{font-weight:400; color:var(--muted); font-size:11px; margin-left:9px;
     letter-spacing:.08em; text-transform:uppercase; font-family:var(--mono)}
-  .tabs2{display:flex; gap:6px; margin-left:auto; margin-right:14px}
-  .tabs2 a{font-size:12.5px; font-weight:600; text-decoration:none; color:var(--muted);
-    padding:5px 12px; border-radius:8px; border:1px solid transparent; white-space:nowrap}
-  .tabs2 a:hover{color:var(--ink); background:#f0f0f5}
-  .tabs2 a.on{background:var(--accent-soft); border-color:var(--accent-line); color:var(--accent)}
+  .navl{display:flex; gap:22px; margin-left:auto; margin-right:18px; font-size:13px}
+  .navl a{text-decoration:none; color:var(--muted); white-space:nowrap}
+  .navl a:hover{color:var(--ink)}
+  .navl a.on{color:var(--ink); font-weight:650}
+  @media(max-width:860px){ .navl{display:none} }
   .hd .rt{display:flex; align-items:center; gap:12px}
   .lang button{font:inherit; font-size:12.5px; padding:4px 11px; border:1px solid var(--line);
     background:#fff; cursor:pointer}
@@ -41,6 +41,8 @@
     margin-bottom:18px; overflow:hidden}
   .pad{padding:34px 30px 38px}
 
+  p.kick{margin:0 0 10px; text-align:center; font-family:var(--mono); font-size:11px;
+    letter-spacing:.14em; text-transform:uppercase; color:var(--accent)}
   h1.q{margin:0 0 8px; font-size:33px; line-height:1.2; letter-spacing:-.9px; font-weight:800;
     text-align:center}
   p.qs{margin:0 auto 30px; color:var(--muted); font-size:14px; line-height:1.65;
@@ -115,11 +117,12 @@
 <body>
 
 <div class="hd">
-  <div class="t"><a href="index.html">EIT&nbsp;Studio</a><span data-i18n="hdSub"></span></div>
-  <div class="tabs2">
-    <a href="start.html" class="on" data-i18n="tabStart"></a>
-    <a href="app.html" data-i18n="tabScore"></a>
-    <a href="segment.html" data-i18n="tabSeg"></a>
+  <div class="t"><a href="index.html">EIT&nbsp;Studio</a></div>
+  <div class="navl">
+    <a href="about.html">About</a>
+    <a href="start.html" class="on">How it works</a>
+    <a href="why-eit.html">Why elicited imitation</a>
+    <a href="cite.html">How to cite</a>
   </div>
   <div class="rt">
     <span class="lang"><button id="langEn">English</button><button id="langKo">한국어</button></span>
@@ -129,6 +132,7 @@
 <div class="stage">
 
   <div class="panel"><div class="pad">
+    <p class="kick" data-i18n="kick"></p>
     <h1 class="q" data-i18n="q"></h1>
     <p class="qs" data-i18n="qs"></p>
 
@@ -211,6 +215,7 @@ const $=id=>document.getElementById(id);
 const I18N={
 en:{
  hdSub:"English EIT · for researchers",
+ kick:"How it works",
  q:"What do I need to get started?",
  qs:"Two things: your target sentences with syllable counts, and audio recordings of the responses. Follow whichever branch matches what you have on disk.",
  n1t:"Your recordings",
@@ -244,6 +249,7 @@ en:{
 },
 ko:{
  hdSub:"English EIT · 연구자용",
+ kick:"이용 방법",
  q:"무엇부터 준비하면 되나요?",
  qs:"두 가지가 필요합니다. 음절 수가 포함된 목표 문장, 그리고 응답 녹음 파일입니다. 가지고 계신 파일 형태에 해당하는 갈래를 따라가시면 됩니다.",
  n1t:"녹음 파일",
@@ -276,8 +282,6 @@ ko:{
  foot:"모든 처리는 브라우저 안에서 이루어집니다 · 업로드 없음, 계정 없음"
 }
 };
-I18N.en.tabStart="Start"; I18N.en.tabScore="Score"; I18N.en.tabSeg="Segment";
-I18N.ko.tabStart="시작"; I18N.ko.tabScore="채점"; I18N.ko.tabSeg="분절";
 
 let LANG=(()=>{ try{ return localStorage.getItem("eitLang")||"en"; }catch(e){ return "en"; } })();
 const T=k=>(I18N[LANG]&&I18N[LANG][k])!=null?I18N[LANG][k]:(I18N.en[k]||"");
