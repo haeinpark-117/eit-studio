@@ -193,6 +193,9 @@
         <option value="Xenova/whisper-small" data-i18n="optSmall"></option>
       </select>
     </div>
+    <p class="meta" style="margin:-8px 0 12px"><a href="segment.html"
+       style="color:var(--accent); font-weight:600; text-decoration:none"
+       data-i18n="segLink"></a></p>
     <p class="meta" id="speedNote" data-i18n="speedNote"
        style="background:var(--accent-soft); border-radius:8px; padding:10px 13px;
               line-height:1.65; margin:2px 0 12px"></p>
@@ -296,12 +299,12 @@ en:{
  heroSub:"Transcribe and score any English elicited imitation task. Everything runs in your browser — no audio leaves your computer.",
  heroBack:"← Home",
  s1Title:"Target sentences", s1Ok:"loaded",
- s1Help:"Paste your target sentences below, or upload a CSV/TSV file. One item per line as “number, sentence” (an optional third column may hold the syllable count). A line with only a sentence is numbered automatically.",
+ s1Help:"Paste your target sentences below, or upload a CSV/TSV file. One item per line as “number, sentence, syllables” — or “sentence, syllables”, in which case items are numbered in order. The syllable count is required: it defines the response window in the administration timing and is what lets the segmenter place an item boundary when a participant produced no audible response.",
  btnPreset:"Load English EIT (Ortega et al., 2002)", btnTgtFile:"Upload file", btnClearTgt:"Clear",
  btnApplyTgt:"Apply target set",
  fmtTgtInfo:n=>n+" items loaded.",
  tgtNone:"No target set loaded yet.",
- fmtTgtWarn:(n,ex)=>n+" line(s) could not be read and were skipped: "+ex,
+ fmtTgtWarn:(n,ex)=>n+" line(s) were skipped — check that each has a syllable count: "+ex,
  s2Title:"Scoring rules",
  s2Help:"These rules are applied identically to the target sentence and to Whisper's output before they are compared. Both are always lowercased and stripped of punctuation; possessive ’s is always kept.",
  optNum:"Spell out numbers (3 → three, 11:30 → eleven thirty)",
@@ -313,6 +316,7 @@ en:{
  normPrevNone:"Load a target set to preview the effect of these rules.",
  s3Title:"Recordings",
  s3Help:"One file per item: each recording should contain a single response to a single target sentence. Files named participantID_itemNN are recognized automatically; anything else can be assigned by hand in the table below. Audio never leaves your computer.",
+ segLink:"Have one long recording per participant instead? Split it into items first →",
  modelLbl:"Model:",
  speedNote:"Everything runs on your own computer, so speed depends on your hardware. The model is downloaded once (about 1.5 GB) and then kept in the browser cache. Each time you open this page it is loaded into memory before the first file is transcribed, which takes a couple of minutes; after that, transcription runs at a few seconds per recording. A 30-item set therefore takes roughly five to ten minutes on a recent laptop with WebGPU, and longer without it.",
  optTurbo:"large-v3-turbo (recommended · large first-time download)",
@@ -352,12 +356,12 @@ ko:{
  heroSub:"영어 elicited imitation task 응답을 자동으로 전사하고 WER로 채점합니다. 모든 처리는 브라우저 안에서 이루어지며, 음성 파일은 외부로 전송되지 않습니다.",
  heroBack:"← 홈",
  s1Title:"목표 문장 세트", s1Ok:"불러옴",
- s1Help:"아래에 목표 문장을 붙여넣거나 CSV·TSV 파일을 올리세요. 한 줄에 한 문항씩 “번호, 문장” 형식이며, 세 번째 열에 음절 수를 넣을 수 있습니다. 문장만 적으면 번호가 자동으로 매겨집니다.",
+ s1Help:"아래에 목표 문장을 붙여넣거나 CSV·TSV 파일을 올리세요. 한 줄에 한 문항씩 “번호, 문장, 음절 수” 형식이며, “문장, 음절 수”로 적으면 번호가 순서대로 매겨집니다. 음절 수는 필수입니다. 시행 타이밍에서 응답창 길이를 결정하는 값이며, 참가자가 아무 응답도 하지 않은 문항의 경계를 분절 도구가 잡을 때 필요합니다.",
  btnPreset:"English EIT 불러오기 (Ortega et al., 2002)", btnTgtFile:"파일 올리기", btnClearTgt:"비우기",
  btnApplyTgt:"목표 세트 적용",
  fmtTgtInfo:n=>n+"개 문항이 등록되었습니다.",
  tgtNone:"아직 목표 세트가 없습니다.",
- fmtTgtWarn:(n,ex)=>n+"개 줄을 읽지 못해 건너뛰었습니다: "+ex,
+ fmtTgtWarn:(n,ex)=>n+"개 줄을 건너뛰었습니다. 각 줄에 음절 수가 있는지 확인해 주십시오: "+ex,
  s2Title:"채점 규칙",
  s2Help:"아래 규칙은 목표 문장과 Whisper 전사 양쪽에 똑같이 적용된 뒤 비교됩니다. 소문자화와 구두점 제거는 항상 적용되며, 소유격 ’s는 항상 보존됩니다.",
  optNum:"숫자 풀어쓰기 (3 → three, 11:30 → eleven thirty)",
@@ -369,6 +373,7 @@ ko:{
  normPrevNone:"목표 세트를 불러오면 규칙 적용 결과를 미리 볼 수 있습니다.",
  s3Title:"녹음 파일",
  s3Help:"한 파일에 한 문항씩 넣어 주십시오. 각 녹음 파일은 목표 문장 하나에 대한 응답 하나만 담고 있어야 합니다. 참가자ID_item번호 형식의 파일은 자동으로 인식되며, 그 외의 파일은 아래 표에서 직접 지정할 수 있습니다. 음성은 컴퓨터 밖으로 전송되지 않습니다.",
+ segLink:"참가자별로 긴 녹음 파일 하나만 있으신가요? 먼저 문항별로 나누기 →",
  modelLbl:"모델:",
  speedNote:"모든 처리가 사용자의 컴퓨터에서 이루어지므로 속도는 하드웨어에 따라 달라집니다. 모델은 최초 1회만 내려받아(약 1.5 GB) 브라우저에 저장되며, 이후에는 페이지를 열 때마다 메모리에 올리는 과정이 필요해 첫 파일이 전사되기까지 2~3분이 걸립니다. 그 다음부터는 파일당 수 초 정도이므로, 30문항 기준으로는 WebGPU를 지원하는 최신 노트북에서 대략 5~10분이 소요되며 지원하지 않는 환경에서는 더 오래 걸립니다.",
  optTurbo:"large-v3-turbo (권장 · 첫 로드 시 대용량 다운로드)",
@@ -564,17 +569,17 @@ function parseTargets(text){
     let cells;
     if(raw.indexOf("\t")>=0) cells=raw.split("\t").map(c=>c.trim());
     else cells=csvSplit(raw);
-    if(cells.length>=2 && /^\d+$/.test(cells[0])){
-      const n=parseInt(cells[0],10);
-      const sent=cells[1];
-      const syl=cells.length>=3 && /^\d+$/.test(cells[2]) ? parseInt(cells[2],10) : null;
-      if(!sent){ bad.push(raw); return; }
+    /* The syllable count is required: it defines the response window in the
+       administration timing, and the segmenter needs it to place item
+       boundaries when a participant produced no audible response. */
+    if(cells.length>=2 && /^(item|number|no|num|번호)$/i.test(cells[0])) return;   /* header */
+    if(cells.length>=3 && /^\d+$/.test(cells[0]) && /^\d+$/.test(cells[2])){
+      const n=parseInt(cells[0],10), sent=cells[1], syl=parseInt(cells[2],10);
+      if(!sent||!syl){ bad.push(raw); return; }
       items.push([n,sent,syl]);
-    }else if(cells.length===1 && cells[0]){
-      if(/^(item|number|no|num|번호)\b/i.test(cells[0])) return;   /* header */
-      items.push([++auto,cells[0],null]);
-    }else if(cells.length>=2 && /^(item|number|no|num|번호)$/i.test(cells[0])){
-      return;                                                      /* header row */
+    }else if(cells.length===2 && /^\d+$/.test(cells[1]) && cells[0] &&
+             !/^\d+$/.test(cells[0])){
+      items.push([++auto,cells[0],parseInt(cells[1],10)]);          /* sentence, syllables */
     }else bad.push(raw);
   });
   /* renumber auto-numbered lines so they do not clash with explicit numbers */
@@ -606,7 +611,7 @@ function applyTargets(text,quiet){
   if(bad.length){
     $("tgtWarn").classList.remove("hidden");
     $("tgtWarn").textContent=T("fmtTgtWarn")(bad.length, bad.slice(0,2).join(" | "));
-  } else $("tgtWarn").classList.add("hidden");
+  } else { $("tgtWarn").classList.add("hidden"); $("tgtWarn").textContent=""; }
   paintTargetInfo(); paintNormPreview();
   if(!quiet) setStatus(TGT_N ? (MODEL?"stReadyCached":"stPick") : "stNoTarget");
 }
@@ -751,8 +756,15 @@ async function transcribe(audio){
     }
   }
   const lpl=new LogitsProcessorList(); lpl.push(new Conf());
+  /* Decoding is fixed and deterministic. Greedy search with sampling off is the
+     temperature-0 case: the same recording always yields the same transcription,
+     which is what a scoring procedure has to guarantee. No prompt or vocabulary
+     bias is supplied — the recognizer is never told the target sentence, because
+     doing so would suppress exactly the deviations the task measures. Each file
+     is decoded on its own, so one item cannot condition the next. */
   const out=await MODEL.generate({...inputs,max_new_tokens:128,language:ASR_LANG,
-    task:"transcribe",logits_processor:lpl,return_dict_in_generate:true});
+    task:"transcribe",do_sample:false,num_beams:1,temperature:0,
+    logits_processor:lpl,return_dict_in_generate:true});
   const seq=out.sequences?out.sequences:out;
   const ids=Array.from(seq.tolist()[0]).map(Number);
   if(ok&&prev&&ids.length===prevLen+1) step(prev,ids[ids.length-1]);

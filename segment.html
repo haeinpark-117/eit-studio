@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Segment — EIT Studio</title>
+<meta name="description" content="Split a continuous elicited imitation recording into one file per item, in the browser.">
+<style>
+  :root{
+    --bg:#f2f2f4; --panel:#fff; --ink:#08080f; --muted:#6a6a7d; --line:#e8e8ef;
+    --accent:#3840f3; --accent-dark:#2a31d4; --accent-soft:#eef0ff; --accent-line:#d9dcff;
+    --coral:#ff5c35; --ok:#0f9d58;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); padding:66px 18px 60px;
+    font:14.5px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+    display:flex; justify-content:center; -webkit-font-smoothing:antialiased}
+  .hd{position:fixed; top:0; left:0; right:0; z-index:20; height:50px;
+    background:rgba(255,255,255,.92); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line); display:flex; align-items:center;
+    justify-content:space-between; padding:0 22px}
+  .hd .t{font-weight:800; font-size:15px; letter-spacing:-.3px}
+  .hd .t a{text-decoration:none; color:inherit}
+  .hd .t span{font-weight:400; color:var(--muted); font-size:11px; margin-left:9px;
+    letter-spacing:.08em; text-transform:uppercase; font-family:var(--mono)}
+  .hd .rt{display:flex; align-items:center; gap:12px}
+  .lang button{font:inherit; font-size:12.5px; padding:4px 11px; border:1px solid var(--line);
+    background:#fff; cursor:pointer}
+  .lang button:first-child{border-radius:7px 0 0 7px}
+  .lang button:last-child{border-radius:0 7px 7px 0; border-left:0}
+  .lang button.on{background:var(--accent); color:#fff; border-color:var(--accent)}
+  .stage{width:100%; max-width:1180px}
+
+  .hero{padding:22px 4px 18px; display:flex; align-items:baseline; gap:14px; flex-wrap:wrap;
+    border-bottom:1px solid var(--line); margin-bottom:20px}
+  .hero-t{margin:0; font-size:19px; font-weight:800; letter-spacing:-.5px}
+  .hero-t span{color:var(--accent)}
+  .hero-s{margin:0; flex:1 1 340px; font-size:12.5px; line-height:1.6; color:var(--muted)}
+  .hero-back{font-size:12.5px; color:var(--accent); text-decoration:none; font-weight:600;
+    white-space:nowrap}
+
+  .panel{background:var(--panel); border:1px solid var(--line); border-radius:14px;
+    margin-bottom:18px; overflow:hidden}
+  .pad{padding:22px 24px}
+  .step{display:flex; align-items:center; gap:10px; margin-bottom:6px}
+  .step .n{width:22px; height:22px; border-radius:50%; background:var(--accent); color:#fff;
+    font-size:12px; font-weight:700; display:grid; place-items:center; flex:0 0 auto}
+  .step h2{margin:0; font-size:16.5px; letter-spacing:-.3px}
+  .meta{color:var(--muted); font-size:13px; margin:6px 0 14px; line-height:1.65}
+  .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:12px}
+  label.fl{font-size:13px; color:var(--muted)}
+  input[type=text],input[type=number],select{font:inherit; font-size:13.5px; padding:7px 10px;
+    border:1px solid var(--line); border-radius:8px; background:#fff}
+  input[type=number]{width:92px}
+  input[type=text]{width:170px}
+  button{font:inherit; cursor:pointer}
+  .btn-p{background:var(--accent); color:#fff; border:0; border-radius:9px; padding:10px 18px;
+    font-weight:650; font-size:14px}
+  .btn-p:hover{background:var(--accent-dark)}
+  .btn-p:disabled{background:#c3c5e8; cursor:default}
+  .btn-g{background:#fff; border:1px solid var(--line); border-radius:9px; padding:9px 15px;
+    font-size:13.5px; font-weight:600}
+  .btn-g:hover{border-color:#c0c0cf}
+  .btn-s{padding:6px 11px; font-size:12.5px; border-radius:7px}
+
+  .drop{border:2px dashed var(--accent-line); border-radius:12px; padding:34px 20px;
+    text-align:center; color:var(--muted); font-size:13.5px; cursor:pointer;
+    background:#fcfcff; transition:.15s}
+  .drop:hover,.drop.over{border-color:var(--accent); background:var(--accent-soft)}
+
+  .infobox{background:var(--accent-soft); border-radius:9px; padding:10px 13px; font-size:13px;
+    color:#3b3e73; line-height:1.65}
+  .warn{background:#fff4f0; color:#7a3b28}
+
+  .wavewrap{position:relative; border:1px solid var(--line); border-radius:10px;
+    background:#fbfbfd; overflow:hidden; user-select:none}
+  canvas{display:block; width:100%; height:190px}
+  .marks{position:absolute; inset:0; pointer-events:none}
+  .seg{position:absolute; top:0; bottom:22px; background:rgba(56,64,243,.07);
+    border-left:2px solid var(--accent); border-right:2px solid var(--accent)}
+  .seg .lab{position:absolute; top:4px; left:4px; font-family:var(--mono); font-size:10px;
+    color:#fff; background:var(--accent); border-radius:4px; padding:1px 5px}
+  .hnd{position:absolute; top:0; bottom:22px; width:9px; margin-left:-4px; cursor:col-resize;
+    pointer-events:auto}
+  .hnd::after{content:""; position:absolute; left:3px; top:0; bottom:0; width:3px;
+    background:var(--accent); border-radius:2px}
+  .hnd.end::after{background:var(--accent)}
+  .ruler{position:absolute; left:0; right:0; bottom:0; height:22px; border-top:1px solid var(--line);
+    background:#fff}
+  .tick{position:absolute; bottom:2px; font-family:var(--mono); font-size:9.5px; color:var(--muted);
+    transform:translateX(-50%)}
+  .tick i{position:absolute; left:50%; bottom:13px; width:1px; height:5px; background:var(--line);
+    display:block}
+  .cursor{position:absolute; top:0; bottom:22px; width:1px; background:var(--coral)}
+  .skip{position:absolute; left:0; top:0; bottom:22px; background:rgba(255,92,53,.10);
+    border-right:2px solid var(--coral)}
+  .skip .lab{position:absolute; top:4px; right:5px; font-family:var(--mono); font-size:10px;
+    color:#fff; background:var(--coral); border-radius:4px; padding:1px 5px; white-space:nowrap}
+  .skiphnd{position:absolute; top:0; bottom:22px; width:11px; margin-left:-5px;
+    cursor:col-resize; pointer-events:auto}
+  .skiphnd::after{content:""; position:absolute; left:4px; top:0; bottom:0; width:3px;
+    background:var(--coral); border-radius:2px}
+
+  table.segs{width:100%; border-collapse:collapse; font-size:13px; margin-top:14px}
+  table.segs th{text-align:left; font-family:var(--mono); font-size:10px; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--muted); font-weight:600; padding:9px 10px;
+    border-bottom:1px solid var(--line)}
+  table.segs td{padding:8px 10px; border-bottom:1px solid #f2f2f6; font-family:var(--mono);
+    font-size:12.5px}
+  table.segs tr:last-child td{border-bottom:0}
+  table.segs tr.short td{background:#fff4f0}
+  table.segs .nm{font-family:var(--mono); color:var(--accent)}
+  .iconbtn{border:1px solid var(--line); background:#fff; border-radius:6px; padding:4px 11px;
+    font-size:12px; line-height:1.2}
+  .iconbtn:hover{border-color:var(--coral); color:var(--coral)}
+  .chip{display:inline-block; font-family:var(--mono); font-size:10.5px; padding:2px 8px;
+    border-radius:999px; letter-spacing:.04em}
+  .chip.ok{background:#e8f5ec; color:#186a3b}
+  .chip.mid{background:#fff4e5; color:#8a5a00}
+  .chip.low{background:#fff0ec; color:#a2381c}
+  .hidden{display:none}
+  .foot{font-size:11.5px; color:var(--muted); padding:11px 22px; border-top:1px solid var(--line);
+    background:#fafafb; font-family:var(--mono)}
+  .bar{flex:1; height:6px; background:#e9e9f0; border-radius:4px; overflow:hidden; min-width:120px}
+  .bar i{display:block; height:100%; width:0; background:var(--accent); transition:width .2s}
+  @media(max-width:700px){ table.segs th:nth-child(4),table.segs td:nth-child(4){display:none} }
+</style>
+</head>
+<body>
+
+<div class="hd">
+  <div class="t"><a href="index.html">EIT&nbsp;Studio</a><span data-i18n="hdSub"></span></div>
+  <div class="rt">
+    <span class="lang"><button id="langEn">English</button><button id="langKo">한국어</button></span>
+  </div>
+</div>
+
+<div class="stage">
+  <div class="hero">
+    <h1 class="hero-t">Segment</h1>
+    <p class="hero-s" data-i18n="heroSub"></p>
+    <a class="hero-back" href="app.html" data-i18n="heroBack"></a>
+  </div>
+
+  <div class="panel"><div class="pad">
+    <details id="guide">
+      <summary style="cursor:pointer; font-weight:650; font-size:14.5px"
+        data-i18n="guideTitle"></summary>
+      <div class="meta" style="margin:14px 0 0">
+        <p style="margin:0 0 10px" data-i18n="guideIntro"></p>
+        <ul style="margin:0 0 12px; padding-left:20px; line-height:1.75">
+          <li data-i18n="guideA"></li>
+          <li data-i18n="guideB"></li>
+          <li data-i18n="guideC"></li>
+          <li data-i18n="guideD"></li>
+        </ul>
+        <p style="margin:0 0 10px" data-i18n="guideWorst"></p>
+        <p style="margin:0 0 10px" data-i18n="guideNaming"></p>
+        <p style="margin:0" data-i18n="guideSpeed"></p>
+      </div>
+    </details>
+  </div></div>
+
+  <!-- 1 : file -->
+  <div class="panel"><div class="pad">
+    <div class="step"><span class="n">1</span><h2 data-i18n="s1Title"></h2></div>
+    <p class="meta" data-i18n="s1Help"></p>
+    <div class="row">
+      <label class="fl" data-i18n="lblPid"></label>
+      <input type="text" id="pid" placeholder="P01">
+      <label class="fl" data-i18n="lblCount"></label>
+      <input type="number" id="expected" min="1" max="200" value="30">
+      <label class="fl" data-i18n="lblStart"></label>
+      <input type="number" id="startNo" min="1" max="200" value="1">
+    </div>
+    <div class="drop" id="drop"><span id="dropMsg"></span>
+      <input type="file" id="fileIn" accept="audio/*" style="display:none">
+    </div>
+  </div></div>
+
+  <!-- 2 : detect -->
+  <div class="panel hidden" id="pDetect"><div class="pad">
+    <div class="step"><span class="n">2</span><h2 data-i18n="s2Title"></h2></div>
+    <p class="meta" data-i18n="s2Help"></p>
+    <div class="row">
+      <label class="fl" data-i18n="lblMode"></label>
+      <select id="mode">
+        <option value="silence" data-i18n="optSilence"></option>
+        <option value="stim" data-i18n="optStim"></option>
+        <option value="text" data-i18n="optText"></option>
+      </select>
+    </div>
+
+    <div id="gridStim" class="hidden">
+      <div class="drop" id="stimDrop" style="padding:20px"><span id="stimMsg"></span>
+        <input type="file" id="stimIn" multiple accept="audio/*" style="display:none">
+      </div>
+    </div>
+    <div id="gridText" class="hidden">
+      <p class="meta" style="margin:0 0 6px" data-i18n="textHelp"></p>
+      <textarea id="tgtBox" spellcheck="false" style="width:100%; height:110px; font:12.5px/1.5
+        var(--mono); padding:9px 11px; border:1px solid var(--line); border-radius:9px"></textarea>
+    </div>
+    <div class="row hidden" id="gridConst">
+      <label class="fl" data-i18n="lblPause"></label>
+      <input type="number" id="cPause" step="0.001" value="2.505">
+      <label class="fl" data-i18n="lblTone"></label>
+      <input type="number" id="cTone" step="0.001" value="0.251">
+      <label class="fl" data-i18n="lblBase"></label>
+      <input type="number" id="cBase" step="0.1" value="2">
+      <label class="fl" data-i18n="lblPer"></label>
+      <input type="number" id="cPer" step="0.1" value="0.5">
+      <label class="fl" data-i18n="lblThr"></label>
+      <input type="number" id="cThr" step="1" value="7">
+      <label class="fl" data-i18n="lblToneHz"></label>
+      <input type="number" id="cToneHz" step="10" value="1000" style="width:88px">
+      <button class="btn-g btn-s" id="fitGrid" data-i18n="btnFitGrid"></button>
+    </div>
+
+    <div class="row" id="skipRow">
+      <label class="fl" data-i18n="lblSkip"></label>
+      <input type="number" id="skipS" min="0" step="1" value="0">
+      <button class="btn-g btn-s" id="skipAuto" data-i18n="btnSkipAuto"></button>
+      <label class="fl" data-i18n="lblMaxLen"></label>
+      <input type="number" id="maxLen" min="1" max="60" step="0.5" value="15">
+    </div>
+    <div class="row" id="silRow">
+      <label class="fl" data-i18n="lblSil"></label>
+      <input type="number" id="minSil" min="0.1" max="5" step="0.1" value="0.8">
+      <label class="fl" data-i18n="lblMinLen"></label>
+      <input type="number" id="minLen" min="0.2" max="10" step="0.1" value="0.8">
+      <label class="fl" data-i18n="lblPad"></label>
+      <input type="number" id="pad" min="0" max="1" step="0.05" value="0.2">
+      <button class="btn-g btn-s" id="redetect" data-i18n="btnRedetect"></button>
+      <button class="btn-g btn-s" id="autoFit" data-i18n="btnAutoFit"></button>
+      <button class="btn-g btn-s" id="keepLast" data-i18n="btnKeepLast"></button>
+    </div>
+    <div class="infobox" id="detectInfo"></div>
+  </div></div>
+
+  <!-- 3 : adjust -->
+  <div class="panel hidden" id="pEdit"><div class="pad">
+    <div class="step"><span class="n">3</span><h2 data-i18n="s3Title"></h2></div>
+    <p class="meta" data-i18n="s3Help"></p>
+    <div class="wavewrap" id="wavewrap">
+      <canvas id="wave"></canvas>
+      <div class="marks" id="marks"></div>
+      <div class="ruler" id="ruler"></div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn-g btn-s" id="playAll" data-i18n="btnPlayAll"></button>
+      <button class="btn-g btn-s" id="stopBtn" data-i18n="btnStop"></button>
+      <span class="meta" style="margin:0" id="editHint"></span>
+    </div>
+    <div class="infobox" id="confBox" style="margin-top:14px"></div>
+    <table class="segs"><thead><tr>
+      <th data-i18n="thNo"></th><th data-i18n="thFile"></th><th data-i18n="thStart"></th>
+      <th data-i18n="thEnd"></th><th data-i18n="thDur"></th><th data-i18n="thConf"></th><th data-i18n="thNote"></th><th></th>
+    </tr></thead><tbody id="segBody"></tbody></table>
+  </div></div>
+
+  <!-- 4 : export -->
+  <div class="panel hidden" id="pExport"><div class="pad">
+    <div class="step"><span class="n">4</span><h2 data-i18n="s4Title"></h2></div>
+    <p class="meta" data-i18n="s4Help"></p>
+    <div class="row">
+      <button class="btn-p" id="exportBtn" data-i18n="btnExport"></button>
+      <button class="btn-g" id="resetBtn" data-i18n="btnReset"></button>
+      <span class="bar"><i id="expBar"></i></span>
+    </div>
+    <p class="meta" id="expStatus" style="margin:2px 0 0"></p>
+  </div></div>
+
+  <div class="panel"><div class="foot" id="foot"></div></div>
+</div>
+
+<script>
+/* ============================================================
+   EIT Studio — Segment
+   Splits one continuous recording into one file per item.
+   Everything runs locally; nothing is uploaded.
+   ============================================================ */
+const $=id=>document.getElementById(id);
+
+/* ---------- localization ---------- */
+const I18N={
+en:{
+ hdSub:"English EIT · for researchers",
+ guideTitle:"Which recordings split cleanly — read this first",
+ guideIntro:"Splitting works best when the recording carries some regular marker of where each item begins. In descending order of reliability:",
+ guideA:"<b>The beep is audible.</b> The best case by far. The tone that starts each response window is a pure 1000 Hz signal, so it is found even underneath speech, and every window is placed from it directly. It does not matter whether the stimulus playback was also recorded. Choose one of the timing-grid modes and give the beep frequency if it is not 1000 Hz.",
+ guideB:"<b>Responses only, no beep, evenly spaced.</b> The participant is recorded but the stimulus is played through headphones. Silence detection works well here, and a timing grid can be fitted to the responses.",
+ guideC:"<b>Stimulus audible but no beep.</b> Silence detection will find roughly twice as many segments as there are items. Use a timing grid, and check the reported alignment error.",
+ guideD:"<b>Practice items or spoken instructions at the start.</b> Handled: the task run is identified by its regular spacing, and anything before it is ignored. Confirm the estimated start by ear.",
+ guideWorst:"The hard case is a recording with no beep in which the participant said nothing for several items. Silence cannot distinguish a skipped item from a pause, so every item number after it shifts. Use a timing grid whenever the schedule is known — it places a window for silent items too, and marks them.",
+ guideNaming:"One recording per participant. Whatever the format, play through a few boundaries before exporting.",
+ guideSpeed:"<b>Speed.</b> A 30-item recording of six to eight minutes is analysed in about five seconds and exported in about one more, so roughly <b>five to ten seconds per participant</b> — the time you spend is the checking, not the computing. Everything runs on your own machine, so a slower computer takes proportionally longer.",
+
+ heroSub:"Split one continuous recording into one file per item. Runs in your browser — no audio leaves your computer.",
+ heroBack:"← Scoring tool",
+ s1Title:"Recording",
+ s1Help:"Drop in a single continuous recording of one participant's whole session. The participant ID and item numbers below are used to name the files that come out.",
+ lblPid:"Participant ID:", lblCount:"Expected items:", lblStart:"First item no.:",
+ dropIdle:"Drop one audio file here, or click to choose",
+ fmtLoaded:(n,d)=>n+" — "+fmtT(d)+" ("+d.toFixed(1)+" s)",
+ s2Title:"Detection",
+ s2Help:"Boundaries are placed where the recording falls silent. Recordings often open with the researcher's spoken instructions; use “ignore before” to skip that stretch, or drag the orange marker on the waveform. The maximum response length discards anything too long to be a single-sentence response, which also removes most instruction speech. Raise the silence length if a single response is being split in two; lower it if two responses are being merged.",
+ lblMode:"Boundaries from:",
+ optSilence:"Silence in the recording",
+ optStim:"Timing grid — sentence set + stimulus audio",
+ optText:"Timing grid — sentence set only",
+ stimIdle:"Drop the stimulus audio files here (one per item), or click to choose",
+ fmtStimLoaded:n=>n+" stimulus files measured.",
+ stimOrder:"Files are ordered by name, so item numbering follows the file names.",
+ textHelp:"Paste the target sentence set: one item per line as “number, sentence, syllables”. This is the same list you load in the scoring tool.",
+ lblToneHz:"Beep (Hz):",
+ fmtGridTone:(n,rms)=>n+" windows placed, anchored on the beep that starts each response window. Mean offset of the detected responses is "+rms.toFixed(2)+" s.",
+ lblPause:"Pause (s):", lblTone:"Tone (s):", lblBase:"Window base (s):",
+ lblPer:"Per syllable (s):", lblThr:"Base syllables:",
+ btnFitGrid:"Fit grid to recording",
+ thNote:"Note",
+ noteEmpty:"no speech", 
+ fmtNoteOff:d=>(d>0?"+":"")+d.toFixed(2)+" s",
+ fmtGridOk:(n,rms)=>n+" windows placed from the timing grid. Mean alignment error "+rms.toFixed(2)+" s against the responses that were detected.",
+ fmtGridDrift:(n,mx)=>n+" windows placed, but alignment drifts up to "+mx.toFixed(1)+" s. The recording may have been paused, or the timing constants may not match this administration. Check the later items before exporting.",
+ gridNeedText:"Load the sentence set first — each line needs a syllable count.",
+ gridNeedStim:"Add the stimulus audio files first.",
+ fmtGridCount:(g,e)=>"The timing source has "+g+" items but "+e+" are expected. Set the expected count to match, or check the source.",
+ fmtEstRate:r=>"Stimulus durations were estimated from syllable counts and scaled by "+r.toFixed(2)+" to fit this recording; boundaries are less precise than with the stimulus audio.",
+ lblSil:"Min. silence (s):", lblMinLen:"Min. response (s):", lblPad:"Padding (s):",
+ lblSkip:"Ignore before (s):", lblMaxLen:"Max. response (s):",
+ btnSkipAuto:"Find task start", btnRedetect:"Detect again", btnAutoFit:"Fit to expected count",
+ btnKeepLast:"Find the task run",
+ fmtFound:(n,exp)=>n+" segments found, "+exp+" expected.",
+ fmtFoundOk:n=>n+" segments found, matching the expected count.",
+ fitFail:"No setting produced the expected count. Check the task start above, then adjust the boundaries by hand below.",
+ fmtSkipFound:t=>"Task start estimated at "+fmtT(t)+". Check it by playing from there, and adjust if the estimate is wrong.",
+ skipNone:"No obvious instruction section was found; the whole file is being used.",
+ fmtIrregular:(mx,md)=>"The expected number of segments was found, but the spacing is uneven — the longest gap between responses is "+mx+" against a typical "+md+". Play through the boundaries before exporting: a stretch where the participant said nothing cannot be detected from silence, and would shift every item number after it.",
+ s3Title:"Adjust",
+ s3Help:"Drag a boundary to move it. Click an empty part of the waveform to add a boundary; use the delete button in the table to remove a segment. Rows shorter than one second are highlighted.",
+ editHint:"Click a row to play that segment.",
+ btnPlayAll:"▶ Play whole file", btnStop:"■ Stop",
+ thConf:"Confidence",
+ lv_ok:"OK", lv_mid:"CHECK", lv_low:"VERIFY",
+ srcTone:"placed from the beep", srcGrid:"placed from the timing grid",
+ srcSilence:"placed from silence in the recording",
+ wEmpty:"no speech in the window", wClipStart:"speech at the start edge",
+ wClipEnd:"speech at the end edge", wShort:"very short", wLong:"unusually long",
+ wCadence:"off the surrounding cadence", wOffset:"far from the predicted position",
+ fmtConf:(n,ok,mid,low,src)=>{
+   const s=n+" segments "+src+". "+ok+" look clean";
+   const rest = (mid||low) ? ", "+(mid?mid+" worth a listen":"")+
+     ((mid&&low)?" and ":"")+(low?low+" need checking before export":"") : "";
+   const tail = low ? " Boundaries marked VERIFY are the ones to play: automatic segmentation cannot tell a skipped item from a pause, and a wrong boundary shifts every item number after it."
+        : (mid ? " Play the ones marked CHECK to confirm the response is complete."
+               : " Even so, play a few boundaries before exporting.");
+   const caveat = GRIDINFO ? ""
+     : " Note that these marks describe the boundaries only. Without a known schedule, an item the participant skipped in silence leaves no trace in the audio, so the item numbering itself cannot be confirmed here — check the first and last items against the sentence set.";
+   return s+rest+"."+tail+caveat;
+ },
+ thNo:"Item", thFile:"Output file", thStart:"Start", thEnd:"End", thDur:"Length",
+ s4Title:"Export",
+ s4Help:"Files are written as 16-bit 16 kHz mono WAV named participantID_itemNN.wav, packaged in a ZIP that can be dropped straight into the scoring tool.",
+ btnExport:"Download ZIP", btnReset:"Start over",
+ expWorking:"Preparing files…", fmtExpDone:n=>"Done — "+n+" files exported.",
+ errDecode:"That file could not be read as audio. Try WAV, MP3, M4A, or WEBM.",
+ errNoSeg:"No speech was detected. Try lowering the minimum response length.",
+ errZip:"The ZIP library could not be loaded. Check your connection and try again.",
+ needPid:"Enter a participant ID first."
+},
+ko:{
+ hdSub:"English EIT · 연구자용",
+ guideTitle:"어떤 녹음이 잘 나뉘는지 — 먼저 읽어보십시오",
+ guideIntro:"각 문항의 시작을 알려주는 규칙적인 표지가 녹음에 있을수록 분절이 잘 됩니다. 신뢰도가 높은 순서입니다.",
+ guideA:"<b>삐 소리가 녹음에 들어 있는 경우.</b> 가장 좋습니다. 응답창 시작을 알리는 1000 Hz 순음이므로 말소리 아래에서도 검출되며, 모든 구간이 여기서 직접 결정됩니다. 자극 음성이 함께 녹음되었는지 여부는 상관없습니다. 타이밍 격자 방식을 고르시고, 주파수가 1000 Hz가 아니면 값을 입력하십시오.",
+ guideB:"<b>응답만 녹음되었고 삐 소리가 없으며 간격이 고른 경우.</b> 자극을 헤드폰으로 들려준 경우입니다. 무음 검출이 잘 작동하며 타이밍 격자를 응답에 맞춰 정합할 수도 있습니다.",
+ guideC:"<b>자극 음성이 함께 녹음되었고 삐 소리가 없는 경우.</b> 무음 검출은 문항 수의 약 두 배를 찾아냅니다. 타이밍 격자를 사용하시고 표시되는 정합 오차를 확인하십시오.",
+ guideD:"<b>앞부분에 연습문항이나 구두 안내가 있는 경우.</b> 처리됩니다. 간격이 규칙적인 구간을 본 과제로 식별하고 그 앞은 무시합니다. 추정된 시작 지점을 귀로 확인해 주십시오.",
+ guideWorst:"가장 어려운 경우는 삐 소리가 없으면서 참가자가 여러 문항에 아무 말도 하지 않은 녹음입니다. 무음만으로는 건너뛴 문항과 쉼을 구별할 수 없어 이후 문항 번호가 전부 밀립니다. 시행 일정을 알고 계시면 반드시 타이밍 격자를 쓰십시오. 응답이 없는 문항에도 구간을 배치하고 표시해 줍니다.",
+ guideNaming:"참가자 한 명당 녹음 파일 하나입니다. 어떤 형식이든 내보내기 전에 경계 몇 개를 재생해 확인해 주십시오.",
+ guideSpeed:"<b>소요 시간.</b> 6~8분 길이의 30문항 녹음은 분석에 약 5초, 내보내기에 약 1초가 걸립니다. 참가자 한 명당 <b>5~10초</b> 정도이며, 실제로 시간이 드는 것은 계산이 아니라 확인 작업입니다. 모든 처리가 사용자 컴퓨터에서 이루어지므로 사양이 낮으면 그만큼 더 걸립니다.",
+
+ heroSub:"하나로 이어진 녹음을 문항별 파일로 나눕니다. 브라우저 안에서 처리되며 음성은 외부로 전송되지 않습니다.",
+ heroBack:"← 채점 도구",
+ s1Title:"녹음 파일",
+ s1Help:"한 참가자의 전체 세션이 담긴 연속 녹음 파일 하나를 올려 주십시오. 아래의 참가자 ID와 문항 번호는 생성될 파일 이름에 사용됩니다.",
+ lblPid:"참가자 ID:", lblCount:"예상 문항 수:", lblStart:"시작 문항 번호:",
+ dropIdle:"여기에 음성 파일 하나를 끌어다 놓거나 클릭해서 선택",
+ fmtLoaded:(n,d)=>n+" — "+fmtT(d)+" ("+d.toFixed(1)+"초)",
+ s2Title:"경계 검출",
+ s2Help:"녹음이 무음이 되는 지점을 경계로 삼습니다. 녹음 앞부분에는 연구자의 구두 안내가 들어가는 경우가 많으므로, “앞부분 무시”로 해당 구간을 건너뛰거나 파형 위의 주황색 표시를 끌어 옮기십시오. 최대 응답 길이는 한 문장 응답으로 보기 어려운 긴 구간을 제외하므로 안내 발화도 대부분 함께 걸러집니다. 한 응답이 둘로 나뉘면 무음 길이를 늘리고, 두 응답이 하나로 합쳐지면 줄이십시오.",
+ lblMode:"경계 산출 방식:",
+ optSilence:"녹음의 무음 기준",
+ optStim:"타이밍 격자 — 문장 세트 + 자극 음성",
+ optText:"타이밍 격자 — 문장 세트만",
+ stimIdle:"자극 음성 파일을 여기에 끌어다 놓거나 클릭해서 선택 (문항당 한 개)",
+ fmtStimLoaded:n=>n+"개 자극 파일의 길이를 측정했습니다.",
+ stimOrder:"파일은 이름순으로 정렬되므로 문항 번호는 파일 이름 순서를 따릅니다.",
+ textHelp:"목표 문장 세트를 붙여넣으세요. 한 줄에 한 문항씩 “번호, 문장, 음절 수” 형식이며, 채점 도구에 넣는 것과 같은 목록입니다.",
+ lblToneHz:"삐 소리(Hz):",
+ fmtGridTone:(n,rms)=>"응답창 시작을 알리는 삐 소리를 기준으로 "+n+"개 구간을 배치했습니다. 검출된 응답의 평균 편차는 "+rms.toFixed(2)+"초입니다.",
+ lblPause:"휴지(초):", lblTone:"톤(초):", lblBase:"응답창 기준(초):",
+ lblPer:"음절당(초):", lblThr:"기준 음절 수:",
+ btnFitGrid:"녹음에 격자 맞추기",
+ thNote:"비고",
+ noteEmpty:"발화 없음",
+ fmtNoteOff:d=>(d>0?"+":"")+d.toFixed(2)+"초",
+ fmtGridOk:(n,rms)=>"타이밍 격자로 "+n+"개 구간을 배치했습니다. 검출된 응답 기준 평균 정합 오차는 "+rms.toFixed(2)+"초입니다.",
+ fmtGridDrift:(n,mx)=>n+"개 구간을 배치했으나 정합 오차가 최대 "+mx.toFixed(1)+"초까지 벌어집니다. 녹음이 중간에 멈췄거나 타이밍 상수가 이 시행과 맞지 않을 수 있습니다. 내보내기 전에 뒤쪽 문항을 확인해 주십시오.",
+ gridNeedText:"목표 문장 세트를 먼저 입력해 주십시오. 각 줄에 음절 수가 있어야 합니다.",
+ gridNeedStim:"자극 음성 파일을 먼저 추가해 주십시오.",
+ fmtGridCount:(g,e)=>"타이밍 자료의 문항 수는 "+g+"개인데 예상 문항 수는 "+e+"개입니다. 예상 문항 수를 맞추시거나 자료를 확인해 주십시오.",
+ fmtEstRate:r=>"자극 길이를 음절 수로 추정한 뒤 이 녹음에 맞추어 "+r.toFixed(2)+"배로 보정했습니다. 자극 음성을 사용할 때보다 경계가 덜 정확합니다.",
+ lblSil:"최소 무음(초):", lblMinLen:"최소 응답 길이(초):", lblPad:"여유(초):",
+ lblSkip:"앞부분 무시(초):", lblMaxLen:"최대 응답 길이(초):",
+ btnSkipAuto:"과제 시작 지점 찾기", btnRedetect:"다시 검출", btnAutoFit:"예상 개수에 맞추기",
+ btnKeepLast:"과제 구간 찾기",
+ fmtFound:(n,exp)=>n+"개 구간이 검출되었습니다. 예상은 "+exp+"개입니다.",
+ fmtFoundOk:n=>n+"개 구간이 검출되어 예상 개수와 일치합니다.",
+ fitFail:"예상 개수를 만드는 설정을 찾지 못했습니다. 위의 과제 시작 지점을 확인하신 뒤 아래에서 경계를 직접 조정해 주십시오.",
+ fmtSkipFound:t=>"과제 시작 지점을 "+fmtT(t)+"로 추정했습니다. 해당 지점부터 재생해 확인하시고 다르면 조정해 주십시오.",
+ skipNone:"안내 구간으로 볼 만한 부분을 찾지 못해 파일 전체를 사용합니다.",
+ fmtIrregular:(mx,md)=>"예상한 개수는 찾았으나 간격이 고르지 않습니다. 응답 사이의 최대 공백이 "+mx+"로, 통상적인 "+md+"보다 큽니다. 내보내기 전에 경계를 재생해 확인해 주십시오. 참가자가 아무 말도 하지 않은 구간은 무음과 구별되지 않아 검출되지 않으며, 그 이후 문항 번호가 모두 밀리게 됩니다.",
+ s3Title:"조정",
+ s3Help:"경계선을 끌어 옮길 수 있습니다. 파형의 빈 곳을 클릭하면 경계가 추가되고, 표의 삭제 버튼으로 구간을 제거할 수 있습니다. 1초 미만인 구간은 표시됩니다.",
+ editHint:"표의 행을 클릭하면 해당 구간이 재생됩니다.",
+ btnPlayAll:"▶ 전체 재생", btnStop:"■ 정지",
+ thConf:"신뢰도",
+ lv_ok:"양호", lv_mid:"확인", lv_low:"검증",
+ srcTone:"삐 소리를 기준으로 배치되었습니다", srcGrid:"타이밍 격자로 배치되었습니다",
+ srcSilence:"녹음의 무음을 기준으로 배치되었습니다",
+ wEmpty:"창 안에 발화 없음", wClipStart:"시작 경계에 발화가 걸침",
+ wClipEnd:"끝 경계에 발화가 걸침", wShort:"매우 짧음", wLong:"비정상적으로 긺",
+ wCadence:"주변 간격에서 벗어남", wOffset:"예측 위치에서 멀리 떨어짐",
+ fmtConf:(n,ok,mid,low,src)=>{
+   let s=n+"개 구간이 "+src+". 이 중 "+ok+"개는 양호합니다";
+   if(mid) s+=", "+mid+"개는 들어보시는 편이 좋습니다";
+   if(low) s+=", "+low+"개는 내보내기 전에 확인이 필요합니다";
+   s+=".";
+   s += low ? " ‘검증’으로 표시된 구간을 재생해 주십시오. 자동 분절은 건너뛴 문항과 쉼을 구별하지 못하며, 경계가 하나 어긋나면 이후 문항 번호가 모두 밀립니다."
+       : (mid ? " ‘확인’으로 표시된 구간을 재생해 응답이 온전한지 확인해 주십시오."
+              : " 그래도 내보내기 전에 경계 몇 개는 재생해 확인해 주십시오.");
+   if(!GRIDINFO) s += " 이 표시는 경계 자체에 대한 것입니다. 시행 일정을 모르는 상태에서는 참가자가 침묵으로 건너뛴 문항이 음성에 아무 흔적을 남기지 않으므로 문항 번호 자체는 여기서 확인할 수 없습니다. 첫 문항과 마지막 문항을 목표 문장과 대조해 주십시오.";
+   return s;
+ },
+ thNo:"문항", thFile:"출력 파일", thStart:"시작", thEnd:"끝", thDur:"길이",
+ s4Title:"내보내기",
+ s4Help:"참가자ID_itemNN.wav 형식의 16비트 16 kHz 모노 WAV로 저장되며, 채점 도구에 그대로 끌어다 놓을 수 있는 ZIP으로 묶입니다.",
+ btnExport:"ZIP 내려받기", btnReset:"처음부터",
+ expWorking:"파일을 준비하는 중…", fmtExpDone:n=>"완료 — "+n+"개 파일을 내보냈습니다.",
+ errDecode:"음성 파일로 읽을 수 없습니다. WAV, MP3, M4A, WEBM 형식을 사용해 주십시오.",
+ errNoSeg:"발화가 검출되지 않았습니다. 최소 응답 길이를 줄여 보십시오.",
+ errZip:"ZIP 라이브러리를 불러오지 못했습니다. 연결을 확인한 뒤 다시 시도해 주십시오.",
+ needPid:"참가자 ID를 먼저 입력해 주십시오."
+}};
+let LANG=(()=>{ try{ return localStorage.getItem("eitLang")||"en"; }catch(e){ return "en"; } })();
+const T=k=>(I18N[LANG]&&I18N[LANG][k])!=null?I18N[LANG][k]:(I18N.en[k]||"");
+function applyLang(){
+  document.querySelectorAll("[data-i18n]").forEach(el=>{
+    const v=T(el.getAttribute("data-i18n"));
+    if(typeof v!=="string") return;
+    if(/^guide/.test(el.getAttribute("data-i18n"))) el.innerHTML=v; else el.textContent=v;
+  });
+  $("langEn").classList.toggle("on",LANG==="en");
+  $("langKo").classList.toggle("on",LANG==="ko");
+  $("editHint").textContent=T("editHint");
+  paintDrop(); paintDetect(); renderTable();
+}
+function setLang(l){ LANG=l; try{ localStorage.setItem("eitLang",l); }catch(e){} applyLang(); }
+$("langEn").onclick=()=>setLang("en");
+$("langKo").onclick=()=>setLang("ko");
+
+function fmtT(s){
+  const m=Math.floor(s/60), r=s-m*60;
+  return m+":"+(r<10?"0":"")+r.toFixed(1);
+}
+
+/* ---------- state ---------- */
+let BUF=null, NAME="", ENV=null, HOP=0.01, SEGS=[], DROPK={k:"dropIdle",a:[]},
+    DETK=null, CTX=null, SRC=null, RAF=0;
+function ac(){ if(!CTX) CTX=new (window.AudioContext||window.webkitAudioContext)(); return CTX; }
+function setDrop(k,...a){ DROPK={k,a}; paintDrop(); }
+function paintDrop(){
+  const v=T(DROPK.k);
+  $("dropMsg").textContent = typeof v==="function" ? v(...DROPK.a) : v;
+}
+function setDetect(k,...a){ DETK={k,a}; paintDetect(); }
+function paintDetect(){
+  if(!DETK){ $("detectInfo").textContent=""; return; }
+  const v=T(DETK.k);
+  $("detectInfo").textContent = typeof v==="function" ? v(...DETK.a) : v;
+  $("detectInfo").classList.toggle("warn", DETK.k==="fitFail"||DETK.k==="errNoSeg");
+}
+
+/* ---------- file input ---------- */
+const drop=$("drop");
+drop.onclick=()=>$("fileIn").click();
+drop.ondragover=e=>{ e.preventDefault(); drop.classList.add("over"); };
+drop.ondragleave=()=>drop.classList.remove("over");
+drop.ondrop=e=>{ e.preventDefault(); drop.classList.remove("over");
+  if(e.dataTransfer.files[0]) load(e.dataTransfer.files[0]); };
+$("fileIn").onchange=e=>{ if(e.target.files[0]) load(e.target.files[0]); };
+
+async function load(f){
+  NAME=f.name;
+  setDrop("__raw", f.name);
+  $("dropMsg").textContent=f.name;
+  try{
+    const ab=await f.arrayBuffer();
+    BUF=await ac().decodeAudioData(ab);
+  }catch(err){ setDrop("errDecode"); return; }
+  setDrop("fmtLoaded", f.name, BUF.duration);
+  buildEnvelope();
+  $("pDetect").classList.remove("hidden");
+  $("pEdit").classList.remove("hidden");
+  $("pExport").classList.remove("hidden");
+  detect();
+  autoFit();
+}
+
+/* ---------- RMS envelope ---------- */
+function buildEnvelope(){
+  const sr=BUF.sampleRate, ch=BUF.numberOfChannels;
+  const hop=Math.max(1,Math.round(sr*HOP));
+  const n=Math.floor(BUF.length/hop);
+  const data=[];
+  for(let c=0;c<ch;c++) data.push(BUF.getChannelData(c));
+  const env=new Float32Array(n);
+  for(let i=0;i<n;i++){
+    let sum=0;
+    const s=i*hop, e=Math.min(BUF.length,s+hop);
+    for(let j=s;j<e;j++){
+      let v=0; for(let c=0;c<ch;c++) v+=data[c][j];
+      v/=ch; sum+=v*v;
+    }
+    env[i]=Math.sqrt(sum/Math.max(1,e-s));
+  }
+  ENV=env;
+}
+/* noise floor = low percentile of the envelope */
+function floorLevel(){
+  const a=Float32Array.from(ENV); a.sort();
+  return a[Math.floor(a.length*0.15)];
+}
+function peakLevel(){
+  const a=Float32Array.from(ENV); a.sort();
+  return a[Math.floor(a.length*0.98)];
+}
+
+/* ---------- segmentation ---------- */
+function segment(minSil,minLen,padS,thrMul,opts){
+  const fl=floorLevel(), pk=peakLevel();
+  const thr=Math.max(fl*thrMul, fl+(pk-fl)*0.06);
+  const silFrames=Math.round(minSil/HOP);
+  const maxLen=(opts&&opts.maxLen!=null)?opts.maxLen:(+$("maxLen").value||1e9);
+  const skip=(opts&&opts.from!=null)?opts.from:(+$("skipS").value||0);
+  const from=Math.max(0,Math.round(skip/HOP));
+  const out=[]; let start=-1, quiet=0;
+  for(let i=from;i<ENV.length;i++){
+    if(ENV[i]>thr){
+      if(start<0) start=i;
+      quiet=0;
+    }else if(start>=0){
+      quiet++;
+      if(quiet>=silFrames){
+        const end=i-quiet;
+        const L=(end-start)*HOP;
+        if(L>=minLen&&L<=maxLen) out.push([start,end]);
+        start=-1; quiet=0;
+      }
+    }
+  }
+  if(start>=0){
+    const L=(ENV.length-start)*HOP;
+    if(L>=minLen&&L<=maxLen) out.push([start,ENV.length-1]);
+  }
+  const dur=BUF.duration;
+  const lo=skip;
+  return out.map(([a,b])=>({
+    s:Math.max(lo,a*HOP-padS),
+    e:Math.min(dur,b*HOP+padS)
+  }));
+}
+function report(k,...a){
+  const w=spacingWarning();
+  if(w){ setDetect("fmtIrregular", fmtT(w.max), fmtT(w.med)); return; }
+  setDetect(k,...a);
+}
+function detect(thrMul){
+  const minSil=+$("minSil").value, minLen=+$("minLen").value, padS=+$("pad").value;
+  SEGS=segment(minSil,minLen,padS, thrMul||3);
+  const exp=+$("expected").value;
+  if(!SEGS.length) setDetect("errNoSeg");
+  else if(SEGS.length===exp) report("fmtFoundOk",SEGS.length);
+  else setDetect("fmtFound",SEGS.length,exp);
+  draw(); renderTable();
+}
+/* search silence length and threshold for the expected count */
+/* Recordings usually open with the researcher's instructions and often with
+   practice items, and may end with a stray remark. Rather than assuming the task
+   is the last N segments, choose the run of N consecutive segments whose spacing
+   is most regular: a fixed-schedule task produces evenly spaced responses,
+   whereas a preamble is separated from them by an unusually long gap. The result
+   is an estimate the user is asked to confirm by ear. */
+function gapStats(list){
+  /* Two views of spacing. Gaps between segments show whether a stretch is
+     missing; intervals between onsets show whether the cadence is regular,
+     which is what a fixed-schedule task produces. A window that has split one
+     response into two has a very irregular onset cadence even though its gaps
+     are small, so the onset view is what the search is scored on. */
+  const g=[],d=[];
+  for(let j=1;j<list.length;j++){
+    g.push(Math.max(0,list[j].s-list[j-1].e));
+    d.push(list[j].s-list[j-1].s);
+  }
+  if(!g.length) return {max:0,med:0,cv:0};
+  const srt=g.slice().sort((a,b)=>a-b);
+  const mean=d.reduce((a,b)=>a+b,0)/d.length;
+  const sd=Math.sqrt(d.reduce((a,b)=>a+(b-mean)*(b-mean),0)/d.length);
+  return {max:Math.max.apply(null,g), med:srt[Math.floor(srt.length/2)],
+          cv: mean>0 ? sd/mean : 9};
+}
+function bestWindow(list,exp){
+  if(list.length<exp) return null;
+  let best=null;
+  for(let i=0;i+exp<=list.length;i++){
+    const win=list.slice(i,i+exp), st=gapStats(win);
+    const score=st.cv;                      /* most regular cadence wins */
+    if(!best||score<best.score) best={score,win};
+  }
+  return best;
+}
+function pickWindow(){
+  const exp=+$("expected").value;
+  const best=bestWindow(SEGS,exp);
+  if(!best||SEGS.length<=exp) return null;
+  SEGS=best.win;
+  const t=Math.max(0,SEGS[0].s-0.5);
+  $("skipS").value=t.toFixed(1);
+  drawMarks(); renderTable();
+  return t;
+}
+/* Flag spacing that does not look like a fixed-schedule task. */
+function spacingWarning(){
+  const st=gapStats(SEGS);
+  return (SEGS.length>2 && st.med>0 && st.max>st.med*3) ? st : null;
+}
+function autoFit(){
+  const exp=+$("expected").value, padS=+$("pad").value;
+  /* Search the detection settings, but do not stop at the first combination that
+     happens to yield the expected count: a fixed-schedule task produces evenly
+     spaced responses, so prefer the candidate whose spacing is most regular. */
+  let best=null, fallback=null;
+  for(const sil of [0.4,0.5,0.6,0.7,0.8,1.0,1.2,1.5,2.0]){
+    for(const ml of [0.8,0.5,0.3,1.2]){
+      for(const mul of [2,2.5,3,4,5,6,8]){
+        const segs=segment(sil,ml,padS,mul);
+        if(segs.length>=exp){
+          const w=bestWindow(segs,exp);
+          if(w&&(!best||w.score<best.score)) best={score:w.score,sil,ml,mul,segs:w.win};
+        }else{
+          const d=exp-segs.length;
+          if(!fallback||d<fallback.d) fallback={d,sil,ml,mul,segs};
+        }
+      }
+    }
+  }
+  if(!best&&!fallback){ setDetect("errNoSeg"); return; }
+  const pick=best||fallback;
+  $("minSil").value=pick.sil; $("minLen").value=pick.ml;
+  SEGS=pick.segs;
+  if(best&&SEGS.length){
+    const t=Math.max(0,SEGS[0].s-0.5);
+    $("skipS").value=t.toFixed(1);
+  }
+  draw(); renderTable();
+  if(SEGS.length===exp) report("fmtFoundOk",SEGS.length);
+  else setDetect("fitFail");
+}
+$("skipAuto").onclick=()=>{
+  if(!BUF) return;
+  $("skipS").value=0; detect(); autoFit();
+  const t=pickWindow();
+  if(t==null){ setDetect("skipNone"); return; }
+  setDetect("fmtSkipFound",t);
+  play(t,Math.min(BUF.duration,t+4));
+};
+$("keepLast").onclick=()=>{
+  const exp=+$("expected").value;
+  const t=pickWindow();
+  if(t!=null){ report("fmtSkipFound",t); return; }
+  if(SEGS.length===exp) report("fmtFoundOk",SEGS.length);
+  else setDetect("fmtFound",SEGS.length,exp);
+};
+$("skipS").onchange=()=>detect();
+$("maxLen").onchange=()=>detect();
+$("redetect").onclick=()=>detect();
+$("autoFit").onclick=()=>autoFit();
+$("expected").onchange=()=>renderTable();
+$("startNo").onchange=()=>renderTable();
+$("pid").oninput=()=>renderTable();
+
+
+/* ============================================================
+   Timing-grid modes
+   An EIT is administered on a fixed schedule: for each item the stimulus is
+   played, a fixed pause follows, a tone marks the start of the response window,
+   and the window itself lasts stimulus + base + per-syllable time. Knowing that
+   schedule, every item boundary follows from a single start time — including
+   items where the participant said nothing, which silence detection can never
+   recover.
+   ============================================================ */
+let STIM=[];        /* measured stimulus durations, seconds  */
+let TGT=[];         /* [item, sentence, syllables]           */
+let GRIDINFO=null;
+
+function constants(){
+  return {pause:+$("cPause").value, tone:+$("cTone").value,
+          base:+$("cBase").value, per:+$("cPer").value, thr:+$("cThr").value};
+}
+/* cycle[i] = stimulus + pause + tone + window,  window = stimulus + base + per*(syl-thr) */
+function buildCycles(stims,syls){
+  const c=constants(), out=[];
+  for(let i=0;i<stims.length;i++){
+    const win=Math.max(0.5, stims[i]+c.base+c.per*((syls[i]||c.thr)-c.thr));
+    out.push({stim:stims[i], win, lead:stims[i]+c.pause+c.tone,
+              cycle:stims[i]+c.pause+c.tone+win});
+  }
+  return out;
+}
+/* Response-window start/end for every item, given a start time. */
+function gridAt(cyc,t0,rate){
+  const out=[]; let t=t0;
+  for(const k of cyc){
+    const lead=k.lead*(rate||1), win=k.win*(rate||1);
+    out.push({s:t+lead, e:t+lead+win});
+    t+=lead+win;
+  }
+  return out;
+}
+/* Detected speech onsets, used only to anchor the grid. */
+/* Onsets are used only to anchor the grid, so they must be read from the whole
+   file: the “ignore before” and maximum-length filters belong to the silence
+   mode and would otherwise hide the very responses the fit needs. */
+function onsets(){
+  return segment(0.5,0.4,0,3,{from:0,maxLen:1e9}).map(x=>({s:x.s,e:x.e}));
+}
+/* Fit the start time — and, when stimulus durations were estimated from text, a
+   global rate that absorbs a different speaking speed — by maximising how well
+   the grid windows cover the detected onsets. Two passes: coarse, then refined
+   around the winner. */
+function firstAfter(obs,t){
+  let lo=0,hi=obs.length;
+  while(lo<hi){ const m=(lo+hi)>>1; if(obs[m].s<t) lo=m+1; else hi=m; }
+  return lo;
+}
+/* Score a candidate alignment. Two kinds of evidence are used: an onset inside a
+   predicted response window, and — when the stimulus itself was recorded — an
+   onset at the predicted stimulus start. Counting both keeps the fit from
+   sliding by one item when several participants' responses are missing. */
+function scoreFit(cyc,obs,t0,rate,useStim){
+  let hit=0,err=0,stimHit=0,t=t0;
+  for(const k of cyc){
+    const lead=k.lead*rate, win=k.win*rate;
+    const ws=t+lead, we=ws+win;
+    if(useStim){
+      const j=firstAfter(obs,t-0.4);
+      if(j<obs.length&&obs[j].s<=t+0.6) stimHit++;
+    }
+    let i;
+    i=firstAfter(obs,ws-0.6);
+    if(i<obs.length&&obs[i].s<=we-0.2){ hit++; err+=Math.abs(obs[i].s-ws); }
+    t=we;
+  }
+  return {hit,stimHit,err:hit?err/hit:0,
+          score:(hit+stimHit)-(hit?err/hit:0)/100};
+}
+function fitOnce(cyc,fitRate,useStim){
+  const obs=onsets().sort((a,b)=>a.s-b.s);
+  if(!obs.length) return null;
+  const dur=BUF.duration;
+  const span=r=>cyc.reduce((a,k)=>a+(k.lead+k.win)*r,0);
+  const coarse=[]; 
+  if(fitRate){ for(let r=0.45;r<=1.45;r+=0.05) coarse.push(+r.toFixed(2)); }
+  else coarse.push(1);
+  let best=null;
+  for(const rate of coarse){
+    const hi=Math.max(0,dur-span(rate)*0.98);
+    for(let t0=0;t0<=hi+0.001;t0+=0.25){
+      const r=scoreFit(cyc,obs,t0,rate,useStim);
+      if(!best||r.score>best.score) best={...r,t0,rate};
+    }
+  }
+  if(!best) return null;
+  const rs=fitRate?[-0.04,-0.03,-0.02,-0.01,0,0.01,0.02,0.03,0.04]:[0];
+  let fine=best;
+  for(const dr of rs){
+    const rate=+(best.rate+dr).toFixed(3);
+    if(rate<=0) continue;
+    for(let t0=best.t0-0.5;t0<=best.t0+0.5;t0+=0.02){
+      if(t0<0) continue;
+      const r=scoreFit(cyc,obs,t0,rate,useStim);
+      if(r.score>fine.score) fine={...r,t0,rate};
+    }
+  }
+  return fine;
+}
+/* Whether the stimulus playback was captured in the recording is not knowable in
+   advance, so both readings are fitted and the one that actually explains the
+   responses is kept. */
+function fitGrid(cyc,fitRate){
+  const a=fitOnce(cyc,fitRate,false), b=fitOnce(cyc,fitRate,true);
+  if(!a) return b; if(!b) return a;
+  if(b.hit>a.hit || (b.hit===a.hit && b.err<a.err-0.05)) return b;
+  return a;
+}
+function applyGrid(){
+  const exp=+$("expected").value, mode=$("mode").value;
+  let stims=null, syls=null, estimated=false;
+  /* Both grid modes need the syllable counts, because they set the length of
+     the response window. Stimulus audio, when supplied, additionally gives the
+     exact playback duration instead of an estimate. */
+  TGT=parseTargetLines($("tgtBox").value);
+  if(!TGT.length||TGT.some(t=>!t[2])){ setDetect("gridNeedText"); return; }
+  syls=TGT.map(t=>t[2]);
+  if(mode==="stim"){
+    if(!STIM.length){ setDetect("gridNeedStim"); return; }
+    if(STIM.length!==TGT.length){ setDetect("fmtGridCount",STIM.length,TGT.length); return; }
+    stims=STIM.slice();
+  }else{
+    /* stimulus duration is not knowable from text; estimate it from syllables
+       and let the fit rescale it to this recording */
+    stims=syls.map(v=>0.726+0.204*v);
+    estimated=true;
+  }
+  if(stims.length!==exp){ setDetect("fmtGridCount",stims.length,exp); return; }
+  const cyc=buildCycles(stims,syls);
+  const tones=findTones(+$("cToneHz").value||1000);
+  let g=null, viaTone=false, fit=null;
+  if(tones.length>=exp){
+    /* Take the run of beeps whose spacing best matches the schedule. */
+    let best=null;
+    for(let i=0;i+exp<=tones.length;i++){
+      const t=tones.slice(i,i+exp);
+      let e=0;
+      for(let j=1;j<exp;j++) e+=Math.abs((t[j].s-t[j-1].s)-(cyc[j-1].win+cyc[j].lead));
+      if(!best||e<best.e) best={e,t};
+    }
+    if(best&&best.e/exp<1.5){
+      g=best.t.map((t,i)=>({s:t.e, e:t.e+cyc[i].win}));
+      viaTone=true;
+    }
+  }
+  if(!g){
+    fit=fitGrid(cyc,estimated);
+    if(!fit){ setDetect("errNoSeg"); return; }
+    g=gridAt(cyc,fit.t0,fit.rate);
+  }
+  const padS=+$("pad").value;
+  const errs=[];
+  /* Trim each window to the speech inside it. Scanning the envelope directly —
+     rather than reusing the merged runs — matters when the beep and the response
+     are close together, because a merged run would start at the beep. */
+  const fl=floorLevel(), pk=peakLevel();
+  const thr=Math.max(fl*3, fl+(pk-fl)*0.06);
+  const voiced=t=>{ const i=Math.round(t/HOP); return i>=0&&i<ENV.length&&ENV[i]>thr; };
+  SEGS=g.map(w=>{
+    const lo=Math.max(0,w.s), hi=Math.min(BUF.duration,w.e);
+    let a=null,b=null,n=0;
+    for(let t=lo;t<hi;t+=HOP){ if(voiced(t)){ if(a===null) a=t; b=t; n++; } }
+    /* a few stray frames are bleed from the beep or the previous response, not a
+       response: require at least 150 ms of voiced signal */
+    if(a===null||n*HOP<0.15) return {s:lo,e:hi,empty:true,off:null};
+    errs.push(a-w.s);
+    return {s:Math.max(lo,a-padS), e:Math.min(hi,b+padS), empty:false, off:a-w.s};
+  });
+  $("skipS").value=Math.max(0,g[0].s-2).toFixed(1);
+  GRIDINFO={estimated,rate:fit?fit.rate:1,viaTone};
+  drawMarks(); renderTable();
+  const mx=errs.length?Math.max.apply(null,errs.map(Math.abs)):0;
+  const rms=errs.length?Math.sqrt(errs.reduce((a,b)=>a+b*b,0)/errs.length):0;
+  if(viaTone) setDetect("fmtGridTone",SEGS.length,rms);
+  else if(mx>2) setDetect("fmtGridDrift",SEGS.length,mx);
+  else if(estimated) setDetect("fmtEstRate",fit.rate);
+  else setDetect("fmtGridOk",SEGS.length,rms);
+}
+/* Minimal target-set parser: number, sentence, syllables — or sentence, syllables. */
+function parseTargetLines(text){
+  const out=[]; let auto=0;
+  String(text||"").split(/\r?\n/).forEach(line=>{
+    const raw=line.trim(); if(!raw) return;
+    const cells=raw.indexOf("\t")>=0 ? raw.split("\t").map(c=>c.trim())
+                                    : raw.split(",").map(c=>c.trim());
+    if(cells.length>=3&&/^\d+$/.test(cells[0])&&/^\d+$/.test(cells[cells.length-1]))
+      out.push([parseInt(cells[0],10),cells.slice(1,-1).join(","),parseInt(cells[cells.length-1],10)]);
+    else if(cells.length>=2&&/^\d+$/.test(cells[cells.length-1])&&!/^\d+$/.test(cells[0]))
+      out.push([++auto,cells.slice(0,-1).join(","),parseInt(cells[cells.length-1],10)]);
+  });
+  return out;
+}
+/* stimulus files -> durations */
+const stimDrop=$("stimDrop");
+stimDrop.onclick=()=>$("stimIn").click();
+stimDrop.ondragover=e=>{ e.preventDefault(); stimDrop.classList.add("over"); };
+stimDrop.ondragleave=()=>stimDrop.classList.remove("over");
+stimDrop.ondrop=e=>{ e.preventDefault(); stimDrop.classList.remove("over"); loadStim(e.dataTransfer.files); };
+$("stimIn").onchange=e=>loadStim(e.target.files);
+async function loadStim(files){
+  const fs=Array.from(files).sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
+  STIM=[];
+  for(const f of fs){
+    try{ const ab=await f.arrayBuffer(); const bf=await ac().decodeAudioData(ab); STIM.push(bf.duration); }
+    catch(e){}
+  }
+  $("stimMsg").textContent=T("fmtStimLoaded")(STIM.length)+" "+T("stimOrder");
+  if(BUF) applyGrid();
+}
+function setMode(){
+  const m=$("mode").value, grid=m!=="silence";
+  $("gridStim").classList.toggle("hidden",m!=="stim");
+  $("gridText").classList.toggle("hidden",!grid);
+  $("gridConst").classList.toggle("hidden",!grid);
+  $("silRow").classList.toggle("hidden",grid);
+  $("skipRow").classList.toggle("hidden",grid);
+  if(!BUF) return;
+  if(grid) applyGrid(); else { detect(); autoFit(); }
+}
+$("mode").onchange=setMode;
+$("fitGrid").onclick=applyGrid;
+$("stimMsg").textContent="";
+
+
+/* ---------- tone detection ----------
+   The beep that marks the start of each response window is a pure tone, which is
+   easy to find even when speech is present: a Goertzel filter at the tone
+   frequency, compared against the total energy of the same frame, separates it
+   from voice. When the beeps are audible this is a far better anchor than
+   guessing from silence, and it is what makes recordings that also captured the
+   stimulus playback usable. */
+function findTones(f0){
+  if(!BUF) return [];
+  const sr=BUF.sampleRate, N=512, HOPN=Math.round(sr*0.01);
+  const ch=BUF.numberOfChannels, data=[];
+  for(let c=0;c<ch;c++) data.push(BUF.getChannelData(c));
+  const k=Math.round(N*f0/sr), w=2*Math.PI*k/N, coeff=2*Math.cos(w);
+  const frames=Math.floor((BUF.length-N)/HOPN);
+  const ratio=new Float32Array(Math.max(0,frames));
+  const buf=new Float32Array(N);
+  for(let f=0;f<frames;f++){
+    const off=f*HOPN;
+    let tot=0;
+    for(let i=0;i<N;i++){
+      let v=0; for(let c=0;c<ch;c++) v+=data[c][off+i];
+      v/=ch; buf[i]=v; tot+=v*v;
+    }
+    if(tot<1e-9){ ratio[f]=0; continue; }
+    let s1=0,s2=0;
+    for(let i=0;i<N;i++){ const s0=buf[i]+coeff*s1-s2; s2=s1; s1=s0; }
+    const pw=(s1*s1+s2*s2-coeff*s1*s2)*4/(N*N);   /* power at f0 */
+    ratio[f]=Math.min(1,pw/(tot/N));
+  }
+  const minF=Math.round(0.12/0.01);
+  const out=[]; let st=-1;
+  for(let f=0;f<ratio.length;f++){
+    if(ratio[f]>0.45){ if(st<0) st=f; }
+    else if(st>=0){ if(f-st>=minF) out.push({s:st*0.01, e:f*0.01}); st=-1; }
+  }
+  if(st>=0&&ratio.length-st>=minF) out.push({s:st*0.01,e:ratio.length*0.01});
+  return out;
+}
+
+/* ---------- waveform ---------- */
+const cv=$("wave"), marks=$("marks"), ruler=$("ruler");
+function draw(){
+  if(!BUF) return;
+  const wrap=$("wavewrap");
+  const W=wrap.clientWidth, H=190, dpr=window.devicePixelRatio||1;
+  cv.width=W*dpr; cv.height=H*dpr; cv.style.height=H+"px";
+  const g=cv.getContext("2d"); g.scale(dpr,dpr);
+  g.clearRect(0,0,W,H);
+  const usable=H-22, mid=usable/2;
+  const per=Math.max(1,Math.floor(ENV.length/W));
+  const pk=peakLevel()||1;
+  g.fillStyle="#c9cbe3";
+  for(let x=0;x<W;x++){
+    let m=0;
+    for(let i=x*per;i<Math.min(ENV.length,(x+1)*per);i++) if(ENV[i]>m) m=ENV[i];
+    const h=Math.min(1,m/pk)*mid*0.94;
+    g.fillRect(x,mid-h,1,h*2||1);
+  }
+  drawMarks(); drawRuler();
+}
+function pxOf(t){ return (t/BUF.duration)*$("wavewrap").clientWidth; }
+function timeOf(x){ return Math.max(0,Math.min(BUF.duration,(x/$("wavewrap").clientWidth)*BUF.duration)); }
+function drawMarks(){
+  marks.innerHTML="";
+  const skip=+$("skipS").value||0;
+  if(skip>0){
+    const d=document.createElement("div");
+    d.className="skip"; d.style.width=pxOf(skip)+"px";
+    d.innerHTML='<span class="lab">'+T("lblSkip").replace(/\s*\(s\):|\(초\):/,"")+" "+fmtT(skip)+'</span>';
+    marks.appendChild(d);
+    const h=document.createElement("div");
+    h.className="skiphnd"; h.style.left=pxOf(skip)+"px";
+    h.onmousedown=ev=>startSkipDrag(ev);
+    marks.appendChild(h);
+  }
+  SEGS.forEach((s,i)=>{
+    const d=document.createElement("div");
+    d.className="seg";
+    d.style.left=pxOf(s.s)+"px"; d.style.width=Math.max(2,pxOf(s.e)-pxOf(s.s))+"px";
+    d.innerHTML='<span class="lab">'+itemNo(i)+'</span>';
+    marks.appendChild(d);
+    ["s","e"].forEach(k=>{
+      const h=document.createElement("div");
+      h.className="hnd"+(k==="e"?" end":"");
+      h.style.left=pxOf(s[k])+"px";
+      h.onmousedown=ev=>startDrag(ev,i,k);
+      marks.appendChild(h);
+    });
+  });
+}
+function drawRuler(){
+  ruler.innerHTML="";
+  const d=BUF.duration;
+  const step=d>600?60:d>240?30:d>90?10:d>30?5:2;
+  for(let t=0;t<=d;t+=step){
+    const e=document.createElement("span");
+    e.className="tick"; e.style.left=pxOf(t)+"px";
+    e.innerHTML='<i></i>'+fmtT(t);
+    ruler.appendChild(e);
+  }
+}
+let SKIPDRAG=false;
+function startSkipDrag(ev){
+  ev.preventDefault(); ev.stopPropagation();
+  SKIPDRAG=true;
+  document.onmousemove=e=>{
+    const r=$("wavewrap").getBoundingClientRect();
+    $("skipS").value=timeOf(e.clientX-r.left).toFixed(1);
+    drawMarks();
+  };
+  document.onmouseup=()=>{ SKIPDRAG=false; document.onmousemove=null; document.onmouseup=null;
+    detect(); };
+}
+let DRAG=null;
+function startDrag(ev,i,k){
+  ev.preventDefault();
+  DRAG={i,k};
+  document.onmousemove=onDrag; document.onmouseup=endDrag;
+}
+function onDrag(ev){
+  if(!DRAG) return;
+  const r=$("wavewrap").getBoundingClientRect();
+  const t=timeOf(ev.clientX-r.left);
+  const s=SEGS[DRAG.i];
+  if(DRAG.k==="s") s.s=Math.min(t,s.e-0.05);
+  else s.e=Math.max(t,s.s+0.05);
+  drawMarks(); renderTable();
+}
+function endDrag(){ DRAG=null; document.onmousemove=null; document.onmouseup=null;
+  SEGS.sort((a,b)=>a.s-b.s); drawMarks(); renderTable(); }
+$("wavewrap").onclick=ev=>{
+  if(DRAG||SKIPDRAG||!BUF) return;
+  if(ev.target.classList.contains("hnd")||ev.target.classList.contains("skiphnd")) return;
+  const r=$("wavewrap").getBoundingClientRect();
+  const t=timeOf(ev.clientX-r.left);
+  if(t<(+$("skipS").value||0)) return;           /* inside the ignored head */
+  if(SEGS.some(s=>t>=s.s&&t<=s.e)) return;      /* inside a segment: ignore */
+  SEGS.push({s:Math.max(0,t-0.4),e:Math.min(BUF.duration,t+0.4)});
+  SEGS.sort((a,b)=>a.s-b.s);
+  drawMarks(); renderTable();
+};
+window.addEventListener("resize",()=>{ if(BUF) draw(); });
+
+/* ---------- table ---------- */
+function itemNo(i){ const n=(+$("startNo").value||1)+i; return String(n).padStart(2,"0"); }
+function fileName(i){ return (($("pid").value||"P01").trim())+"_item"+itemNo(i)+".wav"; }
+function renderTable(){
+  scoreSegments();
+  const tb=$("segBody"); tb.innerHTML="";
+  SEGS.forEach((s,i)=>{
+    const tr=document.createElement("tr");
+    const dur=s.e-s.s;
+    if(dur<1) tr.className="short";
+    const why=(s.why||[]).map(k=>T(k)).filter(Boolean).join(", ");
+    const note = why || (s.off!=null ? T("fmtNoteOff")(s.off) : "");
+    if(s.level==="low") tr.className="short";
+    tr.innerHTML='<td>'+itemNo(i)+'</td><td class="nm">'+fileName(i)+'</td>'+
+      '<td>'+s.s.toFixed(2)+'</td><td>'+s.e.toFixed(2)+'</td><td>'+dur.toFixed(2)+'</td>'+
+      '<td><span class="chip '+(s.level||"ok")+'">'+T("lv_"+(s.level||"ok"))+'</span></td>'+
+      '<td>'+note+'</td>'+
+      '<td><button class="iconbtn" data-del="'+i+'">✕</button></td>';
+    tr.onclick=ev=>{ if(ev.target.dataset.del!=null) return; play(s.s,s.e); };
+    tb.appendChild(tr);
+  });
+  paintConf();
+  tb.querySelectorAll("[data-del]").forEach(b=>{
+    b.onclick=ev=>{ ev.stopPropagation(); SEGS.splice(+b.dataset.del,1); drawMarks(); renderTable(); };
+  });
+}
+
+
+/* ---------- confidence ----------
+   Nothing here measures whether a transcription is right; it reports how much
+   the boundary itself can be trusted, from signals that are actually
+   observable: how the boundary was placed, whether speech runs into the edge of
+   the segment, and whether the segment sits where the surrounding cadence says
+   it should. The point is to tell the researcher which few items to listen to,
+   not to certify the rest. */
+function median(a){ if(!a.length) return 0; const b=a.slice().sort((x,y)=>x-y);
+  return b[Math.floor(b.length/2)]; }
+function scoreSegments(){
+  if(!SEGS.length||!ENV) return;
+  const fl=floorLevel(), pk=peakLevel();
+  const thr=Math.max(fl*3, fl+(pk-fl)*0.06);
+  const at=t=>{ const i=Math.round(t/HOP); return i>=0&&i<ENV.length&&ENV[i]>thr; };
+  const durs=SEGS.map(x=>x.e-x.s), md=median(durs);
+  const iv=[]; for(let i=1;i<SEGS.length;i++) iv.push(SEGS[i].s-SEGS[i-1].s);
+  const mi=median(iv);
+  const base=GRIDINFO ? (GRIDINFO.viaTone?1.0:0.9) : 0.85;
+  SEGS.forEach((x,i)=>{
+    let c=base; const why=[];
+    if(x.empty){ c=Math.min(c,0.45); why.push("wEmpty"); }
+    else{
+      if(at(x.s+0.03)){ c-=0.35; why.push("wClipStart"); }
+      if(at(x.e-0.03)){ c-=0.30; why.push("wClipEnd"); }
+      if(x.e-x.s<0.8){ c-=0.30; why.push("wShort"); }
+      if(md>0&&x.e-x.s>md*2.2){ c-=0.20; why.push("wLong"); }
+    }
+    if(mi>0&&i>0&&Math.abs((x.s-SEGS[i-1].s)-mi)>mi*0.45){ c-=0.25; why.push("wCadence"); }
+    if(x.off!=null&&Math.abs(x.off)>1.5){ c-=0.25; why.push("wOffset"); }
+    x.conf=Math.max(0,Math.min(1,c));
+    x.why=why;
+    x.level=x.conf>=0.8?"ok":(x.conf>=0.55?"mid":"low");
+  });
+}
+function paintConf(){
+  const box=$("confBox");
+  if(!SEGS.length){ box.textContent=""; box.classList.add("hidden"); return; }
+  box.classList.remove("hidden");
+  const low=SEGS.filter(x=>x.level==="low").length;
+  const mid=SEGS.filter(x=>x.level==="mid").length;
+  const src=GRIDINFO ? (GRIDINFO.viaTone?T("srcTone"):T("srcGrid")) : T("srcSilence");
+  box.classList.toggle("warn", low>0);
+  box.textContent=T("fmtConf")(SEGS.length,SEGS.length-low-mid,mid,low,src);
+}
+
+/* ---------- playback ---------- */
+function stop(){ if(SRC){ try{SRC.stop();}catch(e){} SRC=null; }
+  cancelAnimationFrame(RAF); const c=marks.querySelector(".cursor"); if(c) c.remove(); }
+function play(a,b){
+  stop();
+  const s=ac().createBufferSource(); s.buffer=BUF; s.connect(ac().destination);
+  s.start(0,a,Math.max(0.02,b-a)); SRC=s;
+  const cur=document.createElement("div"); cur.className="cursor"; marks.appendChild(cur);
+  const t0=ac().currentTime;
+  (function tick(){
+    const t=a+(ac().currentTime-t0);
+    cur.style.left=pxOf(Math.min(t,b))+"px";
+    if(t<b) RAF=requestAnimationFrame(tick); else cur.remove();
+  })();
+}
+$("playAll").onclick=()=>{ if(BUF) play(0,BUF.duration); };
+$("stopBtn").onclick=stop;
+
+/* ---------- WAV encoding ---------- */
+/* Exported at 16 kHz mono: the rate Whisper works at, so the files stay small
+   without losing anything the scoring step would have used. */
+const OUT_SR=16000;
+function encodeWav(mono,sr){
+  const n=mono.length;
+  const buf=new ArrayBuffer(44+n*2), dv=new DataView(buf);
+  const str=(o,s)=>{ for(let i=0;i<s.length;i++) dv.setUint8(o+i,s.charCodeAt(i)); };
+  str(0,"RIFF"); dv.setUint32(4,36+n*2,true); str(8,"WAVEfmt ");
+  dv.setUint32(16,16,true); dv.setUint16(20,1,true); dv.setUint16(22,1,true);
+  dv.setUint32(24,sr,true); dv.setUint32(28,sr*2,true); dv.setUint16(32,2,true);
+  dv.setUint16(34,16,true); str(36,"data"); dv.setUint32(40,n*2,true);
+  for(let i=0;i<n;i++){
+    let v=Math.max(-1,Math.min(1,mono[i]));
+    dv.setInt16(44+i*2, v<0?v*0x8000:v*0x7FFF, true);
+  }
+  return new Blob([buf],{type:"audio/wav"});
+}
+async function toWav(seg){
+  const sr=BUF.sampleRate, ch=BUF.numberOfChannels;
+  const a=Math.floor(seg.s*sr), b=Math.min(BUF.length,Math.ceil(seg.e*sr));
+  const n=Math.max(1,b-a);
+  const chans=[]; for(let c=0;c<ch;c++) chans.push(BUF.getChannelData(c));
+  const mono=new Float32Array(n);
+  for(let i=0;i<n;i++){ let v=0; for(let c=0;c<ch;c++) v+=chans[c][a+i]||0; mono[i]=v/ch; }
+  if(sr===OUT_SR) return encodeWav(mono,OUT_SR);
+  const len=Math.max(1,Math.round(n*OUT_SR/sr));
+  const off=new OfflineAudioContext(1,len,OUT_SR);
+  const src=off.createBufferSource();
+  const tmp=off.createBuffer(1,n,sr); tmp.copyToChannel(mono,0);
+  src.buffer=tmp; src.connect(off.destination); src.start();
+  const out=await off.startRendering();
+  return encodeWav(out.getChannelData(0),OUT_SR);
+}
+
+/* ---------- export ----------
+   The ZIP is written here rather than pulled from a library, so the page needs
+   no network access at all: WAV data is stored uncompressed, which is also what
+   a general-purpose compressor would end up doing with it. */
+const CRCT=(()=>{ const t=new Uint32Array(256);
+  for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c=c&1?0xEDB88320^(c>>>1):c>>>1; t[n]=c>>>0; }
+  return t; })();
+function crc32(u8){ let c=0xFFFFFFFF;
+  for(let i=0;i<u8.length;i++) c=CRCT[(c^u8[i])&0xFF]^(c>>>8);
+  return (c^0xFFFFFFFF)>>>0; }
+function zipStore(files){        /* [{name, data:Uint8Array}] */
+  const enc=new TextEncoder(), parts=[], central=[];
+  let off=0;
+  for(const f of files){
+    const nm=enc.encode(f.name), crc=crc32(f.data), sz=f.data.length;
+    const lh=new DataView(new ArrayBuffer(30));
+    lh.setUint32(0,0x04034b50,true); lh.setUint16(4,20,true); lh.setUint16(6,0x0800,true);
+    lh.setUint16(8,0,true); lh.setUint16(10,0,true); lh.setUint16(12,0,true);
+    lh.setUint32(14,crc,true); lh.setUint32(18,sz,true); lh.setUint32(22,sz,true);
+    lh.setUint16(26,nm.length,true); lh.setUint16(28,0,true);
+    parts.push(new Uint8Array(lh.buffer),nm,f.data);
+    const ch=new DataView(new ArrayBuffer(46));
+    ch.setUint32(0,0x02014b50,true); ch.setUint16(4,20,true); ch.setUint16(6,20,true);
+    ch.setUint16(8,0x0800,true); ch.setUint16(10,0,true);
+    ch.setUint32(16,crc,true); ch.setUint32(20,sz,true); ch.setUint32(24,sz,true);
+    ch.setUint16(28,nm.length,true); ch.setUint32(42,off,true);
+    central.push(new Uint8Array(ch.buffer),nm);
+    off+=30+nm.length+sz;
+  }
+  let cs=0; for(const c of central) cs+=c.length;
+  const end=new DataView(new ArrayBuffer(22));
+  end.setUint32(0,0x06054b50,true);
+  end.setUint16(8,files.length,true); end.setUint16(10,files.length,true);
+  end.setUint32(12,cs,true); end.setUint32(16,off,true);
+  return new Blob([...parts,...central,new Uint8Array(end.buffer)],{type:"application/zip"});
+}
+$("exportBtn").onclick=async()=>{
+  if(!SEGS.length) return;
+  if(!$("pid").value.trim()){ $("expStatus").textContent=T("needPid"); return; }
+  $("exportBtn").disabled=true; $("expStatus").textContent=T("expWorking");
+  try{
+    const files=[];
+    for(let i=0;i<SEGS.length;i++){
+      const bl=await toWav(SEGS[i]);
+      files.push({name:fileName(i), data:new Uint8Array(await bl.arrayBuffer())});
+      $("expBar").style.width=Math.round((i+1)/SEGS.length*100)+"%";
+      await new Promise(r=>setTimeout(r,0));
+    }
+    const head="item,file,start_s,end_s,duration_s,confidence,level,flags\n";
+    const body=SEGS.map((x,i)=>[itemNo(i),fileName(i),x.s.toFixed(3),x.e.toFixed(3),
+      (x.e-x.s).toFixed(3),(x.conf!=null?x.conf.toFixed(2):""),x.level||"",
+      '"'+(x.why||[]).join(";")+'"'].join(",")).join("\n");
+    files.push({name:"segments.csv",
+      data:new TextEncoder().encode(head+body+"\n")});
+    const blob=zipStore(files);
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download=(($("pid").value||"P01").trim())+"_segments.zip";
+    document.body.appendChild(a); a.click(); a.remove();
+    $("expStatus").textContent=T("fmtExpDone")(SEGS.length);
+  }catch(e){
+    $("expStatus").textContent=T("errZip");
+  }
+  $("exportBtn").disabled=false;
+};
+$("resetBtn").onclick=()=>location.reload();
+
+/* ---------- init ---------- */
+$("foot").textContent="Silence detection · beep alignment · fixed-schedule timing grid · no network, no upload";
+applyLang(); setMode();
+</script>
+</body>
+</html>

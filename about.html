@@ -215,11 +215,71 @@
   url    = {https://haeinpark-117.github.io/eit-studio/}
 }</pre>
 
+  <h3>The recognition settings, in full</h3>
+  <p>These are fixed rather than exposed as options, because varying them would make
+    scores incomparable across studies. Reporting them is what allows a reader to
+    reproduce the procedure.</p>
+  <table style="width:100%; border-collapse:collapse; font-size:14.5px; margin:0 0 18px">
+    <tbody>
+      <tr><td style="padding:11px 0; border-bottom:1px solid var(--line); width:190px;
+        font-weight:650; vertical-align:top">Model</td>
+        <td style="padding:11px 0; border-bottom:1px solid var(--line)">
+        <span style="font-family:var(--mono); font-size:13px">onnx-community/whisper-large-v3-turbo</span>,
+        run in the browser through transformers.js. Encoder in fp16 and decoder quantised to
+        q4 on WebGPU; WASM at q8 where WebGPU is unavailable.</td></tr>
+      <tr><td style="padding:11px 0; border-bottom:1px solid var(--line); font-weight:650;
+        vertical-align:top">Decoding</td>
+        <td style="padding:11px 0; border-bottom:1px solid var(--line)">Greedy search —
+        <span style="font-family:var(--mono); font-size:13px">do_sample = false</span>,
+        <span style="font-family:var(--mono); font-size:13px">num_beams = 1</span>,
+        <span style="font-family:var(--mono); font-size:13px">temperature = 0</span>. The task
+        calls for verbatim repetition of what the participant produced, so the decoding must be
+        deterministic: the same recording yields the same transcription every time. Sampling
+        would introduce run-to-run variation into the score itself, and beam search would let a
+        globally more fluent hypothesis override a locally accurate one.</td></tr>
+      <tr><td style="padding:11px 0; border-bottom:1px solid var(--line); font-weight:650;
+        vertical-align:top">No prompt, no bias</td>
+        <td style="padding:11px 0; border-bottom:1px solid var(--line)">The recognizer is never
+        given the target sentence, and no vocabulary or initial prompt is supplied. This is the
+        single most important setting: constraining recognition toward the expected words would
+        make the transcription converge on the target and erase the deviations that constitute
+        the measurement.</td></tr>
+      <tr><td style="padding:11px 0; border-bottom:1px solid var(--line); font-weight:650;
+        vertical-align:top">No cross-item context</td>
+        <td style="padding:11px 0; border-bottom:1px solid var(--line)">Each recording is decoded
+        independently, with no conditioning on previously decoded text. One item's transcription
+        therefore cannot influence the next, and the order in which files are processed does not
+        affect the result.</td></tr>
+      <tr><td style="padding:11px 0; border-bottom:1px solid var(--line); font-weight:650;
+        vertical-align:top">Language</td>
+        <td style="padding:11px 0; border-bottom:1px solid var(--line)">Fixed to English
+        (<span style="font-family:var(--mono); font-size:13px">language = "en"</span>,
+        <span style="font-family:var(--mono); font-size:13px">task = "transcribe"</span>).
+        Leaving language detection to the model risks it identifying a strongly accented
+        response as the speaker's first language; fixing it removes that failure mode. The
+        translate task is never used.</td></tr>
+      <tr><td style="padding:11px 0; border-bottom:1px solid var(--line); font-weight:650;
+        vertical-align:top">Audio</td>
+        <td style="padding:11px 0; border-bottom:1px solid var(--line)">Resampled to 16 kHz mono,
+        the rate Whisper operates at, with a cap of 128 generated tokens — ample for a
+        single-sentence response and a guard against runaway repetition.</td></tr>
+      <tr><td style="padding:11px 0; font-weight:650; vertical-align:top">Confidence</td>
+        <td style="padding:11px 0">Not produced by the model directly. A logits processor records
+        the distribution at each decoding step, and the reported figure is the mean log
+        probability of the tokens actually chosen, shown both as a probability and in raw form.
+        It is comparable within a session but not across checkpoints or decoding
+        strategies.</td></tr>
+    </tbody>
+  </table>
+
   <h3>What to report in your methods section</h3>
   <pre class="cite">Responses were transcribed automatically using Whisper large-v3-turbo
 running locally in the browser via EIT Studio (Park, 2026). Accuracy was
 operationalized as one minus the word error rate, computed over a word-level
-minimum-edit alignment as (S + D + I) / N and truncated at 1.0. Prior to
+minimum-edit alignment as (S + D + I) / N and truncated at 1.0. Decoding was
+greedy (do_sample = false, num_beams = 1, temperature = 0) with the language
+fixed to English; no prompt or target-sentence bias was supplied, and each
+recording was decoded independently. Prior to
 comparison, both the target sentence and the transcription were lowercased,
 stripped of punctuation, and normalized by [expanding numbers to words /
 expanding contractions / applying the lexical variants listed in the
