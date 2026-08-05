@@ -128,6 +128,7 @@
     font-size:13px}
   .sw-sub{background:#cffafe} .sw-ins{background:#fbcfe8}
   .sw-om{color:#db2777; font-weight:700}
+  .sw-rep{color:#9c9cae; text-decoration:line-through; text-decoration-thickness:1px}
   .exbox{border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin:6px 0 18px;
     background:#fafafb}
   .exbox .k{font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase;
@@ -429,6 +430,10 @@
             <td><b>Omission.</b> A target word with no counterpart in the transcription. Hover to
               see which word is missing.</td></tr>
           <tr><td>unmarked</td><td>A match, which contributes nothing to the error rate.</td></tr>
+          <tr><td><span class="sw sw-rep">the boy was</span></td>
+            <td><b>Self-correction, if that rule is enabled.</b> A restarted stretch that was
+              excluded from the comparison. It contributes nothing to the error rate, and is shown
+              so that the exclusion remains visible.</td></tr>
         </tbody></table>
         <div class="exbox">
           <div class="k">Target (7 words)</div>
@@ -439,6 +444,17 @@
           <p class="calc">Two substitutions, no insertions, no omissions, over seven target words:
             WER = 2 / 7 = .286, accuracy = 71.4 %.</p>
         </div>
+        <h4>Self-corrections</h4>
+        <p>By default the transcription is scored as produced, so a false start is aligned as an
+          insertion and counts against the score. The scoring-rules panel offers an alternative:
+          where a stretch of words is restarted, the first attempt is removed and only the repair
+          is scored, following the convention that a self-corrected response is credited on its
+          final attempt. The rule is applied to the transcription only, never to the target
+          sentence, and a stretch that also occurs in the target sentence is never removed.
+          Whichever setting is used is recorded in both exports, and the removed words are listed
+          item by item, so the decision remains reportable. Because no heuristic distinguishes a
+          self-correction from a genuine repetition in every case, items scored under this rule
+          warrant review.</p>
         <p>Because normalization is applied to both strings before comparison, capitalization,
           punctuation, and whichever variants you configured never affect the score. A response
           that is correct but differently punctuated scores as a match; a response that
@@ -492,10 +508,12 @@
           replacing it.</p>
         <h4>CSV</h4>
         <p class="mono2" style="color:var(--muted)">participant, item, target, whisper, wer,
-          accuracy_pct, confidence, avg_logprob, duration_s, file, model, rules</p>
+          accuracy_pct, confidence, avg_logprob, duration_s, file, model, rules,
+          self_corrections_removed</p>
         <h4>JSON</h4>
         <p>The same item-level fields, plus the alignment operations under
-          <span class="mono2">ops</span>, and a <span class="mono2">meta</span> block recording
+          <span class="mono2">ops</span>, the string the score was computed on under
+          <span class="mono2">transcription_scored</span>, and a <span class="mono2">meta</span> block recording
           the Whisper model, the decoding description, how confidence was computed, the full
           scoring-rule configuration, the number of target items, and a timestamp.</p>
       </div>

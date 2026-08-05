@@ -115,6 +115,7 @@
   .w-sub{background:#cffafe; border-radius:3px; padding:0 3px}
   .w-ins{background:#fbcfe8; border-radius:3px; padding:0 3px}
   .w-om{color:#db2777; font-weight:700}
+  .w-rep{color:#9c9cae; text-decoration:line-through; text-decoration-thickness:1px}
   .foot{font-size:11.5px; color:var(--muted); padding:11px 22px;
     border-top:1px solid var(--line); background:#fafafb; font-family:var(--mono)}
   .maptab td{padding:6px 10px}
@@ -178,6 +179,10 @@
       <label class="chk"><input type="checkbox" id="optNum" checked><span data-i18n="optNum"></span></label>
       <label class="chk"><input type="checkbox" id="optContr" checked><span data-i18n="optContr"></span></label>
     </div>
+    <div class="row" style="margin-top:2px">
+      <label class="chk"><input type="checkbox" id="optRep"><span data-i18n="optRep"></span></label>
+    </div>
+    <p class="meta" data-i18n="repHelp" style="margin:-4px 0 12px"></p>
     <details id="ruleDetails">
       <summary data-i18n="ruleSummary"></summary>
       <p class="meta" style="margin-top:8px" data-i18n="ruleHelp"></p>
@@ -320,6 +325,9 @@ en:{
  s2Help:"These rules are applied identically to the target sentence and to Whisper's output before they are compared. Both are always lowercased and stripped of punctuation; possessive ’s is always kept.",
  optNum:"Spell out numbers (3 → three, 11:30 → eleven thirty)",
  optContr:"Expand contractions (I'm → I am, can't → cannot)",
+ optRep:"Score a self-correction as the final attempt (drop the restarted stretch)",
+ repHelp:"Off by default. Applied to Whisper's output only, never to the target sentence: where a stretch of words is restarted — “the boy was the boy is late” — the first attempt is removed and only the repair is scored. Removed words stay visible in the output table, struck through, and are listed in both exports. A stretch that also occurs in the target sentence is never removed. The rule cannot distinguish every self-correction from a genuine repetition, so items scored under it still warrant review.",
+ repTitle:"self-correction, not scored",
  ruleSummary:"Additional replacements and export",
  ruleHelp:"One rule per line, written as “from => to”. Applied after punctuation is removed, longest phrase first. Use this for spelling variants that should count as the same word.",
  btnApplyRules:"Apply rules", btnExpCfg:"Export settings", btnImpCfg:"Import settings",
@@ -379,6 +387,9 @@ ko:{
  s2Help:"아래 규칙은 목표 문장과 Whisper 전사 양쪽에 똑같이 적용된 뒤 비교됩니다. 소문자화와 구두점 제거는 항상 적용되며, 소유격 ’s는 항상 보존됩니다.",
  optNum:"숫자 풀어쓰기 (3 → three, 11:30 → eleven thirty)",
  optContr:"축약형 확장 (I'm → I am, can't → cannot)",
+ optRep:"자기수정은 마지막 시도만 채점 (다시 시작한 앞부분 제거)",
+ repHelp:"기본값은 해제입니다. 목표 문장에는 적용되지 않고 Whisper 전사에만 적용됩니다. “the boy was the boy is late”처럼 같은 구간을 다시 시작한 경우 앞선 시도를 제거하고 수정된 발화만 채점합니다. 제거된 단어는 결과표에 취소선으로 그대로 표시되며 두 내보내기 파일에도 기록됩니다. 목표 문장에 실제로 존재하는 연쇄는 제거되지 않습니다. 다만 자기수정과 단순 반복을 항상 구분할 수는 없으므로, 이 규칙이 적용된 문항은 확인이 필요합니다.",
+ repTitle:"자기수정 — 채점에서 제외됨",
  ruleSummary:"추가 치환 규칙과 설정 내보내기",
  ruleHelp:"한 줄에 하나씩 “원래 => 바꿀 것” 형식으로 적습니다. 구두점 제거 후에 긴 표현부터 적용됩니다. 같은 단어로 취급해야 하는 표기 변이형에 사용하세요.",
  btnApplyRules:"규칙 적용", btnExpCfg:"설정 내보내기", btnImpCfg:"설정 가져오기",
@@ -497,7 +508,7 @@ const CONTR={
  "ain't":"is not","shan't":"shall not"
 };
 const DEFAULT_RULES="town house => townhouse\ntown houses => townhouses";
-let CFG={ numbers:true, contractions:true, rulesText:DEFAULT_RULES, rules:[] };
+let CFG={ numbers:true, contractions:true, repairs:false, rulesText:DEFAULT_RULES, rules:[] };
 
 function compileRules(text){
   const out=[];
@@ -534,6 +545,47 @@ function normalize(s){
   return s.replace(/\s+/g," ").trim();
 }
 
+/* ---------- self-correction (repair) handling ----------
+   Optional, and applied to the hypothesis only — never to the target sentence.
+   Where a stretch of words is restarted, the first attempt (the reparandum) is
+   removed and only the repair is scored. Two guards keep the heuristic
+   conservative: an onset of at least two words is required before any stretch is
+   cut, and a stretch that also occurs in the target sentence is never cut, so
+   legitimate repetition in the stimulus is left intact. The final word of a
+   reparandum may be a fragment of its repair ("he go he goes"), but a single
+   word is never treated as a fragment on its own, because most such matches in
+   running text are ordinary words ("we went"). */
+const REP_KMAX=5, REP_DMAX=6;
+function stripRepairs(hypW,refW){
+  const ref=" "+refW.join(" ")+" ";
+  const inRef=seq=>ref.indexOf(" "+seq.join(" ")+" ")>=0;
+  const kept=[], gaps={};
+  const drop=w=>{ const k=kept.length; (gaps[k]=gaps[k]||[]).push(w); };
+  let i=0;
+  while(i<hypW.length){
+    let cut=0;
+    for(let k=Math.min(REP_KMAX,hypW.length-i); k>=2 && !cut; k--){
+      for(let d=1; d<=REP_DMAX && !cut; d++){
+        const j=i+d;
+        if(j+k>hypW.length) break;
+        let ok=true, exact=true;
+        for(let t=0;t<k;t++){
+          if(hypW[i+t]===hypW[j+t]) continue;
+          if(t===k-1 && hypW[i+t].length>=2 && hypW[j+t].indexOf(hypW[i+t])===0){ exact=false; continue; }
+          ok=false; break;
+        }
+        if(!ok) continue;
+        if(exact && inRef(hypW.slice(i,j+k))) continue;
+        cut=d;
+      }
+    }
+    if(!cut && i+1<hypW.length && hypW[i]===hypW[i+1] && !inRef([hypW[i],hypW[i]])) cut=1;
+    if(cut){ for(let t=0;t<cut;t++) drop(hypW[i+t]); i+=cut; }
+    else { kept.push(hypW[i]); i++; }
+  }
+  return {kept,gaps};
+}
+
 /* ---------- alignment / WER ---------- */
 function align(refW,hypW){
   const n=refW.length,m=hypW.length;
@@ -562,12 +614,20 @@ function align(refW,hypW){
   return {ops,S,D:Dl,I};
 }
 function scorePair(target,hyp){
-  const gt=normalize(target), tr=normalize(hyp);
+  const gt=normalize(target), tr0=normalize(hyp);
   const refW=gt?gt.split(" "):[];
-  if(!tr) return {wer:1,acc:0,ops:[],gt,tr};
-  const {ops,S,D,I}=align(refW,tr.split(" "));
+  if(!tr0) return {wer:1,acc:0,ops:[],gt,tr:"",gaps:{},rep:[]};
+  let hypW=tr0.split(" "), gaps={}, rep=[];
+  if(CFG.repairs){
+    const st=stripRepairs(hypW,refW);
+    hypW=st.kept; gaps=st.gaps;
+    rep=Object.keys(gaps).sort((a,b)=>a-b).reduce((acc,k)=>acc.concat(gaps[k]),[]);
+  }
+  const tr=hypW.join(" ");
+  if(!tr) return {wer:1,acc:0,ops:[],gt,tr,gaps,rep};
+  const {ops,S,D,I}=align(refW,hypW);
   const wer=refW.length?Math.min(1,(S+D+I)/refW.length):1;
-  return {wer:+wer.toFixed(4),acc:+((1-wer)*100).toFixed(1),ops,gt,tr};
+  return {wer:+wer.toFixed(4),acc:+((1-wer)*100).toFixed(1),ops,gt,tr,gaps,rep};
 }
 
 /* ============================================================
@@ -659,19 +719,31 @@ function paintNormPreview(){
 function readCfgFromUI(){
   CFG.numbers=$("optNum").checked;
   CFG.contractions=$("optContr").checked;
+  CFG.repairs=$("optRep").checked;
   CFG.rulesText=$("ruleBox").value;
   CFG.rules=compileRules(CFG.rulesText);
   try{ localStorage.setItem("eitCfg",JSON.stringify({
-    numbers:CFG.numbers, contractions:CFG.contractions, rulesText:CFG.rulesText})); }catch(e){}
+    numbers:CFG.numbers, contractions:CFG.contractions, repairs:CFG.repairs,
+    rulesText:CFG.rulesText})); }catch(e){}
   paintNormPreview();
+  rescore();
+}
+/* Changing a rule after a run re-scores what is already on screen; the
+   transcriptions themselves are untouched. */
+function rescore(){
+  if(!RESULTS.length) return;
+  RESULTS.forEach(r=>{ r.sc = r.target ? scorePair(r.target,r.text) : null; });
+  render();
 }
 $("applyRules").onclick=readCfgFromUI;
 $("optNum").onchange=readCfgFromUI;
 $("optContr").onchange=readCfgFromUI;
+$("optRep").onchange=readCfgFromUI;
 $("expCfg").onclick=()=>{
   dl(new Blob([JSON.stringify({normalizer_version:"configurable-1",
     lowercase:true, strip_punctuation:true, keep_possessives:true,
     spell_out_numbers:CFG.numbers, expand_contractions:CFG.contractions,
+    score_self_corrections_as_final:CFG.repairs,
     extra_rules:CFG.rules},null,1)],{type:"application/json"}),"scoring_rules.json");
 };
 $("impCfgBtn").onclick=()=>$("impCfg").click();
@@ -681,6 +753,7 @@ $("impCfg").onchange=async e=>{
     const j=JSON.parse(await f.text());
     $("optNum").checked=!!j.spell_out_numbers;
     $("optContr").checked=!!j.expand_contractions;
+    $("optRep").checked=!!j.score_self_corrections_as_final;
     $("ruleBox").value=(j.extra_rules||[]).map(r=>r.from+" => "+r.to).join("\n");
     readCfgFromUI();
     $("ruleDetails").open=true;
@@ -896,13 +969,21 @@ $("resetBtn").onclick=()=>{
 function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");}
 function diffHtml(sc,text){
   if(!sc||!sc.ops.length) return "<span class='w-om'>"+esc(text||T("noSpeech"))+"</span>";
-  return sc.ops.map(o=>{
-    const h=o.h.join(" "), r=o.r.join(" ");
-    if(o.t==="eq")  return esc(h);
-    if(o.t==="sub") return "<span class='w-sub' title='target: "+esc(r)+"'>"+esc(h)+"</span>";
-    if(o.t==="ins") return "<span class='w-ins' title='inserted'>"+esc(h)+"</span>";
-    return "<span class='w-om' title='omitted: "+esc(r)+"'>▲</span>";
-  }).join(" ");
+  const gaps=sc.gaps||{}, out=[]; let k=0;
+  const gapAt=i=>{ const g=gaps[i];
+    if(g&&g.length) out.push("<span class='w-rep' title='"+esc(T("repTitle"))+"'>"+esc(g.join(" "))+"</span>"); };
+  sc.ops.forEach(o=>{
+    if(o.t==="del"){ out.push("<span class='w-om' title='omitted: "+esc(o.r.join(" "))+"'>▲</span>"); return; }
+    o.h.forEach((w,ix)=>{
+      gapAt(k);
+      if(o.t==="eq") out.push(esc(w));
+      else if(o.t==="sub") out.push("<span class='w-sub' title='target: "+esc(o.r[ix]!=null?o.r[ix]:o.r.join(" "))+"'>"+esc(w)+"</span>");
+      else out.push("<span class='w-ins' title='inserted'>"+esc(w)+"</span>");
+      k++;
+    });
+  });
+  gapAt(k);
+  return out.join(" ");
 }
 const mean=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
 function render(){
@@ -954,15 +1035,18 @@ $("sortSel").onchange=render;
 /* ---------- export ---------- */
 function rulesSummary(){
   return "numbers="+(CFG.numbers?"on":"off")+"; contractions="+(CFG.contractions?"on":"off")+
+    "; self_corrections="+(CFG.repairs?"final attempt":"verbatim")+
     "; extra="+CFG.rules.map(r=>r.from+">"+r.to).join("|");
 }
 $("csvBtn").onclick=()=>{
   const cols=["participant","item","target","whisper","wer","accuracy_pct",
-              "confidence","avg_logprob","duration_s","file","model","rules"];
+              "confidence","avg_logprob","duration_s","file","model","rules",
+              "self_corrections_removed"];
   const rows=[cols.join(",")];
   RESULTS.forEach(r=>rows.push([r.pid,r.item??"",r.target,r.text,
     r.sc?r.sc.wer:"",r.sc?r.sc.acc:"",r.conf??"",r.avgLogprob??"",
-    r.dur?r.dur.toFixed(2):"",r.name,loadedModel,rulesSummary()].map(v=>{
+    r.dur?r.dur.toFixed(2):"",r.name,loadedModel,rulesSummary(),
+    r.sc&&r.sc.rep?r.sc.rep.join(" "):""].map(v=>{
       v=String(v??""); return (v.includes(",")||v.includes('"'))?'"'+v.replace(/"/g,'""')+'"':v;
     }).join(",")));
   dl(new Blob([rows.join("\n")],{type:"text/csv"}),"eit_scores.csv");
@@ -973,12 +1057,15 @@ $("jsonBtn").onclick=()=>{
     meta:{whisper_model:loadedModel,decoding:"greedy (transformers.js, in-browser)",
       confidence:"mean probability of the tokens Whisper selected; avg_logprob is the raw value",
       scoring_rules:{lowercase:true,strip_punctuation:true,keep_possessives:true,
-        spell_out_numbers:CFG.numbers,expand_contractions:CFG.contractions,extra_rules:CFG.rules},
+        spell_out_numbers:CFG.numbers,expand_contractions:CFG.contractions,
+        score_self_corrections_as_final:CFG.repairs,extra_rules:CFG.rules},
       n_target_items:TGT_N, scored_at:new Date().toISOString()},
     items:RESULTS.map(r=>({participant:r.pid,item:r.item,target:r.target,
       transcription_raw:r.text,transcription_corrected:null,
       wer:r.sc?r.sc.wer:null,accuracy_pct:r.sc?r.sc.acc:null,
       confidence:r.conf,avg_logprob:r.avgLogprob,ops:r.sc?r.sc.ops:null,
+      transcription_scored:r.sc?r.sc.tr:null,
+      self_corrections_removed:r.sc?r.sc.rep:null,
       duration_s:r.dur?+r.dur.toFixed(2):null,flag:"",file:r.name,reviewed:false}))},null,1)],
     {type:"application/json"}), (pids.length===1?pids[0]:"eit")+"_results.json");
 };
@@ -995,8 +1082,10 @@ function dl(blob,name){
   try{ localStorage.removeItem("eitTargets"); }catch(e){}
   $("optNum").checked = savedCfg ? !!savedCfg.numbers : true;
   $("optContr").checked = savedCfg ? !!savedCfg.contractions : true;
+  $("optRep").checked = savedCfg ? !!savedCfg.repairs : false;
   $("ruleBox").value = savedCfg && savedCfg.rulesText!=null ? savedCfg.rulesText : DEFAULT_RULES;
   CFG.numbers=$("optNum").checked; CFG.contractions=$("optContr").checked;
+  CFG.repairs=$("optRep").checked;
   CFG.rulesText=$("ruleBox").value; CFG.rules=compileRules(CFG.rulesText);
   applyLang();
   updateRunState();
