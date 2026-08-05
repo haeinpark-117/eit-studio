@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EIT Studio</title>
+<style>
+  :root{
+    --bg:#f2f2f4; --panel:#fff; --ink:#17171c; --muted:#6b6b76; --line:#e3e3e8;
+    --accent:#4f46e5; --accent-dark:#4338ca; --accent-soft:#eef2ff;
+    --pink:#ff1493; --pink-soft:#fff0f8; --sev:#be185d;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink);
+    font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,
+    "Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    padding:66px 18px 60px; display:flex; flex-direction:column; align-items:center}
+  .hd{position:fixed; top:0; left:0; right:0; z-index:20; height:50px;
+    background:rgba(242,242,244,.95); border-bottom:1px solid var(--line);
+    display:flex; align-items:center; justify-content:space-between; padding:0 22px}
+  .hd .t{font-weight:700; font-size:15px}
+  .hd .t span{font-weight:400; color:var(--muted); font-size:11px; margin-left:9px;
+    text-transform:uppercase; letter-spacing:.08em}
+  .hd .rt{display:flex; align-items:center; gap:12px}
+  .hd .badge{font-family:var(--mono); font-size:11.5px; color:var(--muted)}
+  .lang{display:flex; border:1px solid #d4d4d8; border-radius:7px; overflow:hidden}
+  .lang button{font-size:12px; font-weight:600; padding:5px 11px; border:none;
+    background:#fff; color:#52525b; border-radius:0}
+  .lang button.on{background:var(--accent); color:#fff}
+  .stage{width:100%; max-width:1280px}
+  .hero{padding:26px 4px 20px; text-align:center}
+  .hero-t{margin:0; font-size:46px; line-height:1.05; font-weight:800;
+    letter-spacing:-1.4px; color:var(--ink)}
+  .hero-t span{color:var(--accent)}
+  .hero-s{margin:11px auto 0; max-width:640px; font-size:13.5px; line-height:1.65;
+    color:var(--muted)}
+  @media(max-width:640px){ .hero{padding:18px 4px 14px} .hero-t{font-size:34px} }
+  .panel{background:var(--panel); border:1px solid #dcdce2; border-radius:12px;
+    margin-bottom:16px; overflow:hidden}
+  .pad{padding:20px 24px}
+  .step{display:flex; align-items:center; gap:10px; margin-bottom:10px}
+  .step .n{width:22px; height:22px; border-radius:50%; background:var(--accent);
+    color:#fff; font-size:12px; font-weight:700; display:flex; align-items:center;
+    justify-content:center; flex:none}
+  .step h2{font-size:16px; margin:0; letter-spacing:-.01em}
+  .step .ok{margin-left:auto; font-size:12px; color:var(--accent); font-weight:600}
+  .meta{font-size:12.5px; color:var(--muted); margin:0 0 12px}
+  button{font:inherit; font-weight:600; cursor:pointer; border-radius:8px;
+    padding:9px 18px; border:1px solid transparent}
+  button:disabled{opacity:.4; cursor:not-allowed}
+  .btn-p{background:var(--accent); color:#fff}
+  .btn-p:hover:not(:disabled){background:var(--accent-dark)}
+  .btn-g{background:#fff; color:#3f3f46; border-color:#d4d4d8}
+  .btn-g:hover:not(:disabled){background:var(--accent-soft)}
+  .btn-s{font-size:12.5px; padding:6px 12px; border-radius:6px}
+  select,input[type=text]{font:inherit; padding:6px 10px; border:1px solid #d4d4d8;
+    border-radius:7px; background:#fff; font-size:13px}
+  textarea{font-family:var(--mono); font-size:12.5px; width:100%; min-height:120px;
+    padding:10px 12px; border:1px solid #d4d4d8; border-radius:8px; resize:vertical;
+    line-height:1.6}
+  .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:10px}
+  .drop{border:2px dashed #c9c9d2; border-radius:10px; padding:24px 20px; text-align:center;
+    color:var(--muted); font-size:14px; margin:12px 0; cursor:pointer}
+  .drop.on{border-color:var(--accent); background:var(--accent-soft); color:var(--accent)}
+  .prog{height:6px; background:var(--line); border-radius:3px; overflow:hidden; flex:1; min-width:110px}
+  .prog div{height:100%; background:var(--accent); width:0%; transition:width .2s}
+  .status{font-size:13px; color:var(--muted); min-height:20px; margin-top:9px; font-family:var(--mono)}
+  .warnbox{background:var(--pink-soft); border:1px solid #fbcfe8; color:var(--sev);
+    border-radius:8px; padding:9px 13px; font-size:12.5px; margin-top:10px}
+  .infobox{background:var(--accent-soft); border:1px solid #c7d2fe; color:#3730a3;
+    border-radius:8px; padding:9px 13px; font-size:12.5px; margin-top:10px}
+  .hidden{display:none}
+  label.chk{display:inline-flex; align-items:center; gap:7px; font-size:13px; cursor:pointer}
+  details{margin-top:10px} summary{cursor:pointer; font-size:13px; color:var(--accent); font-weight:600}
+  table{width:100%; border-collapse:collapse; font-size:13.5px}
+  th{text-align:left; font-size:10.5px; letter-spacing:.09em; text-transform:uppercase;
+    color:var(--muted); font-weight:600; padding:9px 12px; border-bottom:1px solid var(--line);
+    background:#fafafb; white-space:nowrap}
+  td{padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top}
+  tbody tr:hover td{background:#fbfbfd}
+  .sumhead{display:flex; align-items:baseline; gap:16px; padding:16px 22px 10px; flex-wrap:wrap}
+  .sumhead h2{font-size:16px; margin:0}
+  .sumhead .right{margin-left:auto; display:flex; gap:8px; align-items:center}
+  .sumtab th{border-top:1px solid var(--line)}
+  .sumtab td{font-variant-numeric:tabular-nums}
+  .sumtab .pid{font-weight:700}
+  .itemtab thead th{position:sticky; top:50px; z-index:5}
+  .c-pid{font-weight:600; white-space:nowrap}
+  .c-it{font-family:var(--mono); font-size:12.5px; color:var(--muted); white-space:nowrap}
+  .c-tgt{font-family:var(--mono); font-size:12.5px; color:var(--muted); line-height:1.7}
+  .c-hyp{font-family:var(--mono); font-size:12.5px; line-height:1.7}
+  .c-n{font-family:var(--mono); font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap}
+  .acc{font-size:14px; font-weight:700; color:var(--accent)}
+  .acc.low{color:var(--sev)}
+  .pill{display:inline-block; min-width:48px; text-align:center; border-radius:4px;
+    padding:2px 7px; font-weight:600; font-size:12.5px}
+  .p0{background:#eef2ff; color:#4338ca}
+  .p1{background:#f4f4f5; color:#52525b}
+  .p2{background:var(--pink-soft); color:var(--sev)}
+  .conf{font-family:var(--mono); font-variant-numeric:tabular-nums; text-align:right;
+    color:var(--muted); white-space:nowrap; font-size:11.5px}
+  .conf b{color:var(--ink); font-size:13px; font-weight:600}
+  .mini{background:none; border:1px solid var(--line); border-radius:5px; width:26px;
+    height:26px; cursor:pointer; color:var(--accent); font-size:10px; padding:0}
+  .errcell{color:var(--sev); font-size:12.5px}
+  .w-sub{background:#cffafe; border-radius:3px; padding:0 3px}
+  .w-ins{background:#fbcfe8; border-radius:3px; padding:0 3px}
+  .w-om{color:#db2777; font-weight:700}
+  .foot{font-size:11.5px; color:var(--muted); padding:11px 22px;
+    border-top:1px solid var(--line); background:#fafafb; font-family:var(--mono)}
+  .maptab td{padding:6px 10px}
+  .maptab input[type=text]{width:100%; padding:4px 8px; font-size:12.5px}
+  .maptab .unmatched td{background:var(--pink-soft)}
+  .tgt-inline{display:none}
+  @media(max-width:900px){
+    body{padding-left:10px; padding-right:10px}
+    .itemtab th:nth-child(3), .itemtab td:nth-child(3){display:none}
+    .tgt-inline{display:block; color:var(--muted); margin-bottom:2px}
+    .itemtab th, .itemtab td{padding:9px 8px}
+  }
+</style>
+</head>
+<body>
+<div class="hd">
+  <div class="t" id="brand">EIT&nbsp;Studio<span data-i18n="hdSub"></span></div>
+  <div class="rt">
+    <span class="badge" id="gpuBadge"></span>
+    <span class="lang"><button id="langEn">English</button><button id="langKo">한국어</button></span>
+  </div>
+</div>
+<div class="stage">
+
+  <div class="hero">
+    <h1 class="hero-t">EIT <span>Studio</span></h1>
+    <p class="hero-s" data-i18n="heroSub"></p>
+  </div>
+
+  <!-- ============ STEP 1 : target set ============ -->
+  <div class="panel"><div class="pad">
+    <div class="step"><span class="n">1</span><h2 data-i18n="s1Title"></h2>
+      <span class="ok" id="s1Ok"></span></div>
+    <p class="meta" data-i18n="s1Help"></p>
+    <div class="row">
+      <button class="btn-g btn-s" id="loadPreset" data-i18n="btnPreset"></button>
+      <button class="btn-g btn-s" id="tgtFileBtn" data-i18n="btnTgtFile"></button>
+      <input type="file" id="tgtFile" accept=".csv,.tsv,.txt" style="display:none">
+      <button class="btn-g btn-s" id="clearTgt" data-i18n="btnClearTgt"></button>
+    </div>
+    <textarea id="tgtBox" spellcheck="false"></textarea>
+    <div class="row">
+      <button class="btn-p btn-s" id="applyTgt" data-i18n="btnApplyTgt"></button>
+      <span class="meta" id="tgtInfo" style="margin:0"></span>
+    </div>
+    <div class="warnbox hidden" id="tgtWarn"></div>
+  </div></div>
+
+  <!-- ============ STEP 2 : normalizer ============ -->
+  <div class="panel"><div class="pad">
+    <div class="step"><span class="n">2</span><h2 data-i18n="s2Title"></h2></div>
+    <p class="meta" data-i18n="s2Help"></p>
+    <div class="row">
+      <label class="chk"><input type="checkbox" id="optNum" checked><span data-i18n="optNum"></span></label>
+      <label class="chk"><input type="checkbox" id="optContr" checked><span data-i18n="optContr"></span></label>
+    </div>
+    <details id="ruleDetails">
+      <summary data-i18n="ruleSummary"></summary>
+      <p class="meta" style="margin-top:8px" data-i18n="ruleHelp"></p>
+      <textarea id="ruleBox" spellcheck="false" style="min-height:90px"></textarea>
+      <div class="row">
+        <button class="btn-g btn-s" id="applyRules" data-i18n="btnApplyRules"></button>
+        <button class="btn-g btn-s" id="expCfg" data-i18n="btnExpCfg"></button>
+        <button class="btn-g btn-s" id="impCfgBtn" data-i18n="btnImpCfg"></button>
+        <input type="file" id="impCfg" accept=".json" style="display:none">
+      </div>
+    </details>
+    <div class="infobox" id="normPreview"></div>
+  </div></div>
+
+  <!-- ============ STEP 3 : audio ============ -->
+  <div class="panel"><div class="pad">
+    <div class="step"><span class="n">3</span><h2 data-i18n="s3Title"></h2></div>
+    <p class="meta" data-i18n="s3Help"></p>
+    <div class="row">
+      <label class="meta" style="margin:0" data-i18n="modelLbl"></label>
+      <select id="modelSel">
+        <option value="onnx-community/whisper-large-v3-turbo" data-i18n="optTurbo"></option>
+        <option value="Xenova/whisper-small" data-i18n="optSmall"></option>
+      </select>
+    </div>
+    <div class="drop" id="drop"><span id="dropMsg"></span>
+      <input type="file" id="fileIn" multiple accept="audio/*" style="display:none">
+    </div>
+    <div id="mapWrap" class="hidden">
+      <details id="mapDetails">
+        <summary id="mapSummary"></summary>
+        <table class="maptab"><thead><tr>
+          <th data-i18n="thFile"></th>
+          <th style="width:150px" data-i18n="thPid"></th>
+          <th style="width:90px" data-i18n="thItem"></th>
+        </tr></thead><tbody id="mapRows"></tbody></table>
+      </details>
+    </div>
+    <div class="row">
+      <button class="btn-p" id="runBtn" disabled data-i18n="btnRun"></button>
+      <button class="btn-g" id="resetBtn" data-i18n="btnReset"></button>
+      <div class="prog"><div id="progFill"></div></div>
+    </div>
+    <div class="status" id="status"></div>
+    <div class="warnbox hidden" id="wgpuWarn" data-i18n="wgpuWarn"></div>
+    <div class="warnbox hidden" id="dlWarn" data-i18n="dlWarn"></div>
+    <div class="infobox hidden" id="confWarn" data-i18n="confWarn"></div>
+  </div></div>
+
+  <!-- ============ results ============ -->
+  <div class="panel hidden" id="resPanel">
+    <div class="sumhead">
+      <h2 data-i18n="resTitle"></h2>
+      <span class="right">
+        <select id="sortSel">
+          <option value="item" data-i18n="sortItem"></option>
+          <option value="acc" data-i18n="sortAcc"></option>
+          <option value="conf" data-i18n="sortConf"></option>
+        </select>
+        <button class="btn-g btn-s" id="csvBtn">CSV</button>
+        <button class="btn-g btn-s" id="jsonBtn">JSON</button>
+      </span>
+    </div>
+    <table class="sumtab"><thead><tr>
+      <th data-i18n="thPid"></th>
+      <th style="width:90px; text-align:right" data-i18n="thNItems"></th>
+      <th style="width:120px; text-align:right" data-i18n="thMAcc"></th>
+      <th style="width:100px; text-align:right" data-i18n="thMWer"></th>
+      <th style="width:120px; text-align:right" data-i18n="thMConf"></th>
+    </tr></thead><tbody id="sumRows"></tbody></table>
+  </div>
+
+  <div class="panel hidden" id="tabPanel">
+    <table class="itemtab"><thead><tr>
+      <th style="width:96px" data-i18n="thPid"></th>
+      <th style="width:56px" data-i18n="thItem"></th>
+      <th data-i18n="thTarget"></th>
+      <th data-i18n="thWhisper"></th>
+      <th style="width:76px; text-align:right" data-i18n="thAcc"></th>
+      <th style="width:66px; text-align:right">WER</th>
+      <th style="width:112px; text-align:right" data-i18n="thConf"></th>
+      <th style="width:58px; text-align:center" data-i18n="thAudio"></th>
+    </tr></thead><tbody id="rows"></tbody></table>
+    <div class="foot" id="foot"></div>
+  </div>
+</div>
+
+<script type="module">
+const $=id=>document.getElementById(id);
+
+/* ============================================================
+   built-in preset: EIT A (Ortega et al., 2002)
+   ============================================================ */
+const PRESET_EITA = [
+ [1,"I have to get a haircut.",7],[2,"The red book is on the table.",8],
+ [3,"The streets in this city are wide.",8],[4,"He takes a shower every morning.",9],
+ [5,"What did you say you were doing today?",10],[6,"I doubt that he knows how to drive that well.",10],
+ [7,"After dinner I had a long, peaceful nap.",11],[8,"It is possible that it will rain tomorrow.",12],
+ [9,"I enjoy movies which have a happy ending.",12],[10,"The houses are very nice but too expensive.",12],
+ [11,"The little boy whose kitten died yesterday is sad.",13],[12,"That restaurant is supposed to have very good food.",13],
+ [13,"I want a nice, big house in which my animals can live.",14],[14,"You really enjoy listening to country music, don't you?",14],
+ [15,"She just finished painting the inside of her apartment.",14],[16,"Cross the street at the light and then just continue straight ahead.",15],
+ [17,"The person I'm dating has a wonderful sense of humor.",15],[18,"She only orders meat dishes and never eats vegetables.",15],
+ [19,"I wish the price of town houses would become affordable.",15],[20,"I hope it will get warmer sooner this year than it did last year.",16],
+ [21,"A good friend of mine always takes care of my neighbor's three children.",16],
+ [22,"The black cat that you fed yesterday was the one chased by the dog.",16],
+ [23,"Before he can go outside, he has to finish cleaning his room.",16],
+ [24,"The most fun I've ever had was when we went to the opera.",16],
+ [25,"The terrible thief whom the police caught was very tall and thin.",16],
+ [26,"Would you be so kind as to hand me the book which is on the table?",17],
+ [27,"The number of people who smoke cigars is increasing every year.",17],
+ [28,"I don't know if the eleven thirty train has left the station yet.",17],
+ [29,"The exam wasn't nearly as difficult as you told me it would be.",18],
+ [30,"There are a lot of people who don't eat anything at all in the morning.",19]
+];
+
+/* ============================================================
+   LOCALIZATION
+   ============================================================ */
+const I18N={
+en:{
+ hdSub:"for researchers",
+ heroSub:"Bring your own sentence set. Automated transcription and WER scoring for elicited imitation research. Everything runs in your browser — no audio leaves your computer.",
+ s1Title:"Target sentences", s1Ok:"loaded",
+ s1Help:"Paste your target sentences below, or upload a CSV/TSV file. One item per line as “number, sentence” (an optional third column may hold the syllable count). A line with only a sentence is numbered automatically.",
+ btnPreset:"Load EIT A (Ortega et al., 2002)", btnTgtFile:"Upload file", btnClearTgt:"Clear",
+ btnApplyTgt:"Apply target set",
+ fmtTgtInfo:n=>n+" items loaded.",
+ tgtNone:"No target set loaded yet.",
+ fmtTgtWarn:(n,ex)=>n+" line(s) could not be read and were skipped: "+ex,
+ s2Title:"Scoring rules",
+ s2Help:"These rules are applied identically to the target sentence and to Whisper's output before they are compared. Both are always lowercased and stripped of punctuation; possessive ’s is always kept.",
+ optNum:"Spell out numbers (3 → three, 11:30 → eleven thirty)",
+ optContr:"Expand contractions (I'm → I am, can't → cannot)",
+ ruleSummary:"Additional replacements and export",
+ ruleHelp:"One rule per line, written as “from => to”. Applied after punctuation is removed, longest phrase first. Use this for spelling variants that should count as the same word.",
+ btnApplyRules:"Apply rules", btnExpCfg:"Export settings", btnImpCfg:"Import settings",
+ fmtNormPrev:(a,b)=>"Preview — target: “"+a+"”  →  “"+b+"”",
+ normPrevNone:"Load a target set to preview the effect of these rules.",
+ s3Title:"Recordings",
+ s3Help:"Files named participantID_itemNN are recognised automatically. Anything else can be assigned by hand in the table below. Audio never leaves your computer.",
+ modelLbl:"Model:",
+ optTurbo:"large-v3-turbo (recommended · large first-time download)",
+ optSmall:"small (quick check only · lower accuracy)",
+ dropIdle:"Drop audio files here, or click to choose",
+ fmtPicked:(n,names,more)=>n+" file"+(n>1?"s":"")+" selected — "+names+(more?" …":""),
+ fmtMapSum:(ok,bad)=>bad? "File matching — "+ok+" recognised, "+bad+" need assignment"
+                        : "File matching — all "+ok+" recognised",
+ thFile:"File", thPid:"Participant", thItem:"Item",
+ btnRun:"Run transcription and scoring", btnReset:"Upload new files",
+ resTitle:"Results",
+ sortItem:"Participant, item order", sortAcc:"Lowest accuracy first", sortConf:"Lowest confidence first",
+ thNItems:"Items", thMAcc:"Mean accuracy", thMWer:"Mean WER", thMConf:"Mean confidence",
+ thTarget:"Target", thWhisper:"Whisper", thAcc:"Accuracy", thConf:"Confidence", thAudio:"Audio",
+ wgpuWarn:"This browser does not support WebGPU, so the model runs on the CPU (WASM) and will be very slow. A recent version of Chrome or Edge is recommended.",
+ dlWarn:"A network error occurred while downloading the model; retrying automatically. Files already downloaded stay in the browser cache, so the download resumes rather than restarting.",
+ confWarn:"Whisper's token probabilities could not be read in this environment, so no confidence values are shown. Transcription and scoring are unaffected.",
+ stPick:"Load a target set and choose the recordings to score.",
+ stReady:"Ready. Press the run button.",
+ stReadyCached:"Choose the recordings to score. (The model is already loaded.)",
+ stNoTarget:"Load a target set first (step 1).",
+ stNoAudio:"No audio files found.",
+ fmtRun:(k,n,f)=>"Transcribing ("+k+"/"+n+"): "+f,
+ fmtRetry:(k,n,f)=>"Retrying ("+k+"/"+n+"): "+f,
+ fmtDone:(n,s,m,d)=>"Finished — "+n+" files, "+s+" s ("+m+", "+d+")",
+ stLoad:(t,max)=>"Loading model"+(t>1?" (retry "+t+"/"+max+")":"")+"… downloaded once, then cached in this browser.",
+ fmtDl:(t,max,file,pct)=>"Downloading model"+(t>1?" (retry "+t+"/"+max+")":"")+": "+file+" "+pct+"%",
+ fmtWait:s=>"Download failed — retrying in "+s+" s. Files already downloaded are kept.",
+ stLibRetry:(t,max)=>"Library failed to load — retry "+t+"/"+max+"…",
+ errOffline:"The internet connection was lost.",
+ errModel:(max,msg)=>"The model could not be loaded after "+max+" attempts. Check your connection and try again. ("+msg+")",
+ errLib:msg=>"Could not load the Whisper library: "+msg,
+ errPrefix:"Error: ", noSpeech:"(no speech detected)", unassigned:"unassigned"
+},
+ko:{
+ hdSub:"연구자용",
+ heroSub:"목표 문장 세트를 직접 올려서 사용하는 도구입니다. Elicited imitation task 응답을 자동으로 전사하고 WER로 채점합니다. 모든 처리는 브라우저 안에서 이루어지며, 음성 파일은 외부로 전송되지 않습니다.",
+ s1Title:"목표 문장 세트", s1Ok:"불러옴",
+ s1Help:"아래에 목표 문장을 붙여넣거나 CSV·TSV 파일을 올리세요. 한 줄에 한 문항씩 “번호, 문장” 형식이며, 세 번째 열에 음절 수를 넣을 수 있습니다. 문장만 적으면 번호가 자동으로 매겨집니다.",
+ btnPreset:"EIT A 불러오기 (Ortega et al., 2002)", btnTgtFile:"파일 올리기", btnClearTgt:"비우기",
+ btnApplyTgt:"목표 세트 적용",
+ fmtTgtInfo:n=>n+"개 문항이 등록되었습니다.",
+ tgtNone:"아직 목표 세트가 없습니다.",
+ fmtTgtWarn:(n,ex)=>n+"개 줄을 읽지 못해 건너뛰었습니다: "+ex,
+ s2Title:"채점 규칙",
+ s2Help:"아래 규칙은 목표 문장과 Whisper 전사 양쪽에 똑같이 적용된 뒤 비교됩니다. 소문자화와 구두점 제거는 항상 적용되며, 소유격 ’s는 항상 보존됩니다.",
+ optNum:"숫자 풀어쓰기 (3 → three, 11:30 → eleven thirty)",
+ optContr:"축약형 확장 (I'm → I am, can't → cannot)",
+ ruleSummary:"추가 치환 규칙과 설정 내보내기",
+ ruleHelp:"한 줄에 하나씩 “원래 => 바꿀 것” 형식으로 적습니다. 구두점 제거 후에 긴 표현부터 적용됩니다. 같은 단어로 취급해야 하는 표기 변이형에 사용하세요.",
+ btnApplyRules:"규칙 적용", btnExpCfg:"설정 내보내기", btnImpCfg:"설정 가져오기",
+ fmtNormPrev:(a,b)=>"미리보기 — 목표: “"+a+"”  →  “"+b+"”",
+ normPrevNone:"목표 세트를 불러오면 규칙 적용 결과를 미리 볼 수 있습니다.",
+ s3Title:"녹음 파일",
+ s3Help:"참가자ID_item번호 형식의 파일은 자동으로 인식됩니다. 그 외의 파일은 아래 표에서 직접 지정할 수 있습니다. 음성은 컴퓨터 밖으로 전송되지 않습니다.",
+ modelLbl:"모델:",
+ optTurbo:"large-v3-turbo (권장 · 첫 로드 시 대용량 다운로드)",
+ optSmall:"small (빠른 동작 확인용 · 정확도 낮음)",
+ dropIdle:"여기에 오디오 파일을 끌어다 놓거나 클릭해서 선택",
+ fmtPicked:(n,names,more)=>n+"개 파일 선택됨 — "+names+(more?" …":""),
+ fmtMapSum:(ok,bad)=>bad? "파일 매칭 — "+ok+"개 인식, "+bad+"개 지정 필요"
+                        : "파일 매칭 — "+ok+"개 모두 인식됨",
+ thFile:"파일", thPid:"참가자", thItem:"문항",
+ btnRun:"전사 및 채점 시작", btnReset:"새 파일 업로드",
+ resTitle:"채점 결과",
+ sortItem:"참가자 · 문항 순", sortAcc:"정확도 낮은 순", sortConf:"확신도 낮은 순",
+ thNItems:"문항 수", thMAcc:"평균 정확도", thMWer:"평균 WER", thMConf:"평균 확신도",
+ thTarget:"Target", thWhisper:"Whisper", thAcc:"정확도", thConf:"확신도", thAudio:"오디오",
+ wgpuWarn:"이 브라우저는 WebGPU를 지원하지 않아 CPU(WASM)로 실행됩니다 — 매우 느릴 수 있습니다. 최신 Chrome/Edge 사용을 권장합니다.",
+ dlWarn:"모델 다운로드 중 네트워크 오류가 발생해 자동으로 재시도하고 있습니다. 이미 받은 파일은 브라우저에 남아 있으므로 처음부터 다시 받지 않습니다.",
+ confWarn:"이 환경에서는 Whisper의 토큰 확률을 읽을 수 없어 확신도가 표시되지 않습니다. 전사와 채점은 정상적으로 수행됩니다.",
+ stPick:"목표 세트를 불러오고 채점할 녹음 파일을 선택하세요.",
+ stReady:"준비 완료. 시작 버튼을 누르세요.",
+ stReadyCached:"채점할 녹음 파일을 선택하세요. (모델이 이미 로드되어 있습니다.)",
+ stNoTarget:"먼저 목표 세트를 불러오세요 (1단계).",
+ stNoAudio:"오디오 파일이 없습니다.",
+ fmtRun:(k,n,f)=>"전사 중 ("+k+"/"+n+"): "+f,
+ fmtRetry:(k,n,f)=>"재시도 ("+k+"/"+n+"): "+f,
+ fmtDone:(n,s,m,d)=>"완료 — "+n+"개 파일, "+s+"초 ("+m+", "+d+")",
+ stLoad:(t,max)=>"모델 로드 중"+(t>1?" (재시도 "+t+"/"+max+")":"")+"… 첫 사용 시 다운로드 후 브라우저에 캐시됩니다.",
+ fmtDl:(t,max,file,pct)=>"모델 다운로드"+(t>1?" (재시도 "+t+"/"+max+")":"")+": "+file+" "+pct+"%",
+ fmtWait:s=>"다운로드 실패 — "+s+"초 후 재시도합니다. 이미 받은 파일은 유지됩니다.",
+ stLibRetry:(t,max)=>"라이브러리 로드 실패 — 재시도 "+t+"/"+max+"…",
+ errOffline:"인터넷 연결이 끊어졌습니다.",
+ errModel:(max,msg)=>"모델을 "+max+"회 시도했으나 불러오지 못했습니다. 네트워크를 확인하고 다시 시도해 주세요. ("+msg+")",
+ errLib:msg=>"Whisper 라이브러리를 불러오지 못했습니다: "+msg,
+ errPrefix:"오류: ", noSpeech:"(음성이 감지되지 않음)", unassigned:"미지정"
+}};
+let LANG=(()=>{ try{ return localStorage.getItem("eitLang")||"ko"; }catch(e){ return "ko"; } })();
+const T=k=>I18N[LANG][k];
+let STATUS={k:"stPick",a:[]}, DROP={k:"dropIdle",a:[]};
+function setStatus(k,...a){ STATUS={k,a}; paintStatus(); }
+function setStatusRaw(m){ STATUS={k:"__raw",a:[m]}; paintStatus(); }
+function paintStatus(){
+  if(STATUS.k==="__raw"){ $("status").textContent=STATUS.a[0]; return; }
+  const v=T(STATUS.k); $("status").textContent = typeof v==="function"? v(...STATUS.a) : v;
+}
+function setDrop(k,...a){ DROP={k,a}; paintDrop(); }
+function paintDrop(){ const v=T(DROP.k);
+  $("dropMsg").textContent = typeof v==="function"? v(...DROP.a) : v; }
+function applyLang(){
+  document.documentElement.lang=LANG;
+  document.querySelectorAll("[data-i18n]").forEach(el=>{
+    const v=T(el.getAttribute("data-i18n"));
+    if(typeof v==="string") el.textContent=v;
+  });
+  $("langEn").classList.toggle("on",LANG==="en");
+  $("langKo").classList.toggle("on",LANG==="ko");
+  paintDrop(); paintStatus(); paintTargetInfo(); paintNormPreview(); paintMap(); render();
+}
+$("langEn").onclick=()=>setLang("en");
+$("langKo").onclick=()=>setLang("ko");
+function setLang(l){ LANG=l; try{ localStorage.setItem("eitLang",l); }catch(e){} applyLang(); }
+
+/* ============================================================
+   NORMALIZER (configurable)
+   ============================================================ */
+const ONES=["zero","one","two","three","four","five","six","seven","eight","nine","ten",
+"eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen"];
+const TENS=["","","twenty","thirty","forty","fifty","sixty","seventy","eighty","ninety"];
+function n2w(n){
+  n=parseInt(n,10);
+  if(n<20) return ONES[n];
+  if(n<100) return TENS[Math.floor(n/10)]+(n%10?" "+ONES[n%10]:"");
+  if(n<1000) return ONES[Math.floor(n/100)]+" hundred"+(n%100?" "+n2w(n%100):"");
+  if(n<1000000) return n2w(Math.floor(n/1000))+" thousand"+(n%1000?" "+n2w(n%1000):"");
+  return n2w(Math.floor(n/1000000))+" million"+(n%1000000?" "+n2w(n%1000000):"");
+}
+const ORD={"1st":"first","2nd":"second","3rd":"third","4th":"fourth","5th":"fifth",
+"6th":"sixth","7th":"seventh","8th":"eighth","9th":"ninth","10th":"tenth",
+"11th":"eleventh","12th":"twelfth","13th":"thirteenth","20th":"twentieth","21st":"twenty first"};
+const CONTR={
+ "i'm":"i am","you're":"you are","we're":"we are","they're":"they are",
+ "i've":"i have","you've":"you have","we've":"we have","they've":"they have",
+ "could've":"could have","would've":"would have","should've":"should have",
+ "might've":"might have","must've":"must have",
+ "i'll":"i will","you'll":"you will","he'll":"he will","she'll":"she will",
+ "it'll":"it will","we'll":"we will","they'll":"they will","that'll":"that will",
+ "there'll":"there will","who'll":"who will",
+ "i'd":"i would","you'd":"you would","he'd":"he would","she'd":"she would",
+ "we'd":"we would","they'd":"they would","that'd":"that would",
+ "it's":"it is","he's":"he is","she's":"she is","that's":"that is",
+ "there's":"there is","here's":"here is","what's":"what is","who's":"who is",
+ "where's":"where is","when's":"when is","how's":"how is","let's":"let us",
+ "don't":"do not","doesn't":"does not","didn't":"did not",
+ "isn't":"is not","aren't":"are not","wasn't":"was not","weren't":"were not",
+ "hasn't":"has not","haven't":"have not","hadn't":"had not",
+ "won't":"will not","wouldn't":"would not","can't":"cannot","couldn't":"could not",
+ "shouldn't":"should not","mustn't":"must not","needn't":"need not",
+ "ain't":"is not","shan't":"shall not"
+};
+const DEFAULT_RULES="town house => townhouse\ntown houses => townhouses";
+let CFG={ numbers:true, contractions:true, rulesText:DEFAULT_RULES, rules:[] };
+
+function compileRules(text){
+  const out=[];
+  String(text||"").split(/\n+/).forEach(line=>{
+    const m=line.split("=>");
+    if(m.length<2) return;
+    const from=m[0].trim().toLowerCase(), to=m.slice(1).join("=>").trim().toLowerCase();
+    if(!from) return;
+    out.push({from,to});
+  });
+  out.sort((a,b)=>b.from.length-a.from.length);   /* longest phrase first */
+  return out;
+}
+function esc4re(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"); }
+
+function normalize(s){
+  s=String(s).toLowerCase().replace(/[‘’]/g,"'");
+  if(CFG.numbers){
+    s=s.replace(/\b(\d{1,2}):(\d{2})\b/g,(m,h,mn)=>{
+      h=parseInt(h,10); mn=parseInt(mn,10);
+      if(mn===0) return n2w(h)+" o'clock";
+      if(mn<10)  return n2w(h)+" oh "+n2w(mn);
+      return n2w(h)+" "+n2w(mn);
+    });
+    s=s.replace(/(\d),(\d{3})\b/g,"$1$2");
+    s=s.replace(/\b(\d+)(st|nd|rd|th)\b/g,m=>ORD[m]||n2w(m.replace(/\D/g,"")));
+    s=s.replace(/(\d+)\s*%/g,(m,d)=>n2w(d)+" percent");
+    s=s.replace(/\b\d+\b/g,m=>n2w(m));
+  }
+  if(CFG.contractions) s=s.replace(/[a-z]+'[a-z]+/g,m=>CONTR[m]||m);
+  s=s.replace(/[^a-z0-9' ]/g," ");
+  s=s.replace(/\s+/g," ").trim();
+  CFG.rules.forEach(r=>{ s=s.replace(new RegExp("\\b"+esc4re(r.from)+"\\b","g"), r.to); });
+  return s.replace(/\s+/g," ").trim();
+}
+
+/* ---------- alignment / WER ---------- */
+function align(refW,hypW){
+  const n=refW.length,m=hypW.length;
+  const D=Array.from({length:n+1},()=>new Array(m+1).fill(0));
+  for(let i=0;i<=n;i++)D[i][0]=i;
+  for(let j=0;j<=m;j++)D[0][j]=j;
+  for(let i=1;i<=n;i++)for(let j=1;j<=m;j++){
+    const c=refW[i-1]===hypW[j-1]?0:1;
+    D[i][j]=Math.min(D[i-1][j-1]+c,D[i-1][j]+1,D[i][j-1]+1);
+  }
+  const raw=[]; let i=n,j=m;
+  while(i>0||j>0){
+    if(i>0&&j>0&&D[i][j]===D[i-1][j-1]+(refW[i-1]===hypW[j-1]?0:1)){
+      raw.push({t:refW[i-1]===hypW[j-1]?"eq":"sub",r:[refW[i-1]],h:[hypW[j-1]]}); i--; j--;
+    }else if(i>0&&D[i][j]===D[i-1][j]+1){ raw.push({t:"del",r:[refW[i-1]],h:[]}); i--; }
+    else{ raw.push({t:"ins",r:[],h:[hypW[j-1]]}); j--; }
+  }
+  raw.reverse();
+  const ops=[]; let S=0,Dl=0,I=0;
+  for(const o of raw){
+    if(o.t==="sub")S++; else if(o.t==="del")Dl++; else if(o.t==="ins")I++;
+    const last=ops[ops.length-1];
+    if(last&&last.t===o.t){ last.r.push(...o.r); last.h.push(...o.h); }
+    else ops.push({t:o.t,r:[...o.r],h:[...o.h]});
+  }
+  return {ops,S,D:Dl,I};
+}
+function scorePair(target,hyp){
+  const gt=normalize(target), tr=normalize(hyp);
+  const refW=gt?gt.split(" "):[];
+  if(!tr) return {wer:1,acc:0,ops:[],gt,tr};
+  const {ops,S,D,I}=align(refW,tr.split(" "));
+  const wer=refW.length?Math.min(1,(S+D+I)/refW.length):1;
+  return {wer:+wer.toFixed(4),acc:+((1-wer)*100).toFixed(1),ops,gt,tr};
+}
+
+/* ============================================================
+   STEP 1 — target set
+   ============================================================ */
+let TARGETS={}, TGT_SYL={}, TGT_N=0;
+
+function parseTargets(text){
+  const items=[], bad=[];
+  let auto=0;
+  String(text||"").split(/\r?\n/).forEach(line=>{
+    const raw=line.trim();
+    if(!raw) return;
+    let cells;
+    if(raw.indexOf("\t")>=0) cells=raw.split("\t").map(c=>c.trim());
+    else cells=csvSplit(raw);
+    if(cells.length>=2 && /^\d+$/.test(cells[0])){
+      const n=parseInt(cells[0],10);
+      const sent=cells[1];
+      const syl=cells.length>=3 && /^\d+$/.test(cells[2]) ? parseInt(cells[2],10) : null;
+      if(!sent){ bad.push(raw); return; }
+      items.push([n,sent,syl]);
+    }else if(cells.length===1 && cells[0]){
+      if(/^(item|number|no|num|번호)\b/i.test(cells[0])) return;   /* header */
+      items.push([++auto,cells[0],null]);
+    }else if(cells.length>=2 && /^(item|number|no|num|번호)$/i.test(cells[0])){
+      return;                                                      /* header row */
+    }else bad.push(raw);
+  });
+  /* renumber auto-numbered lines so they do not clash with explicit numbers */
+  if(items.some(x=>x[0]===null)) items.forEach((x,i)=>{ if(x[0]===null) x[0]=i+1; });
+  return {items,bad};
+}
+function csvSplit(line){
+  const out=[]; let cur="", q=false;
+  for(let i=0;i<line.length;i++){
+    const c=line[i];
+    if(q){
+      if(c==='"' && line[i+1]==='"'){ cur+='"'; i++; }
+      else if(c==='"') q=false;
+      else cur+=c;
+    }else{
+      if(c==='"') q=true;
+      else if(c===","){ out.push(cur.trim()); cur=""; }
+      else cur+=c;
+    }
+  }
+  out.push(cur.trim());
+  return out;
+}
+function applyTargets(text,quiet){
+  const {items,bad}=parseTargets(text);
+  TARGETS={}; TGT_SYL={};
+  items.forEach(([n,s,syl])=>{ TARGETS[n]=s; if(syl) TGT_SYL[n]=syl; });
+  TGT_N=items.length;
+  try{ localStorage.setItem("eitTargets",text); }catch(e){}
+  if(bad.length){
+    $("tgtWarn").classList.remove("hidden");
+    $("tgtWarn").textContent=T("fmtTgtWarn")(bad.length, bad.slice(0,2).join(" | "));
+  } else $("tgtWarn").classList.add("hidden");
+  paintTargetInfo(); paintNormPreview();
+  if(!quiet) setStatus(TGT_N ? (MODEL?"stReadyCached":"stPick") : "stNoTarget");
+}
+function paintTargetInfo(){
+  $("tgtInfo").textContent = TGT_N ? T("fmtTgtInfo")(TGT_N) : T("tgtNone");
+  $("s1Ok").textContent = TGT_N ? "✓ "+T("s1Ok") : "";
+}
+$("loadPreset").onclick=()=>{
+  $("tgtBox").value=PRESET_EITA.map(r=>r[0]+"\t"+r[1]+"\t"+r[2]).join("\n");
+  applyTargets($("tgtBox").value);
+};
+$("applyTgt").onclick=()=>applyTargets($("tgtBox").value);
+$("clearTgt").onclick=()=>{ $("tgtBox").value=""; applyTargets(""); };
+$("tgtFileBtn").onclick=()=>$("tgtFile").click();
+$("tgtFile").onchange=async e=>{
+  const f=e.target.files[0]; if(!f) return;
+  $("tgtBox").value=await f.text(); applyTargets($("tgtBox").value);
+  e.target.value="";
+};
+
+/* ============================================================
+   STEP 2 — rules
+   ============================================================ */
+function paintNormPreview(){
+  const first=Object.keys(TARGETS).map(Number).sort((a,b)=>a-b)[0];
+  if(!first){ $("normPreview").textContent=T("normPrevNone"); return; }
+  const s=TARGETS[first];
+  $("normPreview").textContent=T("fmtNormPrev")(s, normalize(s));
+}
+function readCfgFromUI(){
+  CFG.numbers=$("optNum").checked;
+  CFG.contractions=$("optContr").checked;
+  CFG.rulesText=$("ruleBox").value;
+  CFG.rules=compileRules(CFG.rulesText);
+  try{ localStorage.setItem("eitCfg",JSON.stringify({
+    numbers:CFG.numbers, contractions:CFG.contractions, rulesText:CFG.rulesText})); }catch(e){}
+  paintNormPreview();
+}
+$("applyRules").onclick=readCfgFromUI;
+$("optNum").onchange=readCfgFromUI;
+$("optContr").onchange=readCfgFromUI;
+$("expCfg").onclick=()=>{
+  dl(new Blob([JSON.stringify({normalizer_version:"configurable-1",
+    lowercase:true, strip_punctuation:true, keep_possessives:true,
+    spell_out_numbers:CFG.numbers, expand_contractions:CFG.contractions,
+    extra_rules:CFG.rules},null,1)],{type:"application/json"}),"scoring_rules.json");
+};
+$("impCfgBtn").onclick=()=>$("impCfg").click();
+$("impCfg").onchange=async e=>{
+  const f=e.target.files[0]; if(!f) return;
+  try{
+    const j=JSON.parse(await f.text());
+    $("optNum").checked=!!j.spell_out_numbers;
+    $("optContr").checked=!!j.expand_contractions;
+    $("ruleBox").value=(j.extra_rules||[]).map(r=>r.from+" => "+r.to).join("\n");
+    readCfgFromUI();
+    $("ruleDetails").open=true;
+  }catch(err){ alert(String(err&&err.message||err)); }
+  e.target.value="";
+};
+
+/* ============================================================
+   audio decode / model / transcription
+   ============================================================ */
+let DEC_CTX=null;
+async function decodeTo16k(file){
+  const buf=await file.arrayBuffer();
+  if(!DEC_CTX) DEC_CTX=new (window.AudioContext||window.webkitAudioContext)();
+  const audio=await DEC_CTX.decodeAudioData(buf);
+  const off=new OfflineAudioContext(1,Math.max(1,Math.ceil(audio.duration*16000)),16000);
+  const src=off.createBufferSource(); src.buffer=audio; src.connect(off.destination); src.start();
+  const out=await off.startRendering();
+  return {data:out.getChannelData(0),dur:audio.duration};
+}
+const MAX_TRIES=5;
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const hasGPU=!!navigator.gpu;
+$("gpuBadge").textContent=hasGPU?"WebGPU ✓":"CPU (WASM)";
+if(!hasGPU) $("wgpuWarn").classList.remove("hidden");
+let libCache=null,MODEL=null,PROC=null,TOK=null,loadedModel=null,confAvailable=true;
+
+async function loadLib(){
+  if(libCache) return libCache;
+  const urls=["https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.4.0",
+              "https://unpkg.com/@huggingface/transformers@3.4.0"];
+  let last=null;
+  for(let t=1;t<=MAX_TRIES;t++){
+    try{ libCache=await import(urls[(t-1)%urls.length]); return libCache; }
+    catch(e){ last=e; setStatus("stLibRetry",t,MAX_TRIES);
+      if(t<MAX_TRIES) await sleep(Math.min(1000*2**t,8000)); }
+  }
+  throw new Error(T("errLib")(last&&last.message||last));
+}
+async function loadModel(id){
+  if(MODEL&&loadedModel===id) return;
+  const lib=await loadLib();
+  const {AutoProcessor,AutoTokenizer,WhisperForConditionalGeneration}=lib;
+  const dtype=id.includes("turbo")?{encoder_model:"fp16",decoder_model_merged:"q4"}:"q8";
+  let last=null;
+  for(let t=1;t<=MAX_TRIES;t++){
+    setStatus("stLoad",t,MAX_TRIES);
+    try{
+      const cb=p=>{ if(p.status==="progress"&&p.total)
+        setStatus("fmtDl",t,MAX_TRIES,p.file,Math.round(p.progress)); };
+      PROC=await AutoProcessor.from_pretrained(id,{progress_callback:cb});
+      TOK =await AutoTokenizer.from_pretrained(id,{progress_callback:cb});
+      MODEL=await WhisperForConditionalGeneration.from_pretrained(id,
+        {dtype,device:hasGPU?"webgpu":"wasm",progress_callback:cb});
+      loadedModel=id; $("dlWarn").classList.add("hidden"); return;
+    }catch(e){
+      last=e; MODEL=null;
+      if(!navigator.onLine) throw new Error(T("errOffline"));
+      if(t<MAX_TRIES){
+        $("dlWarn").classList.remove("hidden");
+        for(let s=Math.min(2**t,15);s>0;s--){ setStatus("fmtWait",s); await sleep(1000); }
+      }
+    }
+  }
+  throw new Error(T("errModel")(MAX_TRIES,last&&last.message||last));
+}
+async function transcribe(audio){
+  const {LogitsProcessor,LogitsProcessorList}=libCache;
+  const inputs=await PROC(audio);
+  let prev=null,prevLen=0,sumLP=0,nTok=0,ok=true;
+  const lastRow=t=>{ const d=t&&t.data; if(!d||!d.length) return null;
+    const v=t.dims[t.dims.length-1]; return d.length>v?d.subarray(d.length-v):d; };
+  const step=(row,tok)=>{
+    let mx=-Infinity; for(let i=0;i<row.length;i++) if(row[i]>mx) mx=row[i];
+    let se=0; for(let i=0;i<row.length;i++) se+=Math.exp(row[i]-mx);
+    sumLP+=(row[tok]-mx)-Math.log(se); nTok++;
+  };
+  class Conf extends LogitsProcessor{
+    _call(input_ids,logits){
+      try{
+        const ids=Array.from(input_ids[0]).map(Number);
+        const row=lastRow(logits);
+        if(!row){ ok=false; return logits; }
+        if(prev&&ids.length===prevLen+1) step(prev,ids[ids.length-1]);
+        prev=Float32Array.from(row); prevLen=ids.length;
+      }catch(e){ ok=false; }
+      return logits;
+    }
+  }
+  const lpl=new LogitsProcessorList(); lpl.push(new Conf());
+  const out=await MODEL.generate({...inputs,max_new_tokens:128,language:"en",
+    task:"transcribe",logits_processor:lpl,return_dict_in_generate:true});
+  const seq=out.sequences?out.sequences:out;
+  const ids=Array.from(seq.tolist()[0]).map(Number);
+  if(ok&&prev&&ids.length===prevLen+1) step(prev,ids[ids.length-1]);
+  const text=TOK.decode(ids,{skip_special_tokens:true}).trim();
+  const avg=(ok&&nTok)?sumLP/nTok:null;
+  if(avg===null) confAvailable=false;
+  return {text,avgLogprob:avg===null?null:+avg.toFixed(4),
+          conf:avg===null?null:+Math.exp(avg).toFixed(4)};
+}
+
+/* ============================================================
+   STEP 3 — files, matching, run
+   ============================================================ */
+const FNAME_RE=/^(.+?)[_-]item[_-]?(\d{1,3})(?:[_-]v\d+)?\.[A-Za-z0-9]+$/i;
+let FILES=[], MAP=[], RESULTS=[];
+const drop=$("drop");
+drop.onclick=()=>$("fileIn").click();
+drop.ondragover=e=>{e.preventDefault(); drop.classList.add("on");};
+drop.ondragleave=()=>drop.classList.remove("on");
+drop.ondrop=e=>{e.preventDefault(); drop.classList.remove("on"); takeFiles(e.dataTransfer.files);};
+$("fileIn").onchange=e=>takeFiles(e.target.files);
+
+function takeFiles(list){
+  FILES=[...list].filter(f=>/\.(wav|mp3|m4a|webm|ogg|flac|aac)$/i.test(f.name));
+  FILES.sort((a,b)=>a.name.localeCompare(b.name));
+  MAP=FILES.map(f=>{
+    const m=f.name.match(FNAME_RE);
+    return {file:f, name:f.name, pid:m?m[1]:"", item:m?parseInt(m[2],10):null, auto:!!m};
+  });
+  if(FILES.length) setDrop("fmtPicked",FILES.length,
+      FILES.map(f=>f.name).slice(0,4).join(", "),FILES.length>4);
+  else setDrop("dropIdle");
+  paintMap();
+  updateRunState();
+}
+function paintMap(){
+  if(!MAP.length){ $("mapWrap").classList.add("hidden"); return; }
+  $("mapWrap").classList.remove("hidden");
+  const bad=MAP.filter(m=>!m.pid||m.item==null).length;
+  $("mapSummary").textContent=T("fmtMapSum")(MAP.length-bad,bad);
+  $("mapDetails").open = bad>0;
+  $("mapRows").innerHTML=MAP.map((m,i)=>
+    "<tr"+(!m.pid||m.item==null?" class='unmatched'":"")+">"+
+    "<td class='c-it'>"+esc(m.name)+"</td>"+
+    "<td><input type='text' data-i='"+i+"' data-k='pid' value='"+esc(m.pid)+"'></td>"+
+    "<td><input type='text' data-i='"+i+"' data-k='item' value='"+(m.item==null?"":m.item)+"'></td>"+
+    "</tr>").join("");
+  $("mapRows").querySelectorAll("input").forEach(inp=>{
+    inp.oninput=()=>{
+      const i=+inp.getAttribute("data-i"), k=inp.getAttribute("data-k");
+      if(k==="pid") MAP[i].pid=inp.value.trim();
+      else{ const v=parseInt(inp.value,10); MAP[i].item=isNaN(v)?null:v; }
+      const bad2=MAP.filter(m=>!m.pid||m.item==null).length;
+      $("mapSummary").textContent=T("fmtMapSum")(MAP.length-bad2,bad2);
+      inp.closest("tr").classList.toggle("unmatched",!MAP[i].pid||MAP[i].item==null);
+      updateRunState();
+    };
+  });
+}
+function updateRunState(){
+  const ready=FILES.length>0 && TGT_N>0;
+  $("runBtn").disabled=!ready;
+  if(!TGT_N) setStatus("stNoTarget");
+  else if(!FILES.length) setStatus("stNoAudio");
+  else setStatus("stReady");
+}
+
+$("runBtn").onclick=async()=>{
+  $("runBtn").disabled=true; RESULTS=[]; $("rows").innerHTML=""; $("sumRows").innerHTML="";
+  confAvailable=true; $("confWarn").classList.add("hidden");
+  const t0=performance.now();
+  try{
+    await loadModel($("modelSel").value);
+    for(let k=0;k<MAP.length;k++){
+      const m=MAP[k];
+      setStatus("fmtRun",k+1,MAP.length,m.name);
+      $("progFill").style.width=(k/MAP.length*100)+"%";
+      let r={text:"",avgLogprob:null,conf:null}, dur=null, err=null;
+      for(let t=1;t<=2;t++){
+        try{
+          const {data,dur:d}=await decodeTo16k(m.file); dur=d;
+          r=await transcribe(data); err=null; break;
+        }catch(e){
+          err=String(e&&e.message||e);
+          if(t<2){ setStatus("fmtRetry",k+1,MAP.length,m.name); await sleep(800); }
+        }
+      }
+      const target=(m.item!=null&&TARGETS[m.item])?TARGETS[m.item]:"";
+      RESULTS.push({file:m.file,name:m.name,pid:m.pid||T("unassigned"),item:m.item,
+        target,text:r.text,dur,err,conf:r.conf,avgLogprob:r.avgLogprob,
+        sc: target?scorePair(target,r.text):null});
+      render();
+    }
+    $("progFill").style.width="100%";
+    setStatus("fmtDone",MAP.length,((performance.now()-t0)/1000).toFixed(1),
+      loadedModel.split("/").pop(),hasGPU?"WebGPU":"WASM");
+    if(!confAvailable) $("confWarn").classList.remove("hidden");
+  }catch(e){ setStatusRaw(T("errPrefix")+(e&&e.message||e)); }
+  $("runBtn").disabled=false;
+};
+$("resetBtn").onclick=()=>{
+  FILES=[]; MAP=[]; RESULTS=[];
+  $("fileIn").value=""; $("rows").innerHTML=""; $("sumRows").innerHTML="";
+  $("resPanel").classList.add("hidden"); $("tabPanel").classList.add("hidden");
+  $("mapWrap").classList.add("hidden"); $("confWarn").classList.add("hidden");
+  $("progFill").style.width="0%";
+  setDrop("dropIdle"); updateRunState();
+  window.scrollTo({top:0,behavior:"smooth"});
+};
+
+/* ============================================================
+   rendering
+   ============================================================ */
+function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");}
+function diffHtml(sc,text){
+  if(!sc||!sc.ops.length) return "<span class='w-om'>"+esc(text||T("noSpeech"))+"</span>";
+  return sc.ops.map(o=>{
+    const h=o.h.join(" "), r=o.r.join(" ");
+    if(o.t==="eq")  return esc(h);
+    if(o.t==="sub") return "<span class='w-sub' title='target: "+esc(r)+"'>"+esc(h)+"</span>";
+    if(o.t==="ins") return "<span class='w-ins' title='inserted'>"+esc(h)+"</span>";
+    return "<span class='w-om' title='omitted: "+esc(r)+"'>▲</span>";
+  }).join(" ");
+}
+const mean=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+function render(){
+  if(!RESULTS.length) return;
+  $("resPanel").classList.remove("hidden"); $("tabPanel").classList.remove("hidden");
+  const byPid=new Map();
+  RESULTS.forEach(r=>{ if(!byPid.has(r.pid)) byPid.set(r.pid,[]); byPid.get(r.pid).push(r); });
+  $("sumRows").innerHTML=[...byPid.entries()].map(([pid,rs])=>{
+    const sc=rs.filter(r=>r.sc);
+    const mAcc=mean(sc.map(r=>r.sc.acc)), mWer=mean(sc.map(r=>r.sc.wer));
+    const mConf=mean(rs.filter(r=>r.conf!=null).map(r=>r.conf));
+    return "<tr><td class='pid'>"+esc(pid)+"</td>"+
+      "<td class='c-n'>"+sc.length+(TGT_N?" / "+TGT_N:"")+"</td>"+
+      "<td class='c-n'><span class='acc'>"+(mAcc==null?"—":mAcc.toFixed(1)+"%")+"</span></td>"+
+      "<td class='c-n'>"+(mWer==null?"—":mWer.toFixed(3).replace(/^0/,""))+"</td>"+
+      "<td class='c-n'>"+(mConf==null?"—":(mConf*100).toFixed(1)+"%")+"</td></tr>";
+  }).join("");
+
+  const sort=$("sortSel").value;
+  const list=RESULTS.slice();
+  if(sort==="acc") list.sort((a,b)=>(a.sc?a.sc.acc:101)-(b.sc?b.sc.acc:101));
+  else if(sort==="conf") list.sort((a,b)=>(a.conf==null?9:a.conf)-(b.conf==null?9:b.conf));
+  else list.sort((a,b)=> a.pid===b.pid?((a.item||999)-(b.item||999)):a.pid.localeCompare(b.pid));
+
+  $("rows").innerHTML=list.map(r=>{
+    const acc=r.sc?r.sc.acc:null, wer=r.sc?r.sc.wer:null;
+    const pill=wer==null?"p1":wer===0?"p0":wer>=0.3?"p2":"p1";
+    return "<tr>"+
+      "<td class='c-pid'>"+esc(r.pid)+"</td>"+
+      "<td class='c-it'>"+(r.item!=null?String(r.item).padStart(2,"0"):"—")+"</td>"+
+      "<td class='c-tgt'>"+esc(r.sc?r.sc.gt:"")+"</td>"+
+      "<td class='c-hyp'><span class='tgt-inline'>"+esc(r.sc?r.sc.gt:"")+"</span>"+
+        (r.err?"<span class='errcell'>"+esc(r.err)+"</span>":diffHtml(r.sc,r.text))+"</td>"+
+      "<td class='c-n'><span class='acc"+(acc!=null&&acc<50?" low":"")+"'>"+
+        (acc==null?"—":acc.toFixed(1)+"%")+"</span></td>"+
+      "<td class='c-n'><span class='pill "+pill+"'>"+
+        (wer==null?"—":wer.toFixed(3).replace(/^0/,""))+"</span></td>"+
+      "<td class='conf'>"+(r.conf==null?"—":"<b>"+(r.conf*100).toFixed(1)+"%</b><br>"+r.avgLogprob)+"</td>"+
+      "<td style='text-align:center'><button class='mini' data-f='"+esc(r.name)+"'>&#9654;</button></td></tr>";
+  }).join("");
+  $("rows").querySelectorAll(".mini").forEach(b=>{
+    b.onclick=()=>{ const r=RESULTS.find(x=>x.name===b.getAttribute("data-f"));
+      if(r) new Audio(URL.createObjectURL(r.file)).play(); };
+  });
+  $("foot").textContent=loadedModel||"";
+}
+$("sortSel").onchange=render;
+
+/* ---------- export ---------- */
+function rulesSummary(){
+  return "numbers="+(CFG.numbers?"on":"off")+"; contractions="+(CFG.contractions?"on":"off")+
+    "; extra="+CFG.rules.map(r=>r.from+">"+r.to).join("|");
+}
+$("csvBtn").onclick=()=>{
+  const cols=["participant","item","target","whisper","wer","accuracy_pct",
+              "confidence","avg_logprob","duration_s","file","model","rules"];
+  const rows=[cols.join(",")];
+  RESULTS.forEach(r=>rows.push([r.pid,r.item??"",r.target,r.text,
+    r.sc?r.sc.wer:"",r.sc?r.sc.acc:"",r.conf??"",r.avgLogprob??"",
+    r.dur?r.dur.toFixed(2):"",r.name,loadedModel,rulesSummary()].map(v=>{
+      v=String(v??""); return (v.includes(",")||v.includes('"'))?'"'+v.replace(/"/g,'""')+'"':v;
+    }).join(",")));
+  dl(new Blob([rows.join("\n")],{type:"text/csv"}),"eit_scores.csv");
+};
+$("jsonBtn").onclick=()=>{
+  const pids=[...new Set(RESULTS.map(r=>r.pid))];
+  dl(new Blob([JSON.stringify({participants:pids,
+    meta:{whisper_model:loadedModel,decoding:"greedy (transformers.js, in-browser)",
+      confidence:"mean probability of the tokens Whisper selected; avg_logprob is the raw value",
+      scoring_rules:{lowercase:true,strip_punctuation:true,keep_possessives:true,
+        spell_out_numbers:CFG.numbers,expand_contractions:CFG.contractions,extra_rules:CFG.rules},
+      n_target_items:TGT_N, scored_at:new Date().toISOString()},
+    items:RESULTS.map(r=>({participant:r.pid,item:r.item,target:r.target,
+      transcription_raw:r.text,transcription_corrected:null,
+      wer:r.sc?r.sc.wer:null,accuracy_pct:r.sc?r.sc.acc:null,
+      confidence:r.conf,avg_logprob:r.avgLogprob,ops:r.sc?r.sc.ops:null,
+      duration_s:r.dur?+r.dur.toFixed(2):null,flag:"",file:r.name,reviewed:false}))},null,1)],
+    {type:"application/json"}), (pids.length===1?pids[0]:"eit")+"_results.json");
+};
+function dl(blob,name){
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob); a.download=name;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* ---------- restore saved state ---------- */
+(function init(){
+  let savedCfg=null, savedTgt=null;
+  try{ savedCfg=JSON.parse(localStorage.getItem("eitCfg")||"null"); }catch(e){}
+  try{ savedTgt=localStorage.getItem("eitTargets"); }catch(e){}
+  $("optNum").checked = savedCfg ? !!savedCfg.numbers : true;
+  $("optContr").checked = savedCfg ? !!savedCfg.contractions : true;
+  $("ruleBox").value = savedCfg && savedCfg.rulesText!=null ? savedCfg.rulesText : DEFAULT_RULES;
+  CFG.numbers=$("optNum").checked; CFG.contractions=$("optContr").checked;
+  CFG.rulesText=$("ruleBox").value; CFG.rules=compileRules(CFG.rulesText);
+  if(savedTgt){ $("tgtBox").value=savedTgt; applyTargets(savedTgt,true); }
+  applyLang();
+  updateRunState();
+})();
+</script>
+</body>
+</html>
