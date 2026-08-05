@@ -207,6 +207,17 @@
     heritage language learners. Scores demonstrated excellent reliability and correlated strongly
     with an independent proficiency measure (the DELE), supporting the task's utility with this
     population.</p>
+
+  <h3>It extends beyond global proficiency</h3>
+  <p>McGuire (2026) compared spoken elicited imitation with written transcription as measures of
+    listening accuracy for connected speech. In a crossover design with 115 Japanese university
+    students and 50 English sentences, the two methods produced closely similar performance
+    (<span class="num">71.39 %</span> for elicited imitation, <span class="num">72.84 %</span>
+    for written transcription), correlated at <span class="num">r = .832</span>, 95 % CI
+    [.766, .881], and showed no significant difference in method effects. Elicited imitation
+    therefore appears usable where a written response would introduce construct-irrelevant
+    variance or be unsuitable for the population — and, as that study notes, it lends itself to
+    remote collection through automated web-based administration.</p>
 </div></section>
 
 <section><div class="wrap narrow">
@@ -273,6 +284,70 @@
 </div></section>
 
 <section><div class="wrap narrow">
+  <h2>Why Whisper large-v3-turbo</h2>
+  <p class="lead">Speech recognition was, for a long time, the reason automated elicited
+    imitation did not work. The choice of model is therefore not incidental.</p>
+
+  <h3>The obstacle was L2 speech itself</h3>
+  <p>As McGuire and Larson-Hall (2025) recount, speech recognition systems were built to
+    recognize clear native speech, and their accuracy dropped substantially on non-native or
+    accented speech — the principal bottleneck preventing reliable automated elicited imitation.
+    The sustained effort to automate the task between 2008 and 2012 used the open-source Sphinx
+    system, which struggled with English L2 learner responses and required considerable
+    fine-tuning to reach even modest accuracy.</p>
+  <p>Those adjustments included <em>forced alignment</em>: constraining the recognizer to the
+    words of the prompt. For elicited imitation this is self-defeating. A recognizer that can
+    only output the target sentence will tend to report the target sentence, and the very
+    deviations that constitute the measurement disappear. An automated procedure for this task
+    needs a recognizer that transcribes what was said without being told what was expected.</p>
+
+  <h3>What Whisper changed</h3>
+  <p>McGuire and Larson-Hall (2025), drawing on Radford et al. (2022), identify four properties
+    that made Whisper suitable where earlier systems were not.</p>
+  <table class="ev">
+    <tbody>
+      <tr><td>Accuracy</td><td>Error rates approaching those of human transcription, closer to
+        human level than any previous system</td></tr>
+      <tr><td>L2 and accented speech</td><td>Trained on multilingual data, so non-native and
+        heavily accented speech is handled without special provision</td></tr>
+      <tr><td>Recording quality</td><td>High tolerance for background noise, so recordings made
+        on participants' own phones and laptops remain usable</td></tr>
+      <tr><td>No adaptation needed</td><td>Neither fine-tuning nor forced alignment is required —
+        which, as above, is what makes the scores meaningful</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Why the turbo variant</h3>
+  <p>Whisper large-v3-turbo is large-v3 with its decoder layers reduced, retaining the same
+    encoder and, per its model card, only minor quality degradation while running several times
+    faster. That difference is what allows the model to run inside a browser on an ordinary
+    laptop rather than on a rented GPU. McGuire and Larson-Hall (2025) processed their 900
+    responses through a commercial API on a remote T4 GPU, at a cost of about USD 0.23 and
+    requiring a Python script and an API token; the turbo variant removes both the cost and the
+    token, at the price of running on the researcher's own hardware. The smaller
+    <span class="mono">whisper-small</span> model remains selectable for quickly checking that a
+    file set is configured correctly, but it should not be used for scoring.</p>
+
+  <h3>What to check in your own data</h3>
+  <p>Two properties of Whisper are worth knowing when the speakers are learners. First,
+    performance is not uniform across accents: Graham and Roll (2024) found higher error rates
+    for non-native than native accents, with proficiency negatively predicting error. Second,
+    Whisper transcribes toward an intended reading rather than a verbatim one, and tends to omit
+    fillers, repetitions, and other disfluencies (Zusag et al., 2024). For most elicited
+    imitation scoring this is harmless or even helpful, since hesitation markers are not part of
+    the target sentence; but if disfluency is itself of interest, the transcription should not be
+    treated as verbatim. Items where the participant produced nothing are also worth inspecting
+    directly. These are reasons to verify a subsample by hand, not reasons to avoid the method.</p>
+
+  <h3>If the model changes</h3>
+  <p>Speech recognition models improve, and this tool will adopt better ones when the evidence
+    supports it. Because that would alter the scores, the model name and version are printed
+    beneath every result table and included in the exported files, and should be reported in any
+    study. Should the default model change, the previous version will remain selectable so that
+    an analysis can be reproduced exactly as it was originally run.</p>
+</div></section>
+
+<section><div class="wrap narrow">
   <h2>References</h2>
   <ol class="refs">
     <li>Bley-Vroman, R., &amp; Chaudron, C. (1994). Elicited imitation as a measure of
@@ -297,6 +372,11 @@
       and WER scoring for elicited imitation: Steps toward automation. <em>Research Methods in
       Applied Linguistics, 4</em>(2), Article 100197.
       <a href="https://doi.org/10.1016/j.rmal.2025.100197">https://doi.org/10.1016/j.rmal.2025.100197</a></li>
+    <li>Graham, C., &amp; Roll, N. (2024). Evaluating OpenAI's Whisper ASR: Performance analysis
+      across diverse accents and speaker traits. <em>JASA Express Letters, 4</em>(2), 025206.
+      <a href="https://pubs.aip.org/asa/jel/article/4/2/025206/3267247/Evaluating-OpenAI-s-Whisper-ASR-Performance">Publisher page</a></li>
+    <li>McGuire, M. (2026). <em>Validating elicited imitation for L2 listening accuracy
+      assessment: A comparison with written transcription</em> [Manuscript].</li>
     <li>Ortega, L., Iwashita, N., Norris, J. M., &amp; Rabie, S. (2002, October).
       <em>An investigation of elicited imitation tasks in crosslinguistic SLA research</em>
       [Paper presentation]. Second Language Research Forum, Toronto, Canada.</li>
@@ -319,10 +399,16 @@
     <li>Vinther, T. (2002). Elicited imitation: A brief overview. <em>International Journal of
       Applied Linguistics, 12</em>(1), 54–73.
       <a href="https://doi.org/10.1111/1473-4192.00024">https://doi.org/10.1111/1473-4192.00024</a></li>
+    <li>Radford, A., Kim, J. W., Xu, T., Brockman, G., McLeavey, C., &amp; Sutskever, I. (2022).
+      <em>Robust speech recognition via large-scale weak supervision</em> (arXiv:2212.04356).
+      arXiv. <a href="https://arxiv.org/abs/2212.04356">https://arxiv.org/abs/2212.04356</a></li>
     <li>Yan, X., Maeda, Y., Lv, J., &amp; Ginther, A. (2016). Elicited imitation as a measure of
       second language proficiency: A narrative review and meta-analysis.
       <em>Language Testing, 33</em>(4), 497–528.
       <a href="https://doi.org/10.1177/0265532215594643">https://doi.org/10.1177/0265532215594643</a></li>
+    <li>Zusag, M., Wagner, L., &amp; Thallinger, B. (2024). CrisperWhisper: Accurate timestamps
+      on verbatim speech transcriptions. In <em>Proceedings of Interspeech 2024</em>.
+      <a href="https://www.isca-archive.org/interspeech_2024/zusag24_interspeech.pdf">ISCA Archive</a></li>
   </ol>
 </div></section>
 
