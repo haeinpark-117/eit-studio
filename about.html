@@ -108,113 +108,98 @@
 
 <header class="pg"><div class="wrap">
   <p class="kicker">About</p>
-  <h1>An open instrument for elicited imitation research.</h1>
-  <p>EIT Studio began as an English-language tool. The goal is a resource that serves elicited
-    imitation research in any language for which validated materials exist.</p>
+  <h1>Precise measurement,<br>within practical reach.</h1>
+  <p>EIT Studio exists so that a well-validated proficiency measure is not abandoned for
+    want of time or technical support.</p>
 </div></header>
 
 <section><div class="wrap narrow">
-  <h2>The vision</h2>
-  <p class="lead">Elicited imitation tasks have been developed in many languages, but the
-    infrastructure for administering and scoring them has remained local to individual
-    laboratories. Each research team rebuilds the same pipeline, and scoring procedures diverge
-    in ways that make findings difficult to compare across studies.</p>
-  <p>EIT Studio is an attempt to make that infrastructure shared. The tool is deliberately
-    instrument-agnostic: researchers load their own target sentences and their own normalization
-    rules, so it fits the instrument a study actually uses rather than imposing a fixed one.
-    Everything runs in the browser, so there is no cost of operation, no account, and no transfer
-    of participant audio.</p>
-  <p>The more specific motivation was access. Automated elicited imitation scoring has been
-    demonstrated repeatedly — with Whisper and word error rate for English (McGuire &amp;
-    Larson-Hall, 2025), with commercial speech recognition and edit-distance metrics for Korean
-    (Isbell et al., 2023), and with commercial natural language processing services for
-    form-based scoring (Kim et al., 2024). What these demonstrations share, however, is a
-    prerequisite: API accounts, scripting, and enough familiarity with programming or natural
-    language processing to adapt someone else's code. Kim et al. (2024) is explicitly a tutorial
-    in Java. A researcher persuaded by this evidence but without that background has had no way
-    to act on it. This tool packages the same procedure as a web page so that the methodology,
-    rather than the implementation, is what a researcher has to think about.</p>
+  <h2>Why elicited imitation</h2>
+  <p class="lead">Elicited imitation is efficient, language-general, and unusually well
+    validated. It discriminates sharply across proficiency levels, converges with other
+    proficiency measures, and holds up under operational test development. The
+    <a href="why-eit.html">evidence page</a> sets out the figures.</p>
+  <p>Its weaknesses are practical rather than psychometric. Scoring oral responses by hand is
+    slow, and procedures vary across studies in ways that make findings hard to compare. Both
+    problems are addressable.</p>
+</div></section>
 
+<section><div class="wrap narrow">
+  <h2>What this tool does about it</h2>
+  <p>It removes the manual transcription step, and it makes the scoring procedure explicit.
+    Normalization rules are visible, editable, and exportable as JSON, so the exact
+    configuration used in a study can be deposited with its materials and reused by others.</p>
+  <p>Automated scoring itself is not new — it has been demonstrated for English with Whisper
+    and word error rate (McGuire &amp; Larson-Hall, 2025), for Korean with commercial speech
+    recognition and edit-distance metrics (Isbell et al., 2023), and for form-based scoring with
+    commercial NLP services (Kim et al., 2024). What those demonstrations require is API
+    accounts, scripting, and enough programming to adapt someone else's code; Kim et al. (2024)
+    is a tutorial in Java. This tool provides the same procedure as a web page, so that the
+    methodology rather than the implementation is what a researcher has to think about.</p>
+  <div class="callout">
+    <p>The wider aim is straightforward: research conclusions are only as good as the
+      measurement behind them. Making a precise instrument quick to score removes one reason to
+      settle for a rougher one.</p>
+  </div>
+</div></section>
+
+<section><div class="wrap narrow">
+  <h2>What comes next</h2>
   <div class="steps">
     <div class="stp now">
       <div class="ph">Now</div>
-      <h3>English</h3>
-      <p>Automated transcription and word error rate scoring for English elicited imitation
-        tasks, with any target sentence set the researcher supplies.</p>
+      <h3>Scoring, English</h3>
+      <p>Automated transcription and WER scoring for any English elicited imitation task.</p>
     </div>
     <div class="stp">
       <div class="ph">Next</div>
-      <h3>Task administration</h3>
-      <p>A companion module for delivering the task itself, so that researchers can administer
-        their own audio stimuli and collect responses in the same environment.</p>
+      <h3>Administration</h3>
+      <p>Deliver your own task — your audio stimuli, your timing — and collect responses in the
+        same environment.</p>
     </div>
     <div class="stp">
-      <div class="ph">Goal</div>
-      <h3>Additional languages</h3>
-      <p>Support for further languages, each added only once the scoring procedure has been
-        examined for that language rather than assumed to transfer from English.</p>
+      <div class="ph">Then</div>
+      <h3>More languages</h3>
+      <p>Added once an appropriate scoring metric has been established for each, rather than
+        assumed to transfer from English.</p>
     </div>
   </div>
-
-  <h3>Why the tool is currently limited to English</h3>
-  <p>The speech recognition model underlying EIT Studio is multilingual, so transcription in
-    other languages is technically available. The obstacle is the scoring metric rather than the
-    transcription. Word error rate is computed over whitespace-delimited words, which does not
-    carry the same interpretation in languages that do not mark word boundaries with spaces, or
-    in agglutinative languages where a single particle error marks an entire eojeol as incorrect.
-    Isbell et al. (2023), scoring a Korean elicited imitation test, accordingly used morpheme-
-    and letter-based Levenshtein distances rather than word error rate, and obtained correlations
-    of .94 to .96 with human total scores. Their result is encouraging for the general approach
-    and is precisely why a language should not simply be switched on: the metric appropriate to
-    it has to be established first. Published agreement evidence for the particular combination
-    implemented here — Whisper transcription scored by word error rate — is currently available
-    for English (McGuire &amp; Larson-Hall, 2025). Enabling further languages before their
-    scoring behavior has been examined would invite exactly the kind of undocumented procedural
-    variation that this tool is intended to reduce.</p>
+  <p style="margin-top:26px">On that last point: word error rate is computed over
+    whitespace-delimited words and does not carry the same meaning in languages without word
+    spacing, or in agglutinative languages where one particle error marks a whole eojeol wrong.
+    Isbell et al. (2023) accordingly scored Korean with morpheme- and letter-based Levenshtein
+    distances, reaching correlations of .94 to .96 with human scores. The approach generalizes;
+    the metric has to be established language by language.</p>
 </div></section>
 
 <section><div class="wrap narrow">
-  <h2>Contributing elicited imitation materials</h2>
-  <p class="lead">Extending the tool to another language requires validated materials, not
-    merely a model that can transcribe it.</p>
-  <p>If you have developed and <strong>published</strong> an elicited imitation task in a
-    language other than English and would be willing to make the materials available, please get
-    in touch. Contributions of the following kinds are especially useful.</p>
+  <h2>Contributing materials</h2>
+  <p class="lead">Extending the tool to another language needs validated materials, not just a
+    model that can transcribe it. If you have <strong>published</strong> an elicited imitation
+    task in another language and would consider sharing it, please write.</p>
   <ul class="plain">
-    <li>Target sentence sets, with item numbers and syllable counts where available</li>
-    <li>Audio stimuli, together with the timing parameters used in administration</li>
-    <li>Scoring rubrics or normalization conventions applied in the published study</li>
-    <li>Response data with human scores, which would permit examination of agreement between
-      automatic and human scoring in that language</li>
-    <li>Independent proficiency scores for the same participants — for example, a standardized
-      test, an institutional placement measure, or a C-test — which would permit examination of
-      concurrent validity between the automated scores and an external criterion</li>
+    <li>Target sentence sets, with item numbers and syllable counts</li>
+    <li>Audio stimuli and the timing parameters used</li>
+    <li>Scoring rubrics or normalization conventions from the published study</li>
+    <li>Response data with human scores — for examining automatic–human agreement</li>
+    <li>Independent proficiency scores for the same participants — for examining concurrent
+      validity against an external criterion</li>
   </ul>
   <div class="callout">
-    <p>Contributors retain authorship and credit. Materials will be attributed to their original
-      publication wherever they appear in the tool, in the same way that the English preset is
-      attributed to Ortega et al. (2002), and nothing is incorporated without the explicit
-      agreement of the researchers who developed it.</p>
-    <p>Inquiries about collaboration, validation studies in additional languages, or
-      institutional use are equally welcome.</p>
+    <p>Contributors retain authorship and credit, materials are attributed to their original
+      publication wherever they appear, and nothing is incorporated without explicit agreement.
+      Inquiries about collaboration or validation studies are equally welcome.</p>
   </div>
 </div></section>
 
 <section><div class="wrap narrow">
-  <h2>How to cite EIT Studio</h2>
-  <p>If the tool contributed to the analysis reported in your study, please cite it and report
-    the model and the scoring configuration you used. Exporting the rule set from Step 2 and
-    depositing that JSON file with your study materials makes the scoring procedure fully
-    reproducible.</p>
-
+  <h2>How to cite</h2>
   <div class="callout">
     <p><strong>For now, please cite the website itself.</strong> No article describing EIT Studio
-      has been published yet, so there is no journal reference to point to. Citing the site as
-      software, using one of the forms below, is the appropriate practice in the meantime and is
-      how software without an accompanying publication is normally handled.</p>
-    <p>A publication describing the tool and its validation is in preparation. Once it appears, a
-      citable reference will be added to this page and users will be asked to cite that article
-      instead. If you would like to be notified when it does, a short email is enough.</p>
+      has been published yet, so there is no journal reference to point to; citing the site as
+      software is the appropriate practice in the meantime.</p>
+    <p>A publication describing the tool and its validation is in preparation. A citable
+      reference will be added here once it appears, and users will be asked to cite it instead.</p>
   </div>
 
   <div class="tabs"><span class="tab">APA 7</span></div>
@@ -231,9 +216,6 @@
 }</pre>
 
   <h3>What to report in your methods section</h3>
-  <p>A description along the following lines states everything a reader needs in order to
-    evaluate or reproduce the scoring procedure. Replace the bracketed material with the values
-    that apply to your study.</p>
   <pre class="cite">Responses were transcribed automatically using Whisper large-v3-turbo
 running locally in the browser via EIT Studio (Park, 2026). Accuracy was
 operationalized as one minus the word error rate, computed over a word-level
@@ -245,17 +227,10 @@ scoring configuration]; possessive 's was preserved. The full scoring
 configuration is available at [repository link]. A randomly selected
 [N] % subsample was transcribed and scored by a human rater; agreement
 was [statistic].</pre>
-
-  <div class="callout">
-    <p>Automatic transcription does not replace human verification. Reporting a human-verified
-      subsample alongside automatically scored data allows readers to evaluate how much the
-      automated procedure contributed to the reported results.</p>
-  </div>
-
-  <h3>Citing the instrument as well as the tool</h3>
-  <p>EIT Studio is scoring software, not an instrument. The elicited imitation task itself
-    should be cited separately. Studies using the included English preset should cite
-    Ortega et al. (2002); studies using their own sentence set should cite its source.</p>
+  <p>Automatic transcription does not replace human verification. Reporting a human-verified
+    subsample lets readers judge how much the automated procedure contributed to the results.</p>
+  <p>EIT Studio is scoring software, not an instrument. Cite the task separately — Ortega et al.
+    (2002) for the included English preset, or the source of your own sentence set.</p>
 </div></section>
 
 <section><div class="wrap narrow">

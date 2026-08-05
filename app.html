@@ -598,7 +598,6 @@ function applyTargets(text,quiet){
   TARGETS={}; TGT_SYL={};
   items.forEach(([n,s,syl])=>{ TARGETS[n]=s; if(syl) TGT_SYL[n]=syl; });
   TGT_N=items.length;
-  try{ localStorage.setItem("eitTargets",text); }catch(e){}
   if(bad.length){
     $("tgtWarn").classList.remove("hidden");
     $("tgtWarn").textContent=T("fmtTgtWarn")(bad.length, bad.slice(0,2).join(" | "));
@@ -959,15 +958,14 @@ function dl(blob,name){
 
 /* ---------- restore saved state ---------- */
 (function init(){
-  let savedCfg=null, savedTgt=null;
+  let savedCfg=null;
   try{ savedCfg=JSON.parse(localStorage.getItem("eitCfg")||"null"); }catch(e){}
-  try{ savedTgt=localStorage.getItem("eitTargets"); }catch(e){}
+  try{ localStorage.removeItem("eitTargets"); }catch(e){}
   $("optNum").checked = savedCfg ? !!savedCfg.numbers : true;
   $("optContr").checked = savedCfg ? !!savedCfg.contractions : true;
   $("ruleBox").value = savedCfg && savedCfg.rulesText!=null ? savedCfg.rulesText : DEFAULT_RULES;
   CFG.numbers=$("optNum").checked; CFG.contractions=$("optContr").checked;
   CFG.rulesText=$("ruleBox").value; CFG.rules=compileRules(CFG.rulesText);
-  if(savedTgt){ $("tgtBox").value=savedTgt; applyTargets(savedTgt,true); }
   applyLang();
   updateRunState();
 })();
