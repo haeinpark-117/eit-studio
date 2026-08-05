@@ -227,7 +227,7 @@
     <p><strong>The validity evidence base is narrower than the citation count suggests.</strong>
       Solon and Park (2024) observe that the vast majority of validity evidence for EITs has been
       presented as reliability coefficients and correlations with other proficiency measures. Such
-      information speaks to reliability and generalisability, but comprehensive validation also
+      information speaks to reliability and generalizability, but comprehensive validation also
       calls for evidence on item properties and psychometric qualities, test takers' response
       processes, raters' response processes, and the consequences of score interpretation and
       use. They further note that reliance on classical test theory carries known limitations —
@@ -252,13 +252,49 @@
     between-study inconsistency. EIT Studio automates the transcription and word error rate
     computation, and makes the normalization rules explicit, editable, and exportable, so that
     the exact scoring configuration can be archived with a study and reused by others.</p>
-  <p>There is direct evidence that this substitution is defensible for English. McGuire and
-    Larson-Hall (2025) had 30 Japanese-L1 participants complete a 30-item English EIT, producing
-    900 responses, each transcribed by two human raters and by Whisper. Agreement between the
-    human and automatic error rates across all items was <span class="num">ICC = .929</span>,
-    95 % CI [.921, .936]. Comparing automated WER-based test scores with the same participants'
-    scores obtained through the traditional ordinal rubric of Ortega et al. (2002) yielded
-    <span class="num">r = .969</span>, 95 % CI [.935, .985].</p>
+  <h3>Automated scoring has been examined, and it holds up</h3>
+  <p>Several independent studies have now compared automatically produced elicited imitation
+    scores against human scoring, using different speech recognition systems, different scoring
+    metrics, and different languages. The convergence across them is what makes the approach
+    credible.</p>
+  <table class="ev">
+    <thead><tr><th>Study</th><th>Setting</th><th>Agreement with human scoring</th></tr></thead>
+    <tbody>
+      <tr><td>McGuire &amp; Larson-Hall (2025)</td>
+        <td>English EIT, 30 Japanese-L1 participants, 900 responses; Whisper ASR with WER scoring</td>
+        <td><span class="num">ICC = .929</span>, 95 % CI [.921, .936] between human and automatic
+          error rates; <span class="num">r = .969</span>, 95 % CI [.935, .985] between WER-based
+          test scores and scores from the ordinal rubric of Ortega et al. (2002)</td></tr>
+      <tr><td>Isbell et al. (2023)</td>
+        <td>Korean EIT, 204 previously human-scored participants; three commercial ASR systems
+          with several transcription metrics</td>
+        <td>Nearly all ASR–metric combinations correlated above <span class="num">.90</span> with
+          human total scores; Naver and Google transcriptions yielded
+          <span class="num">r = .94–.96</span>, with item-level correlations near
+          <span class="num">.80</span></td></tr>
+      <tr><td>Kim et al. (2024)</td>
+        <td>English EI data; commercial NLP services applied to form-based scoring of the
+          be-passive and third person singular -s</td>
+        <td>A step-by-step automated pipeline for speech-to-text, morphosyntactic identification,
+          and scoring, validated against human ratings</td></tr>
+    </tbody>
+  </table>
+  <p>Note that the metric was adapted to the language in each case. Isbell et al. (2023) scored
+    Korean transcriptions with morpheme- and letter-based Levenshtein distances rather than
+    whitespace-delimited word error rate, precisely because Korean orthography does not support
+    the latter interpretation. Automated scoring generalizes across languages; the specific
+    metric does not transfer unexamined.</p>
+
+  <h3>What has been missing is access</h3>
+  <p>The procedures above are convincing, but they are not equally available to everyone. Isbell
+    et al. (2023) required accounts with commercial ASR platforms and scripted comparison of
+    transcription metrics; Kim et al. (2024) is explicitly a programming tutorial, implemented in
+    Java and drawing on commercial natural language processing services. A researcher who is
+    persuaded by this evidence but does not write code cannot act on it.</p>
+  <p>EIT Studio exists to close that gap. It implements the same logic — automatic transcription
+    followed by an edit-distance scoring metric — as a web page requiring no installation, no
+    account, no API key, and no programming. The methodological decisions that would otherwise be
+    buried in a script are surfaced as settings that can be inspected, edited, and exported.</p>
   <div class="callout">
     <p>Automatic transcription does not replace human verification. Reporting a human-verified
       subsample alongside automatically scored data remains good practice, and the scoring rules
@@ -279,6 +315,14 @@
     <li>Davis, L., &amp; Norris, J. (2021). Developing an innovative elicited imitation task for
       efficient English proficiency assessment. <em>ETS Research Report Series, 2021</em>(1),
       1–30. <a href="https://doi.org/10.1002/ets2.12338">https://doi.org/10.1002/ets2.12338</a></li>
+    <li>Isbell, D. R., Kim, K. M., &amp; Chen, X. (2023). Exploring the potential of automated
+      speech recognition for scoring the Korean Elicited Imitation Test.
+      <em>Research Methods in Applied Linguistics, 2</em>(3), Article 100076.
+      <a href="https://doi.org/10.1016/j.rmal.2023.100076">https://doi.org/10.1016/j.rmal.2023.100076</a></li>
+    <li>Kim, K. M., Chen, X., &amp; Liu, X. (2024). Accuracy scoring of elicited imitation:
+      A tutorial of automating speech data with commercial NLP support. <em>Research Methods in
+      Applied Linguistics, 3</em>(3), Article 100127.
+      <a href="https://doi.org/10.1016/j.rmal.2024.100127">https://doi.org/10.1016/j.rmal.2024.100127</a></li>
     <li>Kostromitina, M., &amp; Plonsky, L. (2022). Elicited imitation tasks as a measure of L2
       proficiency: A meta-analysis. <em>Studies in Second Language Acquisition, 44</em>(3),
       886–911. <a href="https://doi.org/10.1017/S0272263121000395">https://doi.org/10.1017/S0272263121000395</a></li>

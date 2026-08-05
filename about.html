@@ -124,6 +124,16 @@
     rules, so it fits the instrument a study actually uses rather than imposing a fixed one.
     Everything runs in the browser, so there is no cost of operation, no account, and no transfer
     of participant audio.</p>
+  <p>The more specific motivation was access. Automated elicited imitation scoring has been
+    demonstrated repeatedly — with Whisper and word error rate for English (McGuire &amp;
+    Larson-Hall, 2025), with commercial speech recognition and edit-distance metrics for Korean
+    (Isbell et al., 2023), and with commercial natural language processing services for
+    form-based scoring (Kim et al., 2024). What these demonstrations share, however, is a
+    prerequisite: API accounts, scripting, and enough familiarity with programming or natural
+    language processing to adapt someone else's code. Kim et al. (2024) is explicitly a tutorial
+    in Java. A researcher persuaded by this evidence but without that background has had no way
+    to act on it. This tool packages the same procedure as a web page so that the methodology,
+    rather than the implementation, is what a researcher has to think about.</p>
 
   <div class="steps">
     <div class="stp now">
@@ -148,15 +158,19 @@
 
   <h3>Why the tool is currently limited to English</h3>
   <p>The speech recognition model underlying EIT Studio is multilingual, so transcription in
-    other languages is technically available. Two considerations argue against enabling it
-    before the relevant work has been done. First, word error rate is computed over
-    whitespace-delimited words, which does not carry the same interpretation in languages that
-    do not mark word boundaries with spaces, or in agglutinative languages where a single
-    particle error marks an entire eojeol as incorrect. Second, published evidence on the
-    agreement between automatic and human scoring of elicited imitation is currently available
-    for English (McGuire &amp; Larson-Hall, 2025) and not, to our knowledge, for other languages.
-    Enabling a language before its scoring behavior has been examined would invite exactly the
-    kind of undocumented procedural variation that this tool is intended to reduce.</p>
+    other languages is technically available. The obstacle is the scoring metric rather than the
+    transcription. Word error rate is computed over whitespace-delimited words, which does not
+    carry the same interpretation in languages that do not mark word boundaries with spaces, or
+    in agglutinative languages where a single particle error marks an entire eojeol as incorrect.
+    Isbell et al. (2023), scoring a Korean elicited imitation test, accordingly used morpheme-
+    and letter-based Levenshtein distances rather than word error rate, and obtained correlations
+    of .94 to .96 with human total scores. Their result is encouraging for the general approach
+    and is precisely why a language should not simply be switched on: the metric appropriate to
+    it has to be established first. Published agreement evidence for the particular combination
+    implemented here — Whisper transcription scored by word error rate — is currently available
+    for English (McGuire &amp; Larson-Hall, 2025). Enabling further languages before their
+    scoring behavior has been examined would invite exactly the kind of undocumented procedural
+    variation that this tool is intended to reduce.</p>
 </div></section>
 
 <section><div class="wrap narrow">
@@ -181,7 +195,7 @@
       publication wherever they appear in the tool, in the same way that the English preset is
       attributed to Ortega et al. (2002), and nothing is incorporated without the explicit
       agreement of the researchers who developed it.</p>
-    <p>Enquiries about collaboration, validation studies in additional languages, or
+    <p>Inquiries about collaboration, validation studies in additional languages, or
       institutional use are equally welcome.</p>
   </div>
 </div></section>
@@ -192,6 +206,16 @@
     the model and the scoring configuration you used. Exporting the rule set from Step 2 and
     depositing that JSON file with your study materials makes the scoring procedure fully
     reproducible.</p>
+
+  <div class="callout">
+    <p><strong>For now, please cite the website itself.</strong> No article describing EIT Studio
+      has been published yet, so there is no journal reference to point to. Citing the site as
+      software, using one of the forms below, is the appropriate practice in the meantime and is
+      how software without an accompanying publication is normally handled.</p>
+    <p>A publication describing the tool and its validation is in preparation. Once it appears, a
+      citable reference will be added to this page and users will be asked to cite that article
+      instead. If you would like to be notified when it does, a short email is enough.</p>
+  </div>
 
   <div class="tabs"><span class="tab">APA 7</span></div>
   <pre class="cite">Park, H. I. (2026). <em>EIT Studio</em> [Computer software].
@@ -238,7 +262,7 @@ was [statistic].</pre>
   <h2>Contact</h2>
   <p>EIT Studio is developed and maintained by Hae In (Lauren) Park, Associate Professor and
     Chair of the Department of Applied English Linguistics and Translation Studies at Kyung Hee
-    University, Seoul.</p>
+    University, Seoul, South Korea.</p>
   <div class="contact">
     <div class="cc">
       <div class="k">Email</div>
@@ -263,6 +287,14 @@ was [statistic].</pre>
 
   <h3>References cited on this page</h3>
   <p style="font-size:14.5px; line-height:1.75; color:var(--muted)">
+    Isbell, D. R., Kim, K. M., &amp; Chen, X. (2023). Exploring the potential of automated speech
+    recognition for scoring the Korean Elicited Imitation Test. <em>Research Methods in Applied
+    Linguistics, 2</em>(3), Article 100076.
+    <a href="https://doi.org/10.1016/j.rmal.2023.100076">https://doi.org/10.1016/j.rmal.2023.100076</a><br>
+    Kim, K. M., Chen, X., &amp; Liu, X. (2024). Accuracy scoring of elicited imitation: A tutorial
+    of automating speech data with commercial NLP support. <em>Research Methods in Applied
+    Linguistics, 3</em>(3), Article 100127.
+    <a href="https://doi.org/10.1016/j.rmal.2024.100127">https://doi.org/10.1016/j.rmal.2024.100127</a><br>
     McGuire, M., &amp; Larson-Hall, J. (2025). Assessing Whisper automatic speech recognition and
     WER scoring for elicited imitation: Steps toward automation. <em>Research Methods in Applied
     Linguistics, 4</em>(2), Article 100197.
@@ -282,7 +314,7 @@ was [statistic].</pre>
 </div></div>
 
 <footer><div class="wrap">
-  <div>EIT Studio · Hae In Park, Kyung Hee University</div>
+  <div>EIT Studio · Hae In Park · Kyung Hee University, Seoul, South Korea</div>
   <div class="mono">whisper-large-v3-turbo · transformers.js</div>
 </div></footer>
 
