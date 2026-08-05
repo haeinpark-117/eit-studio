@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Start here — EIT Studio</title>
+<meta name="description" content="What you need to start transcribing and scoring an elicited imitation task in EIT Studio.">
+<style>
+  :root{
+    --bg:#f2f2f4; --panel:#fff; --ink:#08080f; --muted:#6a6a7d; --line:#e8e8ef;
+    --accent:#3840f3; --accent-dark:#2a31d4; --accent-soft:#eef0ff; --accent-line:#d9dcff;
+    --pink:#ff1493; --pink-dark:#d1097a; --pink-soft:#fff0f8; --pink-line:#ffcfe8;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); padding:66px 18px 60px;
+    font:14.5px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+    display:flex; justify-content:center; -webkit-font-smoothing:antialiased}
+  .hd{position:fixed; top:0; left:0; right:0; z-index:20; height:50px;
+    background:rgba(255,255,255,.92); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line); display:flex; align-items:center;
+    justify-content:space-between; padding:0 22px}
+  .hd .t{font-weight:800; font-size:15px; letter-spacing:-.3px}
+  .hd .t a{text-decoration:none; color:inherit}
+  .hd .t span{font-weight:400; color:var(--muted); font-size:11px; margin-left:9px;
+    letter-spacing:.08em; text-transform:uppercase; font-family:var(--mono)}
+  .tabs2{display:flex; gap:6px; margin-left:auto; margin-right:14px}
+  .tabs2 a{font-size:12.5px; font-weight:600; text-decoration:none; color:var(--muted);
+    padding:5px 12px; border-radius:8px; border:1px solid transparent; white-space:nowrap}
+  .tabs2 a:hover{color:var(--ink); background:#f0f0f5}
+  .tabs2 a.on{background:var(--accent-soft); border-color:var(--accent-line); color:var(--accent)}
+  .hd .rt{display:flex; align-items:center; gap:12px}
+  .lang button{font:inherit; font-size:12.5px; padding:4px 11px; border:1px solid var(--line);
+    background:#fff; cursor:pointer}
+  .lang button:first-child{border-radius:7px 0 0 7px}
+  .lang button:last-child{border-radius:0 7px 7px 0; border-left:0}
+  .lang button.on{background:var(--accent); color:#fff; border-color:var(--accent)}
+  .stage{width:100%; max-width:900px}
+
+  .panel{background:var(--panel); border:1px solid var(--line); border-radius:14px;
+    margin-bottom:18px; overflow:hidden}
+  .pad{padding:34px 30px 38px}
+
+  h1.q{margin:0 0 8px; font-size:33px; line-height:1.2; letter-spacing:-.9px; font-weight:800;
+    text-align:center}
+  p.qs{margin:0 auto 30px; color:var(--muted); font-size:14px; line-height:1.65;
+    text-align:center; max-width:60ch}
+
+  /* ---------- flow ---------- */
+  .flow{display:flex; flex-direction:column; align-items:center}
+  .node{border:1px solid var(--line); background:#fff; border-radius:12px; padding:13px 20px;
+    text-align:center; min-width:250px; max-width:400px}
+  .node .n-t{font-weight:700; font-size:14.5px; letter-spacing:-.2px}
+  .node .n-s{color:var(--muted); font-size:12.5px; line-height:1.55; margin-top:3px}
+  .node.qn{background:var(--accent-soft); border-color:var(--accent-line)}
+  .node.pink{background:var(--pink-soft); border-color:var(--pink-line)}
+  .node.end{background:#08080f; border-color:#08080f; color:#fff}
+  .node.end .n-s{color:#b7b7c8}
+  .arrow{width:2px; height:26px; background:var(--line); position:relative}
+  .arrow:after{content:""; position:absolute; left:50%; bottom:0; transform:translateX(-50%);
+    border-left:5px solid transparent; border-right:5px solid transparent;
+    border-top:7px solid var(--line)}
+  .branch{display:grid; grid-template-columns:1fr 1fr; gap:22px; width:100%; max-width:780px}
+  .branch .col{display:flex; flex-direction:column; align-items:center}
+  .lbl{font-family:var(--mono); font-size:10.5px; letter-spacing:.09em; text-transform:uppercase;
+    color:var(--accent); background:var(--accent-soft); border:1px solid var(--accent-line);
+    border-radius:20px; padding:3px 12px; margin-bottom:11px}
+  .lbl.alt{color:var(--pink); background:var(--pink-soft); border-color:var(--pink-line)}
+  .splitline,.mergeline{width:100%; max-width:780px; height:22px; position:relative}
+  .splitline:before{content:""; position:absolute; top:0; left:25%; right:25%; height:2px;
+    background:var(--line)}
+  .mergeline:before{content:""; position:absolute; bottom:0; left:25%; right:25%; height:2px;
+    background:var(--line)}
+  .stub,.mstub{position:absolute; width:2px; height:22px; background:var(--line)}
+  .stub{top:0} .mstub{bottom:0}
+  .stub.l,.mstub.l{left:25%} .stub.r,.mstub.r{left:75%}
+  .stub:after{content:""; position:absolute; left:50%; bottom:0; transform:translateX(-50%);
+    border-left:5px solid transparent; border-right:5px solid transparent;
+    border-top:7px solid var(--line)}
+  .kbd{font-family:var(--mono); font-size:11.5px; background:#f3f3f7; border:1px solid var(--line);
+    border-radius:5px; padding:1px 5px; white-space:nowrap}
+
+  /* ---------- CTA ---------- */
+  .cta{display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:34px}
+  .btn{display:inline-block; text-decoration:none; font-size:13.5px; font-weight:650;
+    padding:11px 20px; border-radius:10px; border:1px solid transparent}
+  .btn-p{background:var(--accent); color:#fff}
+  .btn-p:hover{background:var(--accent-dark)}
+  .btn-k{background:var(--pink); color:#fff}
+  .btn-k:hover{background:var(--pink-dark)}
+
+  /* ---------- checklist ---------- */
+  .need{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:6px}
+  .need .it{border:1px solid var(--line); border-radius:12px; padding:16px 18px; background:#fff}
+  .need .it h3{margin:0 0 5px; font-size:14.5px; letter-spacing:-.2px}
+  .need .it p{margin:0; color:var(--muted); font-size:12.8px; line-height:1.6}
+  .need .it pre{margin:9px 0 0; font-family:var(--mono); font-size:11.5px; color:var(--muted);
+    background:#f7f7fa; border:1px solid var(--line); border-radius:8px; padding:8px 10px;
+    line-height:1.7; overflow-x:auto}
+  h2.sec{margin:0 0 4px; font-size:17px; letter-spacing:-.35px}
+  p.secs{margin:0 0 16px; color:var(--muted); font-size:13px; line-height:1.65}
+  .foot{font-size:11.5px; color:var(--muted); padding:11px 22px; border-top:1px solid var(--line);
+    background:#fafafb; font-family:var(--mono)}
+  @media(max-width:720px){
+    h1.q{font-size:26px}
+    .pad{padding:26px 20px 30px}
+    .need{grid-template-columns:1fr}
+    .branch{grid-template-columns:1fr; gap:0}
+    .splitline,.mergeline{display:none}
+    .branch .col{margin-bottom:18px}
+    .node{min-width:0; width:100%}
+  }
+</style>
+</head>
+<body>
+
+<div class="hd">
+  <div class="t"><a href="index.html">EIT&nbsp;Studio</a><span data-i18n="hdSub"></span></div>
+  <div class="tabs2">
+    <a href="start.html" class="on" data-i18n="tabStart"></a>
+    <a href="app.html" data-i18n="tabScore"></a>
+    <a href="segment.html" data-i18n="tabSeg"></a>
+  </div>
+  <div class="rt">
+    <span class="lang"><button id="langEn">English</button><button id="langKo">한국어</button></span>
+  </div>
+</div>
+
+<div class="stage">
+
+  <div class="panel"><div class="pad">
+    <h1 class="q" data-i18n="q"></h1>
+    <p class="qs" data-i18n="qs"></p>
+
+    <div class="flow">
+      <div class="node">
+        <div class="n-t" data-i18n="n1t"></div>
+        <div class="n-s" data-i18n="n1s"></div>
+      </div>
+      <div class="arrow"></div>
+      <div class="node qn">
+        <div class="n-t" data-i18n="n2t"></div>
+        <div class="n-s" data-i18n="n2s"></div>
+      </div>
+
+      <div class="splitline"><span class="stub l"></span><span class="stub r"></span></div>
+      <div class="branch">
+        <div class="col">
+          <span class="lbl" data-i18n="bYes"></span>
+          <div class="node">
+            <div class="n-t" data-i18n="n3at"></div>
+            <div class="n-s" data-i18n="n3as"></div>
+          </div>
+        </div>
+        <div class="col">
+          <span class="lbl alt" data-i18n="bNo"></span>
+          <div class="node pink">
+            <div class="n-t" data-i18n="n3bt"></div>
+            <div class="n-s" data-i18n="n3bs"></div>
+          </div>
+        </div>
+      </div>
+      <div class="mergeline"><span class="mstub l"></span><span class="mstub r"></span></div>
+
+      <div class="node">
+        <div class="n-t" data-i18n="n4t"></div>
+        <div class="n-s" data-i18n="n4s"></div>
+      </div>
+      <div class="arrow"></div>
+      <div class="node">
+        <div class="n-t" data-i18n="n5t"></div>
+        <div class="n-s" data-i18n="n5s"></div>
+      </div>
+      <div class="arrow"></div>
+      <div class="node end">
+        <div class="n-t" data-i18n="n6t"></div>
+        <div class="n-s" data-i18n="n6s"></div>
+      </div>
+    </div>
+
+    <div class="cta">
+      <a class="btn btn-p" href="app.html" data-i18n="ctaScore"></a>
+      <a class="btn btn-k" href="segment.html" data-i18n="ctaSeg"></a>
+    </div>
+  </div></div>
+
+  <div class="panel"><div class="pad" style="padding:26px 30px 30px">
+    <h2 class="sec" data-i18n="needTitle"></h2>
+    <p class="secs" data-i18n="needIntro"></p>
+    <div class="need">
+      <div class="it">
+        <h3 data-i18n="need1t"></h3>
+        <p data-i18n="need1s"></p>
+        <pre data-i18n="need1x"></pre>
+      </div>
+      <div class="it">
+        <h3 data-i18n="need2t"></h3>
+        <p data-i18n="need2s"></p>
+        <pre data-i18n="need2x"></pre>
+      </div>
+    </div>
+    <p class="secs" style="margin:16px 0 0" data-i18n="needNote"></p>
+  </div></div>
+
+  <div class="panel"><div class="foot" id="foot"></div></div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+
+const I18N={
+en:{
+ hdSub:"English EIT · for researchers",
+ q:"What do I need to get started?",
+ qs:"Two things: your target sentences with syllable counts, and audio recordings of the responses. Follow whichever branch matches what you have on disk.",
+ n1t:"Your recordings",
+ n1s:"Oral responses collected from one or more participants",
+ n2t:"Is there one audio file per item?",
+ n2s:"That is, one response to one target sentence per file",
+ bYes:"Yes",
+ bNo:"No — one long file",
+ n3at:"Go straight to scoring",
+ n3as:"Name the files participantID_itemNN and they are matched to items automatically; anything else can be assigned by hand.",
+ n3bt:"Segment first",
+ n3bs:"Silence detection, beep alignment, or a fixed timing grid produces a ZIP of one WAV per item, ready for the scoring tool.",
+ n4t:"Load your target sentences",
+ n4s:"One line per item: number, sentence, syllable count",
+ n5t:"Transcribe with Whisper large-v3-turbo",
+ n5s:"Recognition runs in your browser; no audio is uploaded",
+ n6t:"Download the scores as CSV",
+ n6s:"Item-level WER, edit counts, and transcripts for checking",
+ ctaScore:"I have one file per item — start scoring →",
+ ctaSeg:"I have one long recording — split it first →",
+ needTitle:"What the two inputs look like",
+ needIntro:"Neither input requires any software beyond a browser. Both can be prepared in a spreadsheet or a text editor.",
+ need1t:"Target sentences",
+ need1s:"A CSV, TSV, or pasted text with one item per line: number, sentence, syllable count. The syllable count is required, since it defines the response window used in administration and lets the segmenter place a boundary where a participant produced no audible response.",
+ need1x:"1,I have to get a haircut.,7\n2,The red book is on the table.,8\n3,The streets in this city are wide.,8",
+ need2t:"Audio recordings",
+ need2s:"One file per item, in any format the browser can decode (WAV, MP3, M4A, FLAC, OGG, WebM). Files named participantID_itemNN are recognized automatically; the item number may be zero-padded or not.",
+ need2x:"P01_item01.wav\nP01_item02.wav\nP01_item03.wav …",
+ needNote:"If you would like to try the tool before preparing your own materials, the scoring page loads the English EIT of Ortega et al. (2002) as a worked example.",
+ foot:"Everything runs locally in your browser · no upload, no account"
+},
+ko:{
+ hdSub:"English EIT · 연구자용",
+ q:"무엇부터 준비하면 되나요?",
+ qs:"두 가지가 필요합니다. 음절 수가 포함된 목표 문장, 그리고 응답 녹음 파일입니다. 가지고 계신 파일 형태에 해당하는 갈래를 따라가시면 됩니다.",
+ n1t:"녹음 파일",
+ n1s:"한 명 이상의 참가자로부터 수집한 구두 응답",
+ n2t:"문항당 음성 파일이 하나씩 있나요?",
+ n2s:"즉, 한 파일에 하나의 목표 문장에 대한 응답 하나",
+ bYes:"예",
+ bNo:"아니요 — 긴 파일 하나",
+ n3at:"바로 채점으로",
+ n3as:"파일 이름을 participantID_itemNN 형식으로 지정하면 문항에 자동으로 연결되며, 그 외의 이름은 표에서 직접 지정할 수 있습니다.",
+ n3bt:"먼저 분절하기",
+ n3bs:"무음 감지, 신호음 정렬, 고정 타이밍 격자 중 하나로 문항별 WAV 파일을 만들어 ZIP으로 내려받은 뒤 채점 도구에 그대로 사용합니다.",
+ n4t:"목표 문장 불러오기",
+ n4s:"한 줄에 한 문항: 번호, 문장, 음절 수",
+ n5t:"Whisper large-v3-turbo로 전사",
+ n5s:"브라우저 안에서 인식이 이루어지며 음성은 외부로 전송되지 않습니다",
+ n6t:"채점 결과를 CSV로 내려받기",
+ n6s:"문항별 WER, 편집 횟수, 확인용 전사문",
+ ctaScore:"문항별 파일이 있습니다 — 채점 시작 →",
+ ctaSeg:"긴 녹음 파일 하나가 있습니다 — 먼저 나누기 →",
+ needTitle:"두 가지 입력의 형태",
+ needIntro:"브라우저 외에 별도의 프로그램은 필요하지 않으며, 두 가지 모두 스프레드시트나 텍스트 편집기에서 준비할 수 있습니다.",
+ need1t:"목표 문장",
+ need1s:"CSV, TSV 또는 붙여넣은 텍스트로, 한 줄에 한 문항씩 번호, 문장, 음절 수를 적습니다. 음절 수는 필수입니다. 시행 시의 응답 시간을 결정하며, 참가자가 아무 말도 하지 않은 문항에서도 분절 도구가 경계를 잡을 수 있게 해 줍니다.",
+ need1x:"1,I have to get a haircut.,7\n2,The red book is on the table.,8\n3,The streets in this city are wide.,8",
+ need2t:"녹음 파일",
+ need2s:"문항당 한 개씩, 브라우저가 디코딩할 수 있는 형식이면 됩니다(WAV, MP3, M4A, FLAC, OGG, WebM). participantID_itemNN 형식의 이름은 자동으로 인식되며, 문항 번호의 0 채움 여부는 상관없습니다.",
+ need2x:"P01_item01.wav\nP01_item02.wav\nP01_item03.wav …",
+ needNote:"직접 자료를 준비하기 전에 먼저 시험해 보고 싶으시다면, 채점 페이지에서 Ortega et al. (2002)의 영어 EIT를 예시로 불러올 수 있습니다.",
+ foot:"모든 처리는 브라우저 안에서 이루어집니다 · 업로드 없음, 계정 없음"
+}
+};
+I18N.en.tabStart="Start"; I18N.en.tabScore="Score"; I18N.en.tabSeg="Segment";
+I18N.ko.tabStart="시작"; I18N.ko.tabScore="채점"; I18N.ko.tabSeg="분절";
+
+let LANG=(()=>{ try{ return localStorage.getItem("eitLang")||"en"; }catch(e){ return "en"; } })();
+const T=k=>(I18N[LANG]&&I18N[LANG][k])!=null?I18N[LANG][k]:(I18N.en[k]||"");
+function applyLang(){
+  document.querySelectorAll("[data-i18n]").forEach(el=>{
+    const v=T(el.getAttribute("data-i18n"));
+    if(typeof v==="string") el.textContent=v;
+  });
+  document.documentElement.lang=LANG;
+  $("langEn").classList.toggle("on",LANG==="en");
+  $("langKo").classList.toggle("on",LANG==="ko");
+  $("foot").textContent=T("foot");
+}
+function setLang(l){ LANG=l; try{ localStorage.setItem("eitLang",l); }catch(e){} applyLang(); }
+$("langEn").onclick=()=>setLang("en");
+$("langKo").onclick=()=>setLang("ko");
+applyLang();
+</script>
+</body>
+</html>
