@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Reading the results — EIT Studio</title>
-<meta name="description" content="How to read the EIT Studio results table: the alignment marking, word error rate, accuracy, confidence, and the exported columns.">
+<title>Reading the scoring table — EIT Studio</title>
+<meta name="description" content="How to read the EIT Studio scoring table: the alignment marking, word error rate, accuracy, confidence, and the exported columns.">
 <style>
   :root{
     --ink:#08080f; --muted:#6a6a7d; --line:#e8e8ef;
@@ -112,6 +112,12 @@
   table.ev td:first-child{white-space:nowrap}
   code{font-family:var(--mono); font-size:13px; background:var(--soft); border-radius:5px;
     padding:1px 5px}
+  figure{margin:26px 0 8px}
+  figure img{width:100%; display:block; border:1px solid var(--line); border-radius:12px}
+  figcaption{margin-top:10px; font-size:13px; color:var(--muted); line-height:1.65}
+  .soon{display:inline-block; font-family:var(--mono); font-size:10px; letter-spacing:.12em;
+    text-transform:uppercase; background:var(--accent); color:#fff; border-radius:999px;
+    padding:4px 10px; margin-right:8px}
 </style>
 </head>
 <body>
@@ -121,7 +127,7 @@
   <div class="navlinks">
     <a href="about.html">About</a>
     <a href="index.html#how">How it works</a>
-    <a href="results.html" class="on">Reading results</a>
+    <a href="results.html" class="on">Scoring table</a>
     <a href="why-eit.html">Why elicited imitation</a>
     <a href="asr.html">Speech recognition</a>
     <a href="cite.html">How to cite</a>
@@ -131,17 +137,25 @@
 </div></div>
 
 <header class="pg"><div class="wrap">
-  <p class="kicker">Reading the results</p>
-  <h1>What the table<br>is telling you.</h1>
+  <p class="kicker">Reading the scoring table</p>
+  <h1>What the scoring table<br>is telling you.</h1>
   <p>Every quantity the tool reports is defined here, together with what it does and does not
     license you to conclude, and how to check the items that need a human eye.</p>
 </div></header>
 
 <main>
 <section><div class="wrap narrow">
-  <h2>The item table, column by column</h2>
+  <h2>The scoring table, column by column</h2>
   <p>One row per recording. Rows can be sorted by participant and item, by lowest accuracy, or by
     lowest confidence — the last two are the fastest way into the items that need checking.</p>
+  <figure>
+    <img src="scoring-table.png" alt="The EIT Studio scoring table, showing participant, item,
+      target, Whisper transcription with the alignment marked, accuracy, word error rate,
+      confidence, and an audio button for each row.">
+    <figcaption>The scoring table. Item 06 shows what a low-accuracy row looks like: several
+      substituted words, an accuracy of 30.0 %, and a confidence figure well below the others —
+      the combination that usually means the audio is worth listening to.</figcaption>
+  </figure>
   <table class="ev">
     <thead><tr><th>Column</th><th>What it contains</th></tr></thead>
     <tbody>
@@ -211,9 +225,15 @@
 
 <section><div class="wrap narrow">
   <h2>The per-participant summary</h2>
-  <p>Above the item table, one row per participant reports the number of items scored (against
+  <p>Above the scoring table, one row per participant reports the number of items scored (against
     the number of target items, when a target set is loaded), and the mean accuracy, mean word
     error rate, and mean confidence across that participant's items.</p>
+  <figure>
+    <img src="summary-table.png" alt="The per-participant summary row, showing items scored,
+      mean accuracy, mean word error rate, and mean confidence.">
+    <figcaption>The summary row sits above the scoring table, together with the sort control and
+      the CSV and JSON export buttons.</figcaption>
+  </figure>
   <div class="callout">
     <p>The means are taken over items that were actually scored. If a recording is missing or
       failed, the count tells you so — check it before treating a participant mean as comparable
@@ -251,6 +271,15 @@
     the <a href="asr.html">speech recognition page</a> for the evidence. Report the agreement
     between the automatic scores and a human-verified subsample; the
     <a href="cite.html">citation page</a> gives a methods-section template that includes it.</p>
+</div></section>
+
+<section><div class="wrap narrow">
+  <h2>A walkthrough is on the way</h2>
+  <div class="callout">
+    <p><span class="soon">Coming soon</span> A short demonstration video, showing a set of
+      recordings scored from beginning to end and the table read row by row, will be added to this
+      page.</p>
+  </div>
 </div></section>
 
 <section><div class="wrap narrow">
