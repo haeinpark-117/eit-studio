@@ -46,44 +46,26 @@
   p.qs{margin:0 auto 30px; color:var(--muted); font-size:14px; line-height:1.65;
     text-align:center; max-width:60ch}
 
-  /* ---------- flow ---------- */
-  .flow{display:flex; flex-direction:column; align-items:center}
-  .node{border:1px solid var(--line); background:#fff; border-radius:12px; padding:13px 20px;
-    text-align:center; min-width:250px; max-width:400px}
-  .node .n-t{font-weight:700; font-size:14.5px; letter-spacing:-.2px}
-  .node .n-s{color:var(--muted); font-size:12.5px; line-height:1.55; margin-top:3px}
-  .node.qn{background:var(--accent-soft); border-color:var(--accent-line)}
-  .node.pink{background:var(--pink-soft); border-color:var(--pink-line)}
-  .node.end{background:#08080f; border-color:#08080f; color:#fff}
-  .node.end .n-s{color:#b7b7c8}
-  .arrow{width:2px; height:26px; background:var(--line); position:relative}
-  .arrow:after{content:""; position:absolute; left:50%; bottom:0; transform:translateX(-50%);
-    border-left:5px solid transparent; border-right:5px solid transparent;
-    border-top:7px solid var(--line)}
-  .branch{display:grid; grid-template-columns:1fr 1fr; gap:22px; width:100%; max-width:780px}
-  .branch .col{display:flex; flex-direction:column; align-items:center}
-  .lbl{font-family:var(--mono); font-size:10.5px; letter-spacing:.09em; text-transform:uppercase;
-    color:var(--accent); background:var(--accent-soft); border:1px solid var(--accent-line);
-    border-radius:20px; padding:3px 12px; margin-bottom:11px}
-  .lbl.alt{color:var(--pink); background:var(--pink-soft); border-color:var(--pink-line)}
-  .splitline,.mergeline{width:100%; max-width:780px; height:22px; position:relative}
-  .splitline:before{content:""; position:absolute; top:0; left:25%; right:25%; height:2px;
-    background:var(--line)}
-  .mergeline:before{content:""; position:absolute; bottom:0; left:25%; right:25%; height:2px;
-    background:var(--line)}
-  .stub,.mstub{position:absolute; width:2px; height:22px; background:var(--line)}
-  .stub{top:0} .mstub{bottom:0}
-  .stub.l,.mstub.l{left:25%} .stub.r,.mstub.r{left:75%}
-  .stub:after{content:""; position:absolute; left:50%; bottom:0; transform:translateX(-50%);
-    border-left:5px solid transparent; border-right:5px solid transparent;
-    border-top:7px solid var(--line)}
-  .kbd{font-family:var(--mono); font-size:11.5px; background:#f3f3f7; border:1px solid var(--line);
-    border-radius:5px; padding:1px 5px; white-space:nowrap}
+  /* ---------- choice cards ---------- */
+  .two{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+  .card{border:1px solid var(--line); border-radius:14px; padding:22px 22px 20px; background:#fff;
+    display:flex; flex-direction:column; gap:10px; transition:.15s}
+  .card:hover{border-color:var(--accent-line); box-shadow:0 6px 18px rgba(56,64,243,.08)}
+  .card.alt:hover{border-color:var(--pink-line); box-shadow:0 6px 18px rgba(255,20,147,.08)}
+  .card .ic{width:34px; height:34px; border-radius:10px; display:grid; place-items:center;
+    font-size:17px; background:var(--accent-soft); color:var(--accent)}
+  .card.alt .ic{background:var(--pink-soft); color:var(--pink)}
+  .card h3{margin:0; font-size:16.5px; font-weight:700; letter-spacing:-.3px}
+  .card p{margin:0; color:var(--muted); font-size:13.5px; line-height:1.6; flex:1 1 auto}
+  .card .files{font-family:var(--mono); font-size:11.5px; color:var(--muted); background:#f7f7fa;
+    border:1px solid var(--line); border-radius:8px; padding:8px 10px; line-height:1.8;
+    min-height:70px}
+  .foot-note{margin:18px 0 0; font-size:12.8px; color:var(--muted); line-height:1.65}
 
   /* ---------- CTA ---------- */
-  .cta{display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:34px}
-  .btn{display:inline-block; text-decoration:none; font-size:13.5px; font-weight:650;
-    padding:11px 20px; border-radius:10px; border:1px solid transparent}
+  .btn{display:inline-block; align-self:flex-start; text-decoration:none; font-size:13.5px;
+    font-weight:650; padding:10px 18px; border-radius:10px; border:1px solid transparent;
+    margin-top:2px}
   .btn-p{background:var(--accent); color:#fff}
   .btn-p:hover{background:var(--accent-dark)}
   .btn-k{background:var(--pink); color:#fff}
@@ -105,10 +87,7 @@
     h1.q{font-size:26px}
     .pad{padding:26px 20px 30px}
     .need{grid-template-columns:1fr}
-    .branch{grid-template-columns:1fr; gap:0}
-    .splitline,.mergeline{display:none}
-    .branch .col{margin-bottom:18px}
-    .node{min-width:0; width:100%}
+    .two{grid-template-columns:1fr}
   }
 </style>
 </head>
@@ -132,56 +111,23 @@
     <h1 class="q" data-i18n="q"></h1>
     <p class="qs" data-i18n="qs"></p>
 
-    <div class="flow">
-      <div class="node">
-        <div class="n-t" data-i18n="n1t"></div>
-        <div class="n-s" data-i18n="n1s"></div>
+    <div class="two">
+      <div class="card">
+        <div class="ic">✓</div>
+        <h3 data-i18n="cAt"></h3>
+        <p data-i18n="cAs"></p>
+        <div class="files">P01_item01.wav<br>P01_item02.wav<br>P01_item03.wav …</div>
+        <a class="btn btn-p" href="app.html" data-i18n="cAb"></a>
       </div>
-      <div class="arrow"></div>
-      <div class="node qn">
-        <div class="n-t" data-i18n="n2t"></div>
-        <div class="n-s" data-i18n="n2s"></div>
-      </div>
-
-      <div class="splitline"><span class="stub l"></span><span class="stub r"></span></div>
-      <div class="branch">
-        <div class="col">
-          <span class="lbl" data-i18n="bYes"></span>
-          <div class="node">
-            <div class="n-t" data-i18n="n3at"></div>
-            <div class="n-s" data-i18n="n3as"></div>
-          </div>
-        </div>
-        <div class="col">
-          <span class="lbl alt" data-i18n="bNo"></span>
-          <div class="node pink">
-            <div class="n-t" data-i18n="n3bt"></div>
-            <div class="n-s" data-i18n="n3bs"></div>
-          </div>
-        </div>
-      </div>
-      <div class="mergeline"><span class="mstub l"></span><span class="mstub r"></span></div>
-
-      <div class="node">
-        <div class="n-t" data-i18n="n4t"></div>
-        <div class="n-s" data-i18n="n4s"></div>
-      </div>
-      <div class="arrow"></div>
-      <div class="node">
-        <div class="n-t" data-i18n="n5t"></div>
-        <div class="n-s" data-i18n="n5s"></div>
-      </div>
-      <div class="arrow"></div>
-      <div class="node end">
-        <div class="n-t" data-i18n="n6t"></div>
-        <div class="n-s" data-i18n="n6s"></div>
+      <div class="card alt">
+        <div class="ic">✂</div>
+        <h3 data-i18n="cBt"></h3>
+        <p data-i18n="cBs"></p>
+        <div class="files">P01_session.mp3 <span style="opacity:.6" data-i18n="cBx"></span></div>
+        <a class="btn btn-k" href="segment.html" data-i18n="cBb"></a>
       </div>
     </div>
-
-    <div class="cta">
-      <a class="btn btn-p" href="app.html" data-i18n="ctaScore"></a>
-      <a class="btn btn-k" href="segment.html" data-i18n="ctaSeg"></a>
-    </div>
+    <p class="foot-note" data-i18n="cNote"></p>
   </div></div>
 
   <div class="panel"><div class="pad" style="padding:26px 30px 30px">
@@ -212,25 +158,15 @@ const I18N={
 en:{
  hdSub:"English EIT · for researchers",
  q:"What do I need to get started?",
- qs:"Two things: your target sentences with syllable counts, and audio recordings of the responses. Follow whichever branch matches what you have on disk.",
- n1t:"Your recordings",
- n1s:"Oral responses collected from one or more participants",
- n2t:"Is there one audio file per item?",
- n2s:"That is, one response to one target sentence per file",
- bYes:"Yes",
- bNo:"No — one long file",
- n3at:"Go straight to scoring",
- n3as:"Name the files participantID_itemNN and they are matched to items automatically; anything else can be assigned by hand.",
- n3bt:"Segment first",
- n3bs:"Silence detection, beep alignment, or a fixed timing grid produces a ZIP of one WAV per item, ready for the scoring tool.",
- n4t:"Load your target sentences",
- n4s:"One line per item: number, sentence, syllable count",
- n5t:"Transcribe with Whisper large-v3-turbo",
- n5s:"Recognition runs in your browser; no audio is uploaded",
- n6t:"Download the scores as CSV",
- n6s:"Item-level WER, edit counts, and transcripts for checking",
- ctaScore:"I have one file per item — start scoring →",
- ctaSeg:"I have one long recording — split it first →",
+ qs:"Two things: your target sentences with syllable counts, and audio recordings of the responses. Which of the two below describes the recordings you have?",
+ cAt:"I already have one file per item",
+ cAs:"Each file holds a single response to a single target sentence — usually 30 files per participant.",
+ cAb:"Start scoring →",
+ cBt:"I have one long recording per participant",
+ cBs:"The whole session sits in a single file. Split it into one file per item first, then come back here.",
+ cBx:"(≈ 8 min)",
+ cBb:"Split it first →",
+ cNote:"Either way you will also need your target sentences with syllable counts — the scoring page loads the English EIT of Ortega et al. (2002) as a worked example.",
  needTitle:"What the two inputs look like",
  needIntro:"Neither input requires any software beyond a browser. Both can be prepared in a spreadsheet or a text editor.",
  need1t:"Target sentences",
@@ -245,25 +181,15 @@ en:{
 ko:{
  hdSub:"English EIT · 연구자용",
  q:"무엇부터 준비하면 되나요?",
- qs:"두 가지가 필요합니다. 음절 수가 포함된 목표 문장, 그리고 응답 녹음 파일입니다. 가지고 계신 파일 형태에 해당하는 갈래를 따라가시면 됩니다.",
- n1t:"녹음 파일",
- n1s:"한 명 이상의 참가자로부터 수집한 구두 응답",
- n2t:"문항당 음성 파일이 하나씩 있나요?",
- n2s:"즉, 한 파일에 하나의 목표 문장에 대한 응답 하나",
- bYes:"예",
- bNo:"아니요 — 긴 파일 하나",
- n3at:"바로 채점으로",
- n3as:"파일 이름을 participantID_itemNN 형식으로 지정하면 문항에 자동으로 연결되며, 그 외의 이름은 표에서 직접 지정할 수 있습니다.",
- n3bt:"먼저 분절하기",
- n3bs:"무음 감지, 신호음 정렬, 고정 타이밍 격자 중 하나로 문항별 WAV 파일을 만들어 ZIP으로 내려받은 뒤 채점 도구에 그대로 사용합니다.",
- n4t:"목표 문장 불러오기",
- n4s:"한 줄에 한 문항: 번호, 문장, 음절 수",
- n5t:"Whisper large-v3-turbo로 전사",
- n5s:"브라우저 안에서 인식이 이루어지며 음성은 외부로 전송되지 않습니다",
- n6t:"채점 결과를 CSV로 내려받기",
- n6s:"문항별 WER, 편집 횟수, 확인용 전사문",
- ctaScore:"문항별 파일이 있습니다 — 채점 시작 →",
- ctaSeg:"긴 녹음 파일 하나가 있습니다 — 먼저 나누기 →",
+ qs:"두 가지가 필요합니다. 음절 수가 포함된 목표 문장, 그리고 응답 녹음 파일입니다. 아래 두 가지 중 어느 쪽에 해당하시나요?",
+ cAt:"문항별 파일이 이미 있습니다",
+ cAs:"각 파일에 하나의 목표 문장에 대한 응답 하나가 담겨 있습니다. 보통 참가자당 30개입니다.",
+ cAb:"채점 시작 →",
+ cBt:"참가자별로 긴 녹음 파일 하나가 있습니다",
+ cBs:"한 세션 전체가 파일 하나에 들어 있습니다. 먼저 문항별 파일로 나눈 뒤 다시 돌아오시면 됩니다.",
+ cBx:"(약 8분)",
+ cBb:"먼저 나누기 →",
+ cNote:"어느 쪽이든 음절 수가 포함된 목표 문장이 함께 필요합니다. 채점 페이지에서 Ortega et al. (2002)의 영어 EIT를 예시로 불러올 수 있습니다.",
  needTitle:"두 가지 입력의 형태",
  needIntro:"브라우저 외에 별도의 프로그램은 필요하지 않으며, 두 가지 모두 스프레드시트나 텍스트 편집기에서 준비할 수 있습니다.",
  need1t:"목표 문장",
