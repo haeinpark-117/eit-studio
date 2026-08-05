@@ -192,24 +192,7 @@
         <option value="onnx-community/whisper-large-v3-turbo" data-i18n="optTurbo"></option>
         <option value="Xenova/whisper-small" data-i18n="optSmall"></option>
       </select>
-      <label class="meta" style="margin:0 0 0 8px" data-i18n="asrLangLbl"></label>
-      <select id="asrLang">
-        <option value="en">English</option>
-        <option value="es">Español</option>
-        <option value="fr">Français</option>
-        <option value="de">Deutsch</option>
-        <option value="it">Italiano</option>
-        <option value="pt">Português</option>
-        <option value="nl">Nederlands</option>
-        <option value="ru">Русский</option>
-        <option value="ko">한국어</option>
-        <option value="ja">日本語</option>
-        <option value="zh">中文</option>
-      </select>
     </div>
-    <p class="meta hidden" id="asrLangWarn" data-i18n="asrLangWarn"
-       style="color:var(--sev); background:var(--pink-soft); border-radius:6px;
-              padding:8px 11px; line-height:1.6"></p>
     <div class="drop" id="drop"><span id="dropMsg"></span>
       <input type="file" id="fileIn" multiple accept="audio/*" style="display:none">
     </div>
@@ -306,12 +289,12 @@ const PRESET_EITA = [
    ============================================================ */
 const I18N={
 en:{
- hdSub:"for researchers",
- heroSub:"Transcribe and score any elicited imitation task. Everything runs in your browser — no audio leaves your computer.",
+ hdSub:"English EIT · for researchers",
+ heroSub:"Transcribe and score any English elicited imitation task. Everything runs in your browser — no audio leaves your computer.",
  heroBack:"← Home",
  s1Title:"Target sentences", s1Ok:"loaded",
  s1Help:"Paste your target sentences below, or upload a CSV/TSV file. One item per line as “number, sentence” (an optional third column may hold the syllable count). A line with only a sentence is numbered automatically.",
- btnPreset:"Load EIT A (Ortega et al., 2002)", btnTgtFile:"Upload file", btnClearTgt:"Clear",
+ btnPreset:"Load English EIT (Ortega et al., 2002)", btnTgtFile:"Upload file", btnClearTgt:"Clear",
  btnApplyTgt:"Apply target set",
  fmtTgtInfo:n=>n+" items loaded.",
  tgtNone:"No target set loaded yet.",
@@ -328,8 +311,6 @@ en:{
  s3Title:"Recordings",
  s3Help:"Files named participantID_itemNN are recognised automatically. Anything else can be assigned by hand in the table below. Audio never leaves your computer.",
  modelLbl:"Model:",
- asrLangLbl:"Language:",
- asrLangWarn:"Note: WER is computed over whitespace-delimited words. For Korean it is therefore an eojeol-level rate, in which a single particle error marks the whole eojeol as incorrect; for Chinese and Japanese, which do not mark word boundaries with spaces, it is not interpretable as a word error rate. The number and contraction rules in Step 2 apply to English only and should be switched off.",
  optTurbo:"large-v3-turbo (recommended · large first-time download)",
  optSmall:"small (quick check only · lower accuracy)",
  dropIdle:"Drop audio files here, or click to choose",
@@ -363,12 +344,12 @@ en:{
  errPrefix:"Error: ", noSpeech:"(no speech detected)", unassigned:"unassigned"
 },
 ko:{
- hdSub:"연구자용",
- heroSub:"Elicited imitation task 응답을 자동으로 전사하고 WER로 채점합니다. 모든 처리는 브라우저 안에서 이루어지며, 음성 파일은 외부로 전송되지 않습니다.",
+ hdSub:"English EIT · 연구자용",
+ heroSub:"영어 elicited imitation task 응답을 자동으로 전사하고 WER로 채점합니다. 모든 처리는 브라우저 안에서 이루어지며, 음성 파일은 외부로 전송되지 않습니다.",
  heroBack:"← 홈",
  s1Title:"목표 문장 세트", s1Ok:"불러옴",
  s1Help:"아래에 목표 문장을 붙여넣거나 CSV·TSV 파일을 올리세요. 한 줄에 한 문항씩 “번호, 문장” 형식이며, 세 번째 열에 음절 수를 넣을 수 있습니다. 문장만 적으면 번호가 자동으로 매겨집니다.",
- btnPreset:"EIT A 불러오기 (Ortega et al., 2002)", btnTgtFile:"파일 올리기", btnClearTgt:"비우기",
+ btnPreset:"English EIT 불러오기 (Ortega et al., 2002)", btnTgtFile:"파일 올리기", btnClearTgt:"비우기",
  btnApplyTgt:"목표 세트 적용",
  fmtTgtInfo:n=>n+"개 문항이 등록되었습니다.",
  tgtNone:"아직 목표 세트가 없습니다.",
@@ -385,8 +366,6 @@ ko:{
  s3Title:"녹음 파일",
  s3Help:"참가자ID_item번호 형식의 파일은 자동으로 인식됩니다. 그 외의 파일은 아래 표에서 직접 지정할 수 있습니다. 음성은 컴퓨터 밖으로 전송되지 않습니다.",
  modelLbl:"모델:",
- asrLangLbl:"언어:",
- asrLangWarn:"참고: WER은 공백으로 구분된 단어 단위로 산출됩니다. 따라서 한국어에서는 어절 단위 오류율이 되어 조사 하나만 틀려도 어절 전체가 오류로 처리되며, 공백으로 단어 경계를 표시하지 않는 중국어·일본어에서는 단어 오류율로 해석되지 않습니다. 2단계의 숫자·축약형 규칙은 영어에만 해당하므로 해제하시기 바랍니다.",
  optTurbo:"large-v3-turbo (권장 · 첫 로드 시 대용량 다운로드)",
  optSmall:"small (빠른 동작 확인용 · 정확도 낮음)",
  dropIdle:"여기에 오디오 파일을 끌어다 놓거나 클릭해서 선택",
@@ -449,13 +428,11 @@ function setLang(l){ LANG=l; try{ localStorage.setItem("eitLang",l); }catch(e){}
 /* Whisper large-v3-turbo is multilingual. WER is a whitespace-delimited
    word-level metric, so it is not directly interpretable for languages
    without word spacing (zh, ja) or with agglutinative eojeol spacing (ko). */
-const NO_WORD_WER=["ko","ja","zh"];
-let ASR_LANG=(()=>{ try{ return localStorage.getItem("eitAsrLang")||"en"; }catch(e){ return "en"; } })();
-function setAsrLang(l){
-  ASR_LANG=l;
-  try{ localStorage.setItem("eitAsrLang",l); }catch(e){}
-  $("asrLangWarn").classList.toggle("hidden",!NO_WORD_WER.includes(l));
-}
+/* This build is scoped to English EIT. Whisper large-v3-turbo is multilingual,
+   but the normalizer and the whitespace-based WER are English-specific, and
+   ASR-human agreement for EIT scoring has only been reported for English
+   (McGuire & Larson-Hall, 2025). */
+const ASR_LANG="en";
 
 /* ============================================================
    NORMALIZER (configurable)
@@ -991,9 +968,6 @@ function dl(blob,name){
   CFG.numbers=$("optNum").checked; CFG.contractions=$("optContr").checked;
   CFG.rulesText=$("ruleBox").value; CFG.rules=compileRules(CFG.rulesText);
   if(savedTgt){ $("tgtBox").value=savedTgt; applyTargets(savedTgt,true); }
-  $("asrLang").value=ASR_LANG;
-  $("asrLang").onchange=e=>setAsrLang(e.target.value);
-  setAsrLang(ASR_LANG);
   applyLang();
   updateRunState();
 })();

@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Why elicited imitation — EIT Studio</title>
+<meta name="description" content="The evidence base for elicited imitation tasks as a measure of second language proficiency: meta-analytic findings, operational validation, and open questions.">
+<style>
+  :root{
+    --ink:#08080f; --muted:#6a6a7d; --line:#e8e8ef;
+    --accent:#3840f3; --accent-dk:#2a31d4; --accent-soft:#eef0ff; --accent-line:#d9dcff;
+    --coral:#ff5c35; --soft:#f5f5f9;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; color:var(--ink); background:#fff;
+    font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  a{color:var(--accent)}
+  .wrap{max-width:1120px; margin:0 auto; padding:0 26px}
+  .narrow{max-width:730px}
+
+  .nav{position:sticky; top:0; z-index:30; background:rgba(255,255,255,.88);
+    backdrop-filter:blur(12px); border-bottom:1px solid var(--line)}
+  .nav .wrap{display:flex; align-items:center; justify-content:space-between; height:60px}
+  .logo{font-weight:800; letter-spacing:-.4px; font-size:16px; text-decoration:none; color:var(--ink)}
+  .logo span{color:var(--accent)}
+  .navlinks{display:flex; gap:26px; font-size:13.5px}
+  .navlinks a{text-decoration:none; color:var(--muted)}
+  .navlinks a:hover,.navlinks a.on{color:var(--ink)}
+  .btn{display:inline-block; border-radius:9px; font-weight:650; text-decoration:none;
+    padding:10px 18px; font-size:14px; background:var(--accent); color:#fff; transition:.15s}
+  .btn:hover{background:var(--accent-dk)}
+
+  header.pg{border-bottom:1px solid var(--line);
+    background:radial-gradient(900px 340px at 20% -160px,#e4e6ff 0%,rgba(255,255,255,0) 72%)}
+  header.pg .wrap{padding:64px 26px 52px}
+  .kicker{font-family:var(--mono); font-size:11.5px; letter-spacing:.13em;
+    text-transform:uppercase; color:var(--accent); margin:0 0 14px}
+  h1{margin:0; font-size:44px; line-height:1.12; letter-spacing:-1.6px; font-weight:800;
+    max-width:760px}
+  header.pg p{margin:20px 0 0; max-width:680px; font-size:17.5px; color:var(--muted)}
+
+  main{padding:16px 0 40px}
+  section{padding:44px 0; border-bottom:1px solid var(--line)}
+  section:last-of-type{border-bottom:0}
+  h2{font-size:27px; letter-spacing:-.85px; line-height:1.25; font-weight:800; margin:0 0 18px}
+  h3{font-size:17.5px; letter-spacing:-.35px; margin:32px 0 10px}
+  p{margin:0 0 17px}
+  .lead{font-size:17.5px}
+
+  .stats{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin:30px 0 34px}
+  .stat{border:1px solid var(--line); border-radius:13px; padding:22px 20px; background:#fff}
+  .stat .v{font-size:31px; font-weight:800; letter-spacing:-1.1px; color:var(--accent);
+    line-height:1.1}
+  .stat .k{font-size:13.5px; color:var(--muted); margin-top:8px; line-height:1.55}
+  .stat .s{font-family:var(--mono); font-size:10.5px; color:var(--muted); margin-top:10px;
+    letter-spacing:.03em}
+
+  .callout{border-left:2px solid var(--accent); background:var(--accent-soft);
+    border-radius:0 10px 10px 0; padding:20px 24px; margin:26px 0}
+  .callout p{margin:0; font-size:15px; color:#3b3e73; line-height:1.72}
+  .callout p+p{margin-top:12px}
+  .caution{border-left-color:var(--coral); background:#fff4f0}
+  .caution p{color:#7a3b28}
+
+  table.ev{width:100%; border-collapse:collapse; margin:24px 0 8px; font-size:14.5px}
+  table.ev th{text-align:left; font-family:var(--mono); font-size:10.5px; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--muted); font-weight:600; padding:11px 14px;
+    border-bottom:1px solid var(--line)}
+  table.ev td{padding:13px 14px; border-bottom:1px solid #f1f1f5; vertical-align:top;
+    line-height:1.6}
+  table.ev tr:last-child td{border-bottom:0}
+  table.ev td:first-child{white-space:nowrap; font-weight:650}
+  .num{font-family:var(--mono); color:var(--accent); font-weight:700; white-space:nowrap}
+
+  ol.refs{list-style:none; counter-reset:r; padding:0; margin:8px 0 0}
+  ol.refs li{counter-increment:r; padding:15px 0 15px 34px; border-bottom:1px solid #f1f1f5;
+    position:relative; font-size:14.5px; line-height:1.7; text-indent:-20px}
+  ol.refs li:last-child{border-bottom:0}
+  ol.refs li::before{content:counter(r); position:absolute; left:0; top:17px; text-indent:0;
+    font-family:var(--mono); font-size:11px; color:var(--muted)}
+  ol.refs a{word-break:break-all}
+
+  .endcta{background:linear-gradient(180deg,#fff 0%,#f2f3ff 100%); border-top:1px solid var(--line);
+    text-align:center; padding:66px 0}
+  .endcta h2{margin-bottom:12px}
+  .endcta p{color:var(--muted); max-width:520px; margin:0 auto 26px}
+
+  footer{border-top:1px solid var(--line); padding:32px 0; font-size:13px; color:var(--muted)}
+  footer .wrap{display:flex; justify-content:space-between; gap:18px; flex-wrap:wrap}
+  footer .mono{font-family:var(--mono); font-size:11.5px}
+
+  @media(max-width:820px){
+    h1{font-size:31px; letter-spacing:-1px}
+    .stats{grid-template-columns:1fr}
+    .navlinks{display:none}
+    table.ev td:first-child{white-space:normal}
+  }
+</style>
+</head>
+<body>
+
+<div class="nav"><div class="wrap">
+  <a class="logo" href="index.html">EIT <span>Studio</span></a>
+  <div class="navlinks">
+    <a href="why-eit.html" class="on">Why elicited imitation</a>
+    <a href="about.html">About &amp; citation</a>
+    <a href="index.html#how">How it works</a>
+  </div>
+  <a class="btn" href="app.html">Open the tool</a>
+</div></div>
+
+<header class="pg"><div class="wrap">
+  <p class="kicker">The evidence base</p>
+  <h1>Why elicited imitation is worth using.</h1>
+  <p>Elicited imitation tasks are among the most extensively validated efficient measures of
+    second language proficiency available to researchers. This page summarises what the
+    evidence supports, and what it does not.</p>
+</div></header>
+
+<main>
+
+<section><div class="wrap narrow">
+  <h2>The problem it addresses</h2>
+  <p class="lead">Second language proficiency is a covariate in nearly every SLA study, yet it is
+    rarely measured with an independent instrument. In a synthesis of 500 studies published in
+    major SLA journals between 2012 and 2019, Park et al. (2022) found that although over 90 %
+    of studies assessed and reported proficiency in some form, only <span class="num">42 %</span>
+    used an independent measure to do so; institutional status remained the dominant method.</p>
+  <p>The obstacle is rarely conviction. It is cost. Standardised proficiency tests are expensive,
+    lengthy, and unavailable for many languages, and locally developed measures are difficult to
+    compare across studies. A survey of 111 SLA researchers (Park et al., 2025) found that
+    researchers broadly endorse recommended assessment standards but that practical constraints
+    — time, accessibility, ease of administration — drive what they actually do, producing a
+    consistent belief–practice gap. In that survey, reduced-redundancy measures were rated
+    favourably on both validity and practicality.</p>
+  <p>Elicited imitation is the paradigm case of a reduced-redundancy measure. Learners hear a
+    sentence and repeat it as accurately as they can. Because successful repetition requires
+    parsing and reconstructing form and meaning under processing constraints rather than echoing
+    a surface string (Bley-Vroman &amp; Chaudron, 1994; Vinther, 2002), the ability to reproduce
+    such stimuli has been used as a proxy for global oral proficiency.</p>
+</div></section>
+
+<section><div class="wrap narrow">
+  <h2>What the evidence shows</h2>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="v">g = 1.34</div>
+      <div class="k">Ability of EI scores to discriminate between speakers across proficiency
+        levels</div>
+      <div class="s">Yan et al. (2016) · 24 effect sizes, 1,089 participants</div>
+    </div>
+    <div class="stat">
+      <div class="v">r = .66</div>
+      <div class="k">Average correlation between EIT scores and other proficiency measures</div>
+      <div class="s">Kostromitina &amp; Plonsky (2022) · 60 effect sizes, 46 reports</div>
+    </div>
+    <div class="stat">
+      <div class="v">α = .93</div>
+      <div class="k">Internal consistency of a 15-item operational EIT in a large-scale pilot</div>
+      <div class="s">Davis &amp; Norris (2021) · TOEFL Essentials</div>
+    </div>
+  </div>
+
+  <h3>It distinguishes proficiency levels</h3>
+  <p>Yan et al. (2016) reviewed 76 theoretical and empirical studies published between 1970 and
+    2014 and meta-analysed 24 independent effect sizes from 1,089 participants across 21 studies.
+    EI tasks showed a strong ability to discriminate between speakers across proficiency levels
+    (Hedges' <em>g</em> = 1.34). Construct, sentence length, and scoring method emerged as
+    significant moderators of that sensitivity, which indicates that design decisions matter
+    rather than that the method is fragile.</p>
+
+  <h3>It converges with other proficiency measures</h3>
+  <p>Kostromitina and Plonsky (2022) retrieved 46 reports contributing 60 independent
+    correlations, weighted and averaged. The result portrays the EIT as a generally consistent
+    measure of L2 proficiency (<em>r</em> = .66). Stimulus length was positively associated with
+    stronger correlations, a finding that converges with the moderator analysis in Yan et al.
+    and that informs contemporary EIT design recommendations.</p>
+
+  <h3>It withstands operational test development</h3>
+  <p>Davis and Norris (2021) documented the design and validation of the EIT built for the
+    TOEFL Essentials test across a prototyping phase (419 participants) and a pilot phase
+    (701 participants) in multiple countries. The reported psychometrics are strong for a task
+    of this length.</p>
+  <table class="ev">
+    <thead><tr><th>Quantity</th><th>Value</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td>Internal consistency</td><td class="num">α = .93</td>
+        <td>15-item pilot version</td></tr>
+      <tr><td>Interrater agreement</td><td class="num">&gt; 98 %</td>
+        <td>Exact or adjacent, 6-point scale, TOEFL iBT raters</td></tr>
+      <tr><td>Other speaking tasks</td><td class="num">.78 – .84</td>
+        <td>Convergent, as predicted</td></tr>
+      <tr><td>Writing / listening / reading</td><td class="num">.73 / .68 / .57</td>
+        <td>Decreasing with modality distance, as predicted</td></tr>
+      <tr><td>Holistic proficiency (C-test)</td><td class="num">.69</td>
+        <td>Independent global measure</td></tr>
+    </tbody>
+  </table>
+  <p>The graded pattern is itself evidence. Correlations are highest with other speaking tasks
+    and lowest with reading, which is what a measure of oral proficiency should produce.</p>
+
+  <h3>It extends beyond the prototypical L2 learner</h3>
+  <p>Solon et al. (2022) applied Rasch modelling to a 30-item Spanish EIT administered to
+    heritage language learners. Scores demonstrated excellent reliability and correlated strongly
+    with an independent proficiency measure (the DELE), supporting the task's utility with this
+    population.</p>
+</div></section>
+
+<section><div class="wrap narrow">
+  <h2>What the evidence does not show</h2>
+  <p class="lead">Reporting the limitations is part of using the instrument well. Three
+    qualifications are well documented in the literature summarised above.</p>
+
+  <div class="callout caution">
+    <p><strong>An EIT is not interchangeable with a standardised proficiency test.</strong>
+      In Solon et al. (2022), although EIT scores correlated strongly with DELE scores,
+      common-person equating suggested that the two instruments may measure different latent
+      variables. A strong correlation establishes convergence, not equivalence.</p>
+    <p><strong>Items must be targeted to the population.</strong> In the same study, the ability
+      of much of the heritage-learner sample far exceeded the difficulty of the items, and
+      differential item functioning analysis revealed that several items functioned differently
+      for heritage learners than for the second language learners of a prior study. An instrument
+      validated on one population requires re-examination before it is used with another.</p>
+    <p><strong>The validity evidence base is narrower than the citation count suggests.</strong>
+      Solon and Park (2024) observe that the vast majority of validity evidence for EITs has been
+      presented as reliability coefficients and correlations with other proficiency measures. Such
+      information speaks to reliability and generalisability, but comprehensive validation also
+      calls for evidence on item properties and psychometric qualities, test takers' response
+      processes, raters' response processes, and the consequences of score interpretation and
+      use. They further note that reliance on classical test theory carries known limitations —
+      sample dependency, the assumption of item equivalence, and the assumption of equal
+      measurement error variances — that more advanced approaches such as Rasch modelling can
+      address.</p>
+  </div>
+
+  <p>A related open question concerns what the task measures. EITs have been examined both as a
+    measure of global oral proficiency and as a measure of implicit knowledge, and the two lines
+    of inquiry have not fully converged (Solon &amp; Park, 2024). Researchers should state which
+    interpretation they intend and cite evidence appropriate to it.</p>
+</div></section>
+
+<section><div class="wrap narrow">
+  <h2>Where this tool fits</h2>
+  <p class="lead">Two of the moderators identified in the meta-analytic literature — scoring
+    method and consistency of procedure — are matters of implementation rather than of the
+    instrument itself. They are also where researcher time is actually spent.</p>
+  <p>Manual transcription and scoring of oral EIT responses is the principal practical cost of
+    administering the task, and variation in scoring procedure is a documented source of
+    between-study inconsistency. EIT Studio automates the transcription and word error rate
+    computation, and makes the normalisation rules explicit, editable, and exportable, so that
+    the exact scoring configuration can be archived with a study and reused by others.</p>
+  <p>There is direct evidence that this substitution is defensible for English. McGuire and
+    Larson-Hall (2025) had 30 Japanese-L1 participants complete a 30-item English EIT, producing
+    900 responses, each transcribed by two human raters and by Whisper. Agreement between the
+    human and automatic error rates across all items was <span class="num">ICC = .929</span>,
+    95 % CI [.921, .936]. Comparing automated WER-based test scores with the same participants'
+    scores obtained through the traditional ordinal rubric of Ortega et al. (2002) yielded
+    <span class="num">r = .969</span>, 95 % CI [.935, .985].</p>
+  <div class="callout">
+    <p>Automatic transcription does not replace human verification. Reporting a human-verified
+      subsample alongside automatically scored data remains good practice, and the scoring rules
+      used should be reported or deposited with the study materials.</p>
+    <p>Note also that the agreement figures above were obtained for English. Comparable evidence
+      for other languages is not yet available, which is why this tool is currently scoped to
+      English elicited imitation tasks.</p>
+  </div>
+</div></section>
+
+<section><div class="wrap narrow">
+  <h2>References</h2>
+  <ol class="refs">
+    <li>Bley-Vroman, R., &amp; Chaudron, C. (1994). Elicited imitation as a measure of
+      second-language competence. In E. E. Tarone, S. M. Gass, &amp; A. D. Cohen (Eds.),
+      <em>Research methodology in second-language acquisition</em> (pp. 245–261). Lawrence
+      Erlbaum.</li>
+    <li>Davis, L., &amp; Norris, J. (2021). Developing an innovative elicited imitation task for
+      efficient English proficiency assessment. <em>ETS Research Report Series, 2021</em>(1),
+      1–30. <a href="https://doi.org/10.1002/ets2.12338">https://doi.org/10.1002/ets2.12338</a></li>
+    <li>Kostromitina, M., &amp; Plonsky, L. (2022). Elicited imitation tasks as a measure of L2
+      proficiency: A meta-analysis. <em>Studies in Second Language Acquisition, 44</em>(3),
+      886–911. <a href="https://doi.org/10.1017/S0272263121000395">https://doi.org/10.1017/S0272263121000395</a></li>
+    <li>McGuire, M., &amp; Larson-Hall, J. (2025). Assessing Whisper automatic speech recognition
+      and WER scoring for elicited imitation: Steps toward automation. <em>Research Methods in
+      Applied Linguistics, 4</em>(2), Article 100197.
+      <a href="https://doi.org/10.1016/j.rmal.2025.100197">https://doi.org/10.1016/j.rmal.2025.100197</a></li>
+    <li>Ortega, L., Iwashita, N., Norris, J. M., &amp; Rabie, S. (2002, October).
+      <em>An investigation of elicited imitation tasks in crosslinguistic SLA research</em>
+      [Paper presentation]. Second Language Research Forum, Toronto, Canada.</li>
+    <li>Park, H. I., Solon, M., Dehghan-Chaleshtori, M., &amp; Ghanbar, H. (2022). Proficiency
+      reporting practices in research on second language acquisition: Have we made any progress?
+      <em>Language Learning, 72</em>(1), 198–236.
+      <a href="https://doi.org/10.1111/lang.12475">https://doi.org/10.1111/lang.12475</a></li>
+    <li>Park, H. I., Solon, M., &amp; Lee, K. (2025). Understanding proficiency assessment
+      practices in SLA research: Insights from researcher beliefs and practices.
+      <em>Studies in Second Language Acquisition, 47</em>(5), 1205–1229.
+      <a href="https://doi.org/10.1017/S0272263125101058">https://doi.org/10.1017/S0272263125101058</a></li>
+    <li>Solon, M., &amp; Park, H. I. (2024). Elicited imitation in second language acquisition
+      research: New insights to advance methodological rigor (Introduction to the special issue).
+      <em>Research Methods in Applied Linguistics, 3</em>(2), Article 100112.
+      <a href="https://doi.org/10.1016/j.rmal.2024.100112">https://doi.org/10.1016/j.rmal.2024.100112</a></li>
+    <li>Solon, M., Park, H. I., Dehghan-Chaleshtori, M., Carver, C., &amp; Long, A. Y. (2022).
+      Exploring an elicited imitation task as a measure of heritage language proficiency.
+      <em>Studies in Second Language Acquisition, 44</em>(4), 1095–1123.
+      <a href="https://doi.org/10.1017/S0272263121000905">https://doi.org/10.1017/S0272263121000905</a></li>
+    <li>Vinther, T. (2002). Elicited imitation: A brief overview. <em>International Journal of
+      Applied Linguistics, 12</em>(1), 54–73.
+      <a href="https://doi.org/10.1111/1473-4192.00024">https://doi.org/10.1111/1473-4192.00024</a></li>
+    <li>Yan, X., Maeda, Y., Lv, J., &amp; Ginther, A. (2016). Elicited imitation as a measure of
+      second language proficiency: A narrative review and meta-analysis.
+      <em>Language Testing, 33</em>(4), 497–528.
+      <a href="https://doi.org/10.1177/0265532215594643">https://doi.org/10.1177/0265532215594643</a></li>
+  </ol>
+</div></section>
+
+</main>
+
+<div class="endcta"><div class="wrap">
+  <h2>Bring your own EIT.</h2>
+  <p>Load a sentence set, drop in the recordings, and see the scored table for yourself.</p>
+  <a class="btn" href="app.html">Open the tool</a>
+</div></div>
+
+<footer><div class="wrap">
+  <div>EIT Studio · <a href="about.html">About &amp; citation</a></div>
+  <div class="mono">whisper-large-v3-turbo · transformers.js</div>
+</div></footer>
+
+</body>
+</html>
