@@ -116,7 +116,7 @@
 
 <section><div class="wrap narrow">
   <h2>Elicited imitation as a proficiency measure</h2>
-  <p class="lead">Elicited imitation is one of the more widely used measures of second language
+  <p>Elicited imitation is one of the more widely used measures of second language
     proficiency in SLA research, and for good reason: it is efficient to administer,
     language-general, and unusually well validated.</p>
   <p>Its limitations are practical rather than psychometric. Scoring oral responses by hand is
@@ -130,40 +130,43 @@
   <p>It removes the manual transcription step, and it makes the scoring procedure explicit.
     Normalization rules are visible, editable, and exportable as JSON, so the exact
     configuration used in a study can be deposited with its materials and reused by others.</p>
-  <p>Automated scoring itself is not new — it has been demonstrated for English with Whisper
-    and word error rate (McGuire &amp; Larson-Hall, 2025), for Korean with commercial speech
-    recognition and edit-distance metrics (Isbell et al., 2023), and for form-based scoring with
-    commercial NLP services (Kim et al., 2024). What those demonstrations require is API
-    accounts, scripting, and enough programming to adapt someone else's code; Kim et al. (2024)
-    is a tutorial in Java. This tool provides the same procedure as a web page, so that the
-    methodology rather than the implementation is what a researcher has to think about.</p>
-  <div class="callout">
-    <p>The wider aim is straightforward: research conclusions are only as good as the
-      measurement behind them. Making a precise instrument quick to score removes one reason to
-      settle for a rougher one.</p>
-    <p>The recognition settings are fixed rather than exposed as options, so that scores remain
-      comparable across studies. They are documented in full on the
-      <a href="cite.html">citation page</a>, together with a methods-section template.</p>
-  </div>
+  <p>Automated scoring of elicited imitation has been receiving increasing attention. McGuire
+    and Larson-Hall (2025) show that Whisper transcription combined with word error rate tracks
+    human scores closely in English; Isbell et al. (2023) report comparably strong agreement for
+    Korean using commercial speech recognition with edit-distance metrics; and Kim et al. (2024)
+    provide a detailed tutorial for form-based scoring with commercial natural language
+    processing services. Together they establish that the approach works, and they set out
+    carefully how to do it.</p>
+  <p>What they ask of the reader, understandably, is a certain amount of technical groundwork:
+    API accounts, a scripting environment, and enough Python or natural language processing
+    background to adapt code to one's own data. For many applied linguists that learning curve
+    arrives at exactly the wrong moment — in the middle of a project, with data already
+    collected. EIT Studio is an attempt to flatten it: the same procedure, delivered as a web
+    page, so that a researcher can think about the methodology rather than the implementation.</p>
+  <p>The wider aim is straightforward. Research conclusions are only as good as the measurement
+    behind them, and making a precise instrument quick to score removes one reason to settle for
+    a rougher one. The recognition settings are fixed rather than exposed as options, so that
+    scores remain comparable across studies; they are documented in full on the
+    <a href="cite.html">citation page</a>, together with a methods-section template.</p>
 </div></section>
 
 <section><div class="wrap narrow">
-  <h2>What comes next</h2>
+  <h2>Where EIT Studio is going</h2>
   <div class="steps">
     <div class="stp now">
       <div class="ph">Now</div>
-      <h3>Scoring, English</h3>
+      <h3>EIT scoring, English</h3>
       <p>Automated transcription and WER scoring for any English elicited imitation task.</p>
     </div>
     <div class="stp">
       <div class="ph">Next</div>
-      <h3>Administration</h3>
+      <h3>EIT administration</h3>
       <p>Deliver your own task — your audio stimuli, your timing — and collect responses in the
         same environment.</p>
     </div>
     <div class="stp">
       <div class="ph">Then</div>
-      <h3>More languages</h3>
+      <h3>EIT in multiple languages</h3>
       <p>Added once an appropriate scoring metric has been established for each, rather than
         assumed to transfer from English.</p>
     </div>
