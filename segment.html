@@ -127,6 +127,23 @@
   .hidden{display:none}
   .foot{font-size:11.5px; color:var(--muted); padding:11px 22px; border-top:1px solid var(--line);
     background:#fafafb; font-family:var(--mono)}
+  /* ---------- read-me-first guide ---------- */
+  .panel.gpanel{background:var(--accent-soft); border-color:var(--accent-line)}
+  .panel.gpanel .pad{padding:18px 22px}
+  #guide summary{cursor:pointer; list-style:none; display:flex; align-items:center; gap:10px;
+    flex-wrap:wrap}
+  #guide summary::-webkit-details-marker{display:none}
+  #guide .chev{color:var(--accent); font-size:19px; line-height:1; transition:transform .15s;
+    display:inline-block; font-weight:700}
+  #guide[open] .chev{transform:rotate(90deg)}
+  #guide .badge-read{font-family:var(--mono); font-size:10px; letter-spacing:.12em;
+    text-transform:uppercase; background:var(--accent); color:#fff; border-radius:999px;
+    padding:4px 10px; white-space:nowrap}
+  #guide .gtitle{font-weight:700; font-size:15.5px; letter-spacing:-.2px; color:var(--ink)}
+  #guide summary:hover .gtitle{color:var(--accent-dark)}
+  #guide .gbody{margin:14px 0 0; padding-top:14px; border-top:1px solid var(--accent-line)}
+  #guide .gbody b{color:var(--ink)}
+
   .bar{flex:1; height:6px; background:#e9e9f0; border-radius:4px; overflow:hidden; min-width:120px}
   .bar i{display:block; height:100%; width:0; background:var(--accent); transition:width .2s}
   @media(max-width:700px){ table.segs th:nth-child(4),table.segs td:nth-child(4){display:none} }
@@ -153,11 +170,14 @@
     <a class="hero-back" href="app.html" data-i18n="heroBack"></a>
   </div>
 
-  <div class="panel"><div class="pad">
+  <div class="panel gpanel"><div class="pad">
     <details id="guide">
-      <summary style="cursor:pointer; font-weight:650; font-size:14.5px"
-        data-i18n="guideTitle"></summary>
-      <div class="meta" style="margin:14px 0 0">
+      <summary>
+        <span class="chev" aria-hidden="true">›</span>
+        <span class="badge-read" data-i18n="guideBadge"></span>
+        <span class="gtitle" data-i18n="guideTitle"></span>
+      </summary>
+      <div class="meta gbody">
         <p style="margin:0 0 10px" data-i18n="guideIntro"></p>
         <ul style="margin:0 0 12px; padding-left:20px; line-height:1.75">
           <li data-i18n="guideA"></li>
@@ -299,7 +319,8 @@ const $=id=>document.getElementById(id);
 const I18N={
 en:{
  hdSub:"English EIT · for researchers",
- guideTitle:"Which recordings split cleanly — read this first",
+ guideBadge:"Read first",
+ guideTitle:"Which recordings split cleanly",
  guideIntro:"Splitting works best when the recording carries some regular marker of where each item begins. In descending order of reliability:",
  guideA:"<b>The beep is audible.</b> The best case by far. The tone that starts each response window is a pure 1000 Hz signal, so it is found even underneath speech, and every window is placed from it directly. It does not matter whether the stimulus playback was also recorded. Choose one of the timing-grid modes and give the beep frequency if it is not 1000 Hz.",
  guideB:"<b>Responses only, no beep, evenly spaced.</b> The participant is recorded but the stimulus is played through headphones. Silence detection works well here, and a timing grid can be fitted to the responses.",
@@ -386,7 +407,8 @@ en:{
 },
 ko:{
  hdSub:"English EIT · 연구자용",
- guideTitle:"어떤 녹음이 잘 나뉘는지 — 먼저 읽어보십시오",
+ guideBadge:"먼저 읽기",
+ guideTitle:"어떤 녹음이 잘 나뉘는지",
  guideIntro:"각 문항의 시작을 알려주는 규칙적인 표지가 녹음에 있을수록 분절이 잘 됩니다. 신뢰도가 높은 순서입니다.",
  guideA:"<b>삐 소리가 녹음에 들어 있는 경우.</b> 가장 좋습니다. 응답창 시작을 알리는 1000 Hz 순음이므로 말소리 아래에서도 검출되며, 모든 구간이 여기서 직접 결정됩니다. 자극 음성이 함께 녹음되었는지 여부는 상관없습니다. 타이밍 격자 방식을 고르시고, 주파수가 1000 Hz가 아니면 값을 입력하십시오.",
  guideB:"<b>응답만 녹음되었고 삐 소리가 없으며 간격이 고른 경우.</b> 자극을 헤드폰으로 들려준 경우입니다. 무음 검출이 잘 작동하며 타이밍 격자를 응답에 맞춰 정합할 수도 있습니다.",
