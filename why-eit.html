@@ -51,6 +51,8 @@
 
   .stats{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin:30px 0 34px}
   .stat{border:1px solid var(--line); border-radius:13px; padding:22px 20px; background:#fff}
+  .stat .lab{font-family:var(--mono); font-size:10.5px; letter-spacing:.12em;
+    text-transform:uppercase; color:var(--muted); margin-bottom:12px; display:block}
   .stat .v{font-size:31px; font-weight:800; letter-spacing:-1.1px; color:var(--accent);
     line-height:1.1}
   .stat .k{font-size:13.5px; color:var(--muted); margin-top:8px; line-height:1.55}
@@ -149,17 +151,20 @@
 
   <div class="stats">
     <div class="stat">
+      <span class="lab">Discriminatory power</span>
       <div class="v">g = 1.34</div>
       <div class="k">Ability of EI scores to discriminate between speakers across proficiency
         levels</div>
       <div class="s">Yan et al. (2016) · 24 effect sizes, 1,089 participants</div>
     </div>
     <div class="stat">
+      <span class="lab">Concurrent validity</span>
       <div class="v">r = .66</div>
       <div class="k">Average correlation between EIT scores and other proficiency measures</div>
       <div class="s">Kostromitina &amp; Plonsky (2022) · 60 effect sizes, 46 reports</div>
     </div>
     <div class="stat">
+      <span class="lab">Reliability</span>
       <div class="v">α = .93</div>
       <div class="k">Internal consistency of a 15-item operational EIT in a large-scale pilot</div>
       <div class="s">Davis &amp; Norris (2021) · TOEFL Essentials</div>
@@ -205,7 +210,7 @@
   <h2>Where this tool fits</h2>
   <p class="lead">Two of the moderators identified in the meta-analytic literature — scoring
     method and consistency of procedure — are matters of implementation rather than of the
-    instrument itself, and they are where researcher time is actually spent. EIT Studio automates
+    instrument, and they are where researcher time is actually spent. EIT Studio automates
     transcription and word error rate computation, and makes the normalization rules explicit,
     editable, and exportable, so that the exact configuration can be archived with a study.</p>
   <h3>Automated scoring has been examined, and it holds up</h3>
@@ -240,12 +245,9 @@
   </table>
   <p>The metric was adapted to the language in each case: Isbell et al. (2023) scored Korean with
     morpheme- and letter-based Levenshtein distances rather than whitespace-delimited word error
-    rate, because Korean orthography does not support the latter interpretation. Automated scoring
-    generalizes across languages; the specific metric does not transfer unexamined.</p>
-  <p>What these procedures ask for is technical: platform accounts, scripting, and code to adapt.
-    EIT Studio implements the same logic — automatic transcription followed by an edit-distance
-    metric — as a web page requiring no installation, account, API key, or programming, with the
-    methodological decisions surfaced as settings rather than buried in a script
+    rate. Automated scoring generalizes across languages; the specific metric does not transfer
+    unexamined. What these procedures ask of the researcher is technical — platform accounts,
+    scripting, code to adapt — and EIT Studio implements the same logic as a web page instead
     (<a href="about.html">more on that here</a>).</p>
   <div class="callout">
     <p>Automatic transcription does not replace human verification. Reporting a human-verified
