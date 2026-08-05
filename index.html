@@ -320,6 +320,54 @@
 
   <div class="acc" id="reading">
     <details>
+      <summary><span class="chev">›</span>Splitting one long recording into items</summary>
+      <div class="body">
+        <p>If a whole session sits in a single file, the
+          <a href="segment.html" style="color:var(--accent); font-weight:650">segmentation
+          tool</a> writes it out as one file per item, ready to drop straight into scoring.
+          Boundaries can be placed in three ways, and which one to use depends on what the
+          recording contains.</p>
+        <figure>
+          <img src="segment-modes.png" alt="The boundary-source selector, offering silence in the
+            recording, a timing grid from the sentence set plus stimulus audio, and a timing grid
+            from the sentence set only.">
+          <figcaption>If the beep that opens each response window is audible, use a timing grid:
+            every window is placed from the beep directly, and the sentence-set-only mode is the
+            simpler of the two because it needs no stimulus files. Without a beep, supplying the
+            stimulus audio is more accurate than estimating stimulus length from syllable counts.
+            Silence detection is the right choice when the recording contains the responses only
+            and they are evenly spaced.</figcaption>
+        </figure>
+        <p>Recordings usually open with the researcher's spoken instructions.
+          <b>Find task start</b> locates the point where the regularly spaced run of responses
+          begins, and everything before it is ignored; <b>Fit to expected count</b> adjusts the
+          silence threshold until the number of segments matches the number of items you
+          declared.</p>
+        <figure>
+          <img src="segment-detect.png" alt="The detection controls: boundary source, ignore-before
+            time with a find-task-start button, maximum response length, minimum silence, minimum
+            response, padding, and buttons to detect again, fit to the expected count, and find the
+            task run.">
+          <figcaption>The confirmation line reports how many segments were found against how many
+            were expected.</figcaption>
+        </figure>
+        <p>Nothing is exported until you have seen it. The waveform shows every boundary in place,
+          each segment can be played by clicking its row, boundaries can be dragged, added, or
+          deleted, and each row carries a confidence level with a note when something looks
+          wrong — a segment that is very short, one that appears clipped, or spacing that departs
+          from the rest of the run.</p>
+        <figure>
+          <img src="segment-adjust.png" alt="The adjust step: a waveform with numbered boundaries,
+            an ignored region shaded at the start, and a table of items with output file names,
+            start and end times, length, and a confidence label.">
+          <figcaption>Output files are named participantID_itemNN and exported as 16-bit 16 kHz
+            mono WAV in a ZIP, together with a CSV of the boundary times and confidence levels.
+            The note above the table states plainly what the marks do and do not establish.</figcaption>
+        </figure>
+      </div>
+    </details>
+
+    <details>
       <summary><span class="chev">›</span>Reading the output table — column by column</summary>
       <div class="body">
         <p>One row per recording. Rows can be sorted by participant and item, by lowest accuracy,

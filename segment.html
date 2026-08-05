@@ -221,6 +221,7 @@
         <option value="text" data-i18n="optText"></option>
       </select>
     </div>
+    <p class="meta" style="margin:-4px 0 14px" data-i18n="modeHint"></p>
 
     <div id="gridStim" class="hidden">
       <div class="drop" id="stimDrop" style="padding:20px"><span id="stimMsg"></span>
@@ -229,6 +230,11 @@
     </div>
     <div id="gridText" class="hidden">
       <p class="meta" style="margin:0 0 6px" data-i18n="textHelp"></p>
+      <div class="row" style="margin-bottom:8px">
+        <button class="btn-g btn-s" id="loadPreset" data-i18n="btnPreset"></button>
+        <button class="btn-g btn-s" id="clearTgt" data-i18n="btnClearTgt"></button>
+        <span class="meta" id="tgtCount" style="margin:0"></span>
+      </div>
       <textarea id="tgtBox" spellcheck="false" style="width:100%; height:110px; font:12.5px/1.5
         var(--mono); padding:9px 11px; border:1px solid var(--line); border-radius:9px"></textarea>
     </div>
@@ -341,6 +347,9 @@ en:{
  s2Title:"Detection",
  s2Help:"Boundaries are placed where the recording falls silent. Recordings often open with the researcher's spoken instructions; use “ignore before” to skip that stretch, or drag the orange marker on the waveform. The maximum response length discards anything too long to be a single-sentence response, which also removes most instruction speech. Raise the silence length if a single response is being split in two; lower it if two responses are being merged.",
  lblMode:"Boundaries from:",
+ btnPreset:"Load English EIT (Ortega et al., 2002)", btnClearTgt:"Clear",
+ fmtTgtN:n=>n+" items loaded.",
+ modeHint:"Which to choose: if the beep that opens each response window is audible, use a timing grid — it places every window from the beep directly, and the sentence-set-only mode is the simpler of the two because it needs no stimulus files. Without a beep, the stimulus-audio mode is more accurate than estimating stimulus length from syllable counts. Silence detection is the right choice when the recording contains the responses only and they are evenly spaced.",
  optSilence:"Silence in the recording",
  optStim:"Timing grid — sentence set + stimulus audio",
  optText:"Timing grid — sentence set only",
@@ -429,6 +438,9 @@ ko:{
  s2Title:"경계 검출",
  s2Help:"녹음이 무음이 되는 지점을 경계로 삼습니다. 녹음 앞부분에는 연구자의 구두 안내가 들어가는 경우가 많으므로, “앞부분 무시”로 해당 구간을 건너뛰거나 파형 위의 주황색 표시를 끌어 옮기십시오. 최대 응답 길이는 한 문장 응답으로 보기 어려운 긴 구간을 제외하므로 안내 발화도 대부분 함께 걸러집니다. 한 응답이 둘로 나뉘면 무음 길이를 늘리고, 두 응답이 하나로 합쳐지면 줄이십시오.",
  lblMode:"경계 산출 방식:",
+ btnPreset:"English EIT 불러오기 (Ortega et al., 2002)", btnClearTgt:"비우기",
+ fmtTgtN:n=>n+"개 문항이 로드되었습니다.",
+ modeHint:"선택 기준: 각 응답창을 여는 신호음이 녹음에 들어 있다면 타이밍 격자를 사용하십시오. 신호음에서 모든 창을 직접 잡아 주며, 자극 음성 파일이 필요 없는 “문장 세트만” 방식이 더 간단합니다. 신호음이 없다면 자극 음성을 함께 올리는 방식이 음절 수로 자극 길이를 추정하는 것보다 정확합니다. 응답만 녹음되어 있고 간격이 고른 경우에는 무음 감지가 적절합니다.",
  optSilence:"녹음의 무음 기준",
  optStim:"타이밍 격자 — 문장 세트 + 자극 음성",
  optText:"타이밍 격자 — 문장 세트만",
@@ -965,6 +977,40 @@ function setMode(){
   if(!BUF) return;
   if(grid) applyGrid(); else { detect(); autoFit(); }
 }
+const PRESET_EITA = [
+ [1,"I have to get a haircut.",7],[2,"The red book is on the table.",8],
+ [3,"The streets in this city are wide.",8],[4,"He takes a shower every morning.",9],
+ [5,"What did you say you were doing today?",10],[6,"I doubt that he knows how to drive that well.",10],
+ [7,"After dinner I had a long, peaceful nap.",11],[8,"It is possible that it will rain tomorrow.",12],
+ [9,"I enjoy movies which have a happy ending.",12],[10,"The houses are very nice but too expensive.",12],
+ [11,"The little boy whose kitten died yesterday is sad.",13],[12,"That restaurant is supposed to have very good food.",13],
+ [13,"I want a nice, big house in which my animals can live.",14],[14,"You really enjoy listening to country music, don't you?",14],
+ [15,"She just finished painting the inside of her apartment.",14],[16,"Cross the street at the light and then just continue straight ahead.",15],
+ [17,"The person I'm dating has a wonderful sense of humor.",15],[18,"She only orders meat dishes and never eats vegetables.",15],
+ [19,"I wish the price of town houses would become affordable.",15],[20,"I hope it will get warmer sooner this year than it did last year.",16],
+ [21,"A good friend of mine always takes care of my neighbor's three children.",16],
+ [22,"The black cat that you fed yesterday was the one chased by the dog.",16],
+ [23,"Before he can go outside, he has to finish cleaning his room.",16],
+ [24,"The most fun I've ever had was when we went to the opera.",16],
+ [25,"The terrible thief whom the police caught was very tall and thin.",16],
+ [26,"Would you be so kind as to hand me the book which is on the table?",17],
+ [27,"The number of people who smoke cigars is increasing every year.",17],
+ [28,"I don't know if the eleven thirty train has left the station yet.",17],
+ [29,"The exam wasn't nearly as difficult as you told me it would be.",18],
+ [30,"There are a lot of people who don't eat anything at all in the morning.",19]
+];
+$("loadPreset").onclick=()=>{
+  $("tgtBox").value=PRESET_EITA.map(r=>r[0]+"\t"+r[1]+"\t"+r[2]).join("\n");
+  countTargets();
+  if(BUF && $("mode").value!=="silence") applyGrid();
+};
+$("clearTgt").onclick=()=>{ $("tgtBox").value=""; countTargets(); };
+function countTargets(){
+  const n=parseTargetLines($("tgtBox").value).length;
+  $("tgtCount").textContent=n?T("fmtTgtN")(n):"";
+}
+$("tgtBox").addEventListener("input",countTargets);
+
 $("mode").onchange=setMode;
 $("fitGrid").onclick=applyGrid;
 $("stimMsg").textContent="";
