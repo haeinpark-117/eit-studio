@@ -105,7 +105,7 @@
   .stp .mini .fl{display:flex; justify-content:space-between; gap:10px}
 
 
-  /* reading the scoring table — accordion */
+  /* reading the output table — accordion */
   .acc{margin-top:34px; border-top:1px solid var(--line)}
   .acc details{border-bottom:1px solid var(--line)}
   .acc summary{cursor:pointer; list-style:none; display:flex; align-items:center; gap:12px;
@@ -320,13 +320,13 @@
 
   <div class="acc" id="reading">
     <details>
-      <summary><span class="chev">›</span>Reading the scoring table — column by column</summary>
+      <summary><span class="chev">›</span>Reading the output table — column by column</summary>
       <div class="body">
         <p>One row per recording. Rows can be sorted by participant and item, by lowest accuracy,
           or by lowest confidence; the last two are the fastest way into the items that need
           checking.</p>
         <figure>
-          <img src="scoring-table.png" alt="The EIT Studio scoring table, with participant, item,
+          <img src="scoring-table.png" alt="The EIT Studio output table, with participant, item,
             target, the Whisper transcription with its alignment marked, accuracy, word error
             rate, confidence, and an audio button on each row.">
           <figcaption>Item 06 shows what a low-accuracy row looks like: several substituted words,
@@ -357,7 +357,7 @@
         <figure>
           <img src="summary-table.png" alt="The per-participant summary row, showing items scored,
             mean accuracy, mean word error rate, and mean confidence.">
-          <figcaption>Above the scoring table, one row per participant reports the number of items
+          <figcaption>Above the output table, one row per participant reports the number of items
             scored, and the mean accuracy, word error rate, and confidence across them. The means
             cover only the items that were actually scored, so check the count before comparing
             participants.</figcaption>
@@ -518,7 +518,7 @@
       <a href="asr.html" style="color:var(--accent); font-weight:650">
       See why Whisper, and the recognition settings in full →</a><br>
       <a href="#reading" style="color:var(--accent); font-weight:650">
-      Read the scoring table, column by column →</a></p>
+      Read the output table, column by column →</a></p>
   </div>
 </div></section>
 
