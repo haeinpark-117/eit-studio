@@ -49,13 +49,17 @@
   p{margin:0 0 17px}
   .lead{font-size:17.5px}
 
-  .steps{display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin:30px 0 8px}
-  .stp{border:1px solid var(--line); border-radius:13px; padding:24px 22px}
-  .stp .ph{font-family:var(--mono); font-size:10.5px; letter-spacing:.13em;
-    text-transform:uppercase; color:var(--accent)}
-  .stp h3{margin:12px 0 8px; font-size:16.5px}
-  .stp p{margin:0; font-size:14px; color:var(--muted); line-height:1.68}
-  .stp.now{background:var(--accent-soft); border-color:var(--accent-line)}
+  .stack{display:flex; flex-direction:column; gap:14px; margin:30px 0 8px}
+  .phase{border:1px solid var(--line); border-radius:14px; padding:22px 24px; display:grid;
+    grid-template-columns:82px 1fr; gap:20px; align-items:start}
+  .phase.live{background:var(--accent-soft); border-color:var(--accent-line)}
+  .phase.ghost{border-style:dashed; background:#fcfcfd}
+  .phase .ph{font-family:var(--mono); font-size:10px; letter-spacing:.13em;
+    text-transform:uppercase; color:var(--muted); padding-top:3px}
+  .phase.live .ph{color:var(--accent); font-weight:700}
+  .phase h3{margin:0 0 7px; font-size:17px; letter-spacing:-.35px}
+  .phase p{margin:0; font-size:14.5px; color:var(--muted); line-height:1.7}
+  .phase.live p{color:#3b3e73}
 
   pre.cite{background:var(--soft); border:1px solid var(--line); border-radius:11px;
     padding:20px 22px; font-family:var(--mono); font-size:12.5px; line-height:1.85;
@@ -128,19 +132,20 @@
 </div></header>
 
 <section><div class="wrap narrow">
-  <h2>What this tool does about it</h2>
-  <p>It removes the manual transcription step, and it makes the scoring procedure explicit.
-    Normalization rules are visible, editable, and exportable as JSON, so the exact
-    configuration used in a study can be deposited with its materials and reused by others.</p>
+  <h2>What EIT Studio does</h2>
+  <p>EIT Studio was built to make an elicited imitation task easier to implement. Transcription
+    is automated, and the scoring procedure is made explicit: normalization rules are visible,
+    editable, and exportable as JSON, so the exact configuration used in a study can be deposited
+    with its materials and reused by others.</p>
   <p>Research on automated scoring of elicited imitation is only now getting under way.
     McGuire and Larson-Hall (2025) demonstrate Whisper transcription with word error rate for
     English, Isbell et al. (2023) commercial speech recognition with edit-distance metrics for
     Korean, and Kim et al. (2024) form-based scoring with commercial natural language processing
     services. Together these studies suggest that the approach is promising.</p>
-  <p>However, each also asks for a degree of technical skill: API accounts, a scripting environment, and
-    enough Python or natural language processing background to adapt code to one's own data.
-    EIT Studio is an attempt to lower that barrier — the same procedure delivered as a web page,
-    so that a researcher can attend to the methodology rather than the implementation.</p>
+  <p>However, each also asks for a degree of technical skill: API accounts, a scripting
+    environment, and enough Python or natural language processing background to adapt code to
+    one's own data. EIT Studio lowers that barrier by delivering the same procedure as a web
+    page, so that a researcher can attend to the methodology rather than the implementation.</p>
   <p>The wider aim is straightforward. Research conclusions are only as good as the measurement
     behind them, and making a precise instrument quick to score removes one reason to settle for
     a rougher one. The recognition settings are fixed rather than exposed as options, so that
@@ -150,23 +155,27 @@
 
 <section><div class="wrap narrow">
   <h2>Where EIT Studio is going</h2>
-  <div class="steps">
-    <div class="stp now">
+  <div class="stack">
+    <div class="phase live">
       <div class="ph">Now</div>
-      <h3>EIT scoring, English</h3>
-      <p>Automated transcription and WER scoring for any English elicited imitation task.</p>
+      <div><h3>EIT scoring, English</h3>
+        <p>Automated transcription and word error rate scoring for any English elicited imitation
+          task you supply.</p></div>
     </div>
-    <div class="stp">
+    <div class="phase ghost">
       <div class="ph">Next</div>
-      <h3>EIT administration</h3>
-      <p>Deliver your own task — your audio stimuli, your timing — and collect responses in the
-        same environment.</p>
+      <div><h3>EIT administration — an automated test</h3>
+        <p>The task delivered in the browser and administered automatically: stimuli played on a
+          fixed schedule, responses recorded as the session runs, and each response written out as
+          its own audio file. Testing and scoring in one place, with no separate recording,
+          transferring, or splitting step.</p></div>
     </div>
-    <div class="stp">
+    <div class="phase ghost">
       <div class="ph">Then</div>
-      <h3>EIT in multiple languages</h3>
-      <p>Added once an appropriate scoring metric has been established for each, rather than
-        assumed to transfer from English.</p>
+      <div><h3>EIT in other target languages</h3>
+        <p>Extension beyond English, once an appropriate scoring metric has been established for
+          the language in question — work that depends on collaboration with researchers who hold
+          validated materials.</p></div>
     </div>
   </div>
   <p style="margin-top:26px">On that last point: word error rate is computed over
