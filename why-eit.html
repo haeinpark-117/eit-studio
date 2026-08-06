@@ -124,22 +124,20 @@
 
 <section><div class="wrap narrow">
   <h2>Why an efficient proficiency measure matters</h2>
-  <p>Second language proficiency is a covariate in nearly every SLA study, yet it is
-    rarely measured with an independent instrument. Across 500 studies published in major SLA
-    journals between 2012 and 2019, over 90 % assessed proficiency in some form but only
+  <p>Second language proficiency is a covariate in nearly every SLA study, yet it is rarely
+    measured with an independent instrument. Across 500 studies published in major SLA journals
+    between 2012 and 2019, over 90 % assessed proficiency in some form but only
     <span class="num">42 %</span> used an independent measure; institutional status remained the
     dominant method (Park et al., 2022).</p>
-  <p>The obstacle is rarely conviction but cost. Standardized tests are expensive, lengthy, and
-    unavailable for many languages, while locally developed measures are hard to compare across
-    studies. In a survey of 111 SLA researchers, endorsement of recommended assessment standards
-    coexisted with practical constraints — time, accessibility, ease of administration — that
-    drove actual practice, producing a consistent belief–practice gap; reduced-redundancy measures
-    were rated favorably on both validity and practicality (Park et al., 2025).</p>
+  <p>The obstacle is rarely conviction but cost. In a survey of 111 SLA researchers, endorsement
+    of recommended assessment standards coexisted with practical constraints — time, accessibility,
+    ease of administration — that drove actual practice; reduced-redundancy measures were rated
+    favorably on both validity and practicality (Park et al., 2025).</p>
   <p>Elicited imitation is the paradigm case of a reduced-redundancy measure. Learners hear a
     sentence and repeat it as accurately as they can. Because successful repetition requires
     parsing and reconstructing form and meaning under processing constraints rather than echoing a
-    surface string (Bley-Vroman &amp; Chaudron, 1994; Vinther, 2002), the ability to reproduce
-    such stimuli has been used as a proxy for global oral proficiency.</p>
+    surface string (Bley-Vroman &amp; Chaudron, 1994; Vinther, 2002), the ability to reproduce such
+    stimuli has been used as a proxy for global oral proficiency.</p>
 </div></section>
 
 <section><div class="wrap narrow">
@@ -161,17 +159,16 @@
   </div>
 
   <h3>It discriminates, and it converges</h3>
-  <p>Yan et al. (2016) meta-analyzed 24 independent effect sizes from 1,089 participants and
-    found a strong ability to discriminate across proficiency levels (Hedges' <em>g</em> = 1.34),
-    with construct, sentence length, and scoring method as significant moderators. Kostromitina
-    and Plonsky (2022), pooling 60 correlations from 46 reports, report an average correlation
-    with other proficiency measures of <em>r</em> = .66, again with longer stimuli associated
-    with stronger correlations. Design decisions matter; the method itself is not fragile.</p>
+  <p>Yan et al. (2016) meta-analyzed 24 independent effect sizes from 1,089 participants and found
+    a strong ability to discriminate across proficiency levels (Hedges' <em>g</em> = 1.34), with
+    construct, sentence length, and scoring method as significant moderators. Kostromitina and
+    Plonsky (2022), pooling 60 correlations from 46 reports, report an average correlation with
+    other proficiency measures of <em>r</em> = .66, again with longer stimuli associated with
+    stronger correlations. Design decisions matter; the method itself is not fragile.</p>
 
   <h3>It withstands operational test development</h3>
-  <p>Davis and Norris (2021) documented the design and validation of the EIT built for the
-    TOEFL Essentials test across prototyping (419 participants) and piloting (701 participants)
-    in multiple countries.</p>
+  <p>Davis and Norris (2021) documented the EIT built for the TOEFL Essentials test, across
+    prototyping (419 participants) and piloting (701 participants) in multiple countries.</p>
   <table class="ev">
     <thead><tr><th>Quantity</th><th>Value</th><th>Note</th></tr></thead>
     <tbody>
@@ -187,22 +184,29 @@
         <td>Independent global measure</td></tr>
     </tbody>
   </table>
-  <p>The graded pattern is itself evidence: correlations are highest with other speaking tasks
-    and lowest with reading, which is what a measure of oral proficiency should produce. The task
-    also extends beyond the prototypical L2 learner — Solon et al. (2022) applied Rasch modeling
-    to a 30-item Spanish EIT with heritage language learners, obtaining excellent reliability and
-    strong correlations with an independent measure (the DELE).</p>
+  <p>The graded pattern is itself evidence: correlations are highest with other speaking tasks and
+    lowest with reading, which is what a measure of oral proficiency should produce. The task also
+    extends beyond the prototypical L2 learner — Solon et al. (2022) applied Rasch modeling to a
+    30-item Spanish EIT with heritage language learners, obtaining excellent reliability and strong
+    correlations with the DELE.</p>
 
 </div></section>
 
 <section><div class="wrap narrow">
-  <h2>Where this tool fits</h2>
-  <p>Two of the moderators identified in the meta-analytic literature — scoring
-    method and consistency of procedure — are matters of implementation rather than of the
-    instrument, and they are where researcher time is actually spent. EIT Studio automates
-    transcription and word error rate computation, and makes the normalization rules explicit,
-    editable, and exportable, so that the exact configuration can be archived with a study.</p>
-  <h3>Automated scoring has been examined, and it holds up</h3>
+  <h2>Where EIT Studio fits</h2>
+  <p>EIT Studio reduces the burden on both sides of an elicited imitation study: administering the
+    task, and scoring what it produces.</p>
+  <p>Administration runs in the browser. A sentence set is delivered on the schedule the original
+    design specifies — stimulus, fixed pause, ring tone, and a response window scaled to sentence
+    length — so that every participant is given the same timing rather than whatever pace the
+    researcher reads at (Ortega et al., 2002; Wu et al., 2022). Each response is written out as its
+    own file, so the recordings need no separate splitting step before they are scored.</p>
+  <p>Scoring runs in the same place. Transcription and word error rate computation are handled
+    locally, and the normalization rules are explicit, editable, and exportable, so that the exact
+    configuration can be archived with a study. Scoring method is among the moderators identified
+    in the meta-analytic literature (Yan et al., 2016); making it a stated setting rather than an
+    incidental one is part of the point.</p>
+  <h3>Automated scoring has been examined, and it looks promising</h3>
   <p>Independent studies have compared automatically produced scores against human scoring across
     different recognition systems, metrics, and languages.</p>
   <table class="ev">
@@ -234,17 +238,17 @@
   </table>
   <p>The metric was adapted to the language in each case: Isbell et al. (2023) scored Korean with
     morpheme- and letter-based Levenshtein distances rather than whitespace-delimited word error
-    rate. Automated scoring generalizes across languages; the specific metric does not transfer
-    unexamined. What these procedures ask of the researcher is technical — platform accounts,
-    scripting, code to adapt — and EIT Studio implements the same logic as a web-based tool
+    rate. Automated scoring appears to generalize across languages, but the specific metric does
+    not transfer unexamined. What these procedures ask of the researcher is technical — platform accounts,
+    scripting, code to adapt — which is what EIT Studio removes
     (<a href="about.html">more on that here</a>).</p>
   <div class="callout">
     <p>Automatic transcription does not replace human verification. Reporting a human-verified
-      subsample alongside automatically scored data remains good practice, and the scoring rules
-      used should be reported or deposited with the study materials.</p>
-    <p>Note also that the agreement figures above were obtained for English. Comparable evidence
-      for other languages is not yet available, which is why this tool is currently scoped to
-      English elicited imitation tasks.</p>
+      subsample remains good practice, and the scoring rules used should be deposited with the
+      study materials.</p>
+    <p>The agreement figures above were obtained for English. Comparable evidence for other
+      languages is not yet available, which is why EIT Studio is currently scoped to English
+      elicited imitation tasks.</p>
     <p>On the recognition model itself — why Whisper, and how it performs on learner speech —
       see the <a href="asr.html">speech recognition page</a>.</p>
   </div>
@@ -297,6 +301,10 @@
     <li>Vinther, T. (2002). Elicited imitation: A brief overview. <em>International Journal of
       Applied Linguistics, 12</em>(1), 54–73.
       <a href="https://doi.org/10.1111/1473-4192.00024">https://doi.org/10.1111/1473-4192.00024</a></li>
+    <li>Wu, S.-L., Tio, Y. P., &amp; Ortega, L. (2022). Elicited imitation as a measure of L2
+      proficiency: New insights from a comparison of two L2 English parallel forms.
+      <em>Studies in Second Language Acquisition, 44</em>(1), 271–300.
+      <a href="https://doi.org/10.1017/S0272263121000103">https://doi.org/10.1017/S0272263121000103</a></li>
     <li>Yan, X., Maeda, Y., Lv, J., &amp; Ginther, A. (2016). Elicited imitation as a measure of
       second language proficiency: A narrative review and meta-analysis.
       <em>Language Testing, 33</em>(4), 497–528.
@@ -308,7 +316,8 @@
 
 <div class="endcta"><div class="wrap">
   <h2>Bring your own EIT.</h2>
-  <p>Load a sentence set, drop in the recordings, and see the scored table for yourself.</p>
+  <p>Load your sentence set and administer it, or bring recordings you already have. Either way,
+    the scored table is a few minutes away.</p>
   <a class="btn" href="start.html">Start here</a>
 </div></div>
 

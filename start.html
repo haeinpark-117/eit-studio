@@ -47,7 +47,11 @@
     text-align:center; max-width:60ch}
 
   /* ---------- choice cards ---------- */
-  .two{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+  .two{display:grid; grid-template-columns:repeat(3,1fr); gap:15px}
+  .card.plain .ic{background:var(--soft); color:var(--muted)}
+  .card.plain:hover{border-color:#d4d4dc; box-shadow:0 6px 18px rgba(8,8,15,.06)}
+  .btn-n{background:#fff; color:var(--ink); border:1px solid var(--line)}
+  .btn-n:hover{border-color:#c9c9d4}
   .card{border:1px solid var(--line); border-radius:14px; padding:22px 22px 20px; background:#fff;
     display:flex; flex-direction:column; gap:10px; transition:.15s}
   .card:hover{border-color:var(--accent-line); box-shadow:0 6px 18px rgba(56,64,243,.08)}
@@ -56,11 +60,11 @@
     font-size:17px; background:var(--accent-soft); color:var(--accent)}
   .card.alt .ic{background:var(--pink-soft); color:var(--pink)}
   .card h3{margin:0; font-size:16.5px; font-weight:700; letter-spacing:-.3px}
-  .card p{margin:0; color:var(--muted); font-size:13.5px; line-height:1.6; flex:1 1 auto}
+  .card p{margin:0; color:var(--muted); font-size:14px; line-height:1.6; flex:1 1 auto}
   .card .files{font-family:var(--mono); font-size:11.5px; color:var(--muted); background:#f7f7fa;
     border:1px solid var(--line); border-radius:8px; padding:8px 10px; line-height:1.8;
     min-height:70px}
-  .foot-note{margin:18px 0 0; font-size:12.8px; color:var(--muted); line-height:1.65}
+  .foot-note{margin:18px 0 0; font-size:13.2px; color:var(--muted); line-height:1.65}
 
   /* ---------- CTA ---------- */
   .btn{display:inline-block; align-self:flex-start; text-decoration:none; font-size:13.5px;
@@ -75,7 +79,7 @@
   .need{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:6px}
   .need .it{border:1px solid var(--line); border-radius:12px; padding:16px 18px; background:#fff}
   .need .it h3{margin:0 0 5px; font-size:14.5px; letter-spacing:-.2px}
-  .need .it p{margin:0; color:var(--muted); font-size:12.8px; line-height:1.6}
+  .need .it p{margin:0; color:var(--muted); font-size:13.2px; line-height:1.6}
   .need .it pre{margin:9px 0 0; font-family:var(--mono); font-size:11.5px; color:var(--muted);
     background:#f7f7fa; border:1px solid var(--line); border-radius:8px; padding:8px 10px;
     line-height:1.7; overflow-x:auto}
@@ -97,6 +101,7 @@
   <div class="t"><a href="index.html">EIT&nbsp;Studio</a><span data-i18n="hdSub"></span></div>
   <div class="tabs2">
     <a href="start.html" class="on" data-i18n="tabStart"></a>
+    <a href="administer.html" data-i18n="tabAdm"></a>
     <a href="app.html" data-i18n="tabScore"></a>
     <a href="segment.html" data-i18n="tabSeg"></a>
   </div>
@@ -113,18 +118,25 @@
 
     <div class="two">
       <div class="card">
+        <div class="ic">🎙</div>
+        <h3 data-i18n="cCt"></h3>
+        <p data-i18n="cCs"></p>
+        <div class="files">targets.txt<br>→ <span data-i18n="cCx"></span><br>→ P01_item01.wav …</div>
+        <a class="btn btn-p" href="administer.html" data-i18n="cCb"></a>
+      </div>
+      <div class="card alt">
         <div class="ic">✓</div>
         <h3 data-i18n="cAt"></h3>
         <p data-i18n="cAs"></p>
         <div class="files">P01_item01.wav<br>P01_item02.wav<br>P01_item03.wav …</div>
-        <a class="btn btn-p" href="app.html" data-i18n="cAb"></a>
+        <a class="btn btn-k" href="app.html" data-i18n="cAb"></a>
       </div>
-      <div class="card alt">
+      <div class="card plain">
         <div class="ic">✂</div>
         <h3 data-i18n="cBt"></h3>
         <p data-i18n="cBs"></p>
         <div class="files">P01_session.mp3 <span style="opacity:.6" data-i18n="cBx"></span></div>
-        <a class="btn btn-k" href="segment.html" data-i18n="cBb"></a>
+        <a class="btn btn-n" href="segment.html" data-i18n="cBb"></a>
       </div>
     </div>
     <p class="foot-note" data-i18n="cNote"></p>
@@ -158,7 +170,11 @@ const I18N={
 en:{
  hdSub:"English EIT · for researchers",
  q:"What do I need to get started?",
- qs:"Two things: your target sentences with syllable counts, and audio recordings of the responses. Which of the two below describes the recordings you have?",
+ qs:"Your target sentences with syllable counts, and — unless you administer the task here — audio recordings of the responses. Which of the three below describes where you are?",
+ cCt:"I have not collected data yet",
+ cCs:"Load your sentence set and the recorded stimuli, and administer the task here. Each response is written out as its own file, ready to be scored.",
+ cCx:"session",
+ cCb:"Administer the task →",
  cAt:"I already have one file per item",
  cAs:"Each file holds a single response to a single target sentence — usually 30 files per participant.",
  cAb:"Start scoring →",
@@ -181,7 +197,11 @@ en:{
 ko:{
  hdSub:"English EIT · 연구자용",
  q:"무엇부터 준비하면 되나요?",
- qs:"두 가지가 필요합니다. 음절 수가 포함된 목표 문장, 그리고 응답 녹음 파일입니다. 아래 두 가지 중 어느 쪽에 해당하시나요?",
+ qs:"음절 수가 포함된 목표 문장, 그리고 — 여기서 시행하지 않으신다면 — 응답 녹음 파일입니다. 아래 세 가지 중 어느 쪽에 해당하시나요?",
+ cCt:"아직 데이터를 수집하지 않았습니다",
+ cCs:"문장 세트와 자극 녹음을 불러와 여기서 시행하십시오. 각 응답이 개별 파일로 저장되어 바로 채점할 수 있습니다.",
+ cCx:"시행",
+ cCb:"시행하기 →",
  cAt:"문항별 파일이 이미 있습니다",
  cAs:"각 파일에 하나의 목표 문장에 대한 응답 하나가 담겨 있습니다. 보통 참가자당 30개입니다.",
  cAb:"채점 시작 →",
@@ -203,8 +223,8 @@ ko:{
 }
 };
 
-I18N.en.tabStart="Start"; I18N.en.tabScore="Score"; I18N.en.tabSeg="Segment";
-I18N.ko.tabStart="시작"; I18N.ko.tabScore="채점"; I18N.ko.tabSeg="분절";
+I18N.en.tabStart="Start"; I18N.en.tabAdm="Administer"; I18N.en.tabScore="Score"; I18N.en.tabSeg="Segment";
+I18N.ko.tabStart="시작"; I18N.ko.tabAdm="시행"; I18N.ko.tabScore="채점"; I18N.ko.tabSeg="분절";
 
 let LANG=(()=>{ try{ return localStorage.getItem("eitLang")||"en"; }catch(e){ return "en"; } })();
 const T=k=>(I18N[LANG]&&I18N[LANG][k])!=null?I18N[LANG][k]:(I18N.en[k]||"");

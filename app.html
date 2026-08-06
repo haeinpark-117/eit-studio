@@ -13,7 +13,7 @@
   }
   *{box-sizing:border-box}
   body{margin:0; background:var(--bg); color:var(--ink);
-    font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,
+    font:14.5px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,
     "Apple SD Gothic Neo","Malgun Gothic",sans-serif;
     padding:66px 18px 60px; display:flex; flex-direction:column; align-items:center}
   .hd{position:fixed; top:0; left:0; right:0; z-index:20; height:50px;
@@ -53,7 +53,7 @@
     justify-content:center; flex:none}
   .step h2{font-size:16px; margin:0; letter-spacing:-.01em}
   .step .ok{margin-left:auto; font-size:12px; color:var(--accent); font-weight:600}
-  .meta{font-size:12.5px; color:var(--muted); margin:0 0 12px}
+  .meta{font-size:13.2px; color:var(--muted); margin:0 0 12px}
   button{font:inherit; font-weight:600; cursor:pointer; border-radius:8px;
     padding:9px 18px; border:1px solid transparent}
   button:disabled{opacity:.4; cursor:not-allowed}
@@ -136,6 +136,7 @@
      >EIT&nbsp;Studio</a><span data-i18n="hdSub"></span></div>
   <div class="tabs2">
     <a href="start.html" data-i18n="tabStart"></a>
+    <a href="administer.html" data-i18n="tabAdm"></a>
     <a href="app.html" class="on" data-i18n="tabScore"></a>
     <a href="segment.html" data-i18n="tabSeg"></a>
   </div>
@@ -151,6 +152,19 @@
     <p class="hero-s" data-i18n="heroSub"></p>
     <a class="hero-back" href="index.html" data-i18n="heroBack"></a>
   </div>
+
+  <div class="panel hidden" id="handoff" style="border-color:var(--accent-line);
+       background:var(--accent-soft)"><div class="pad" style="padding:18px 22px 20px">
+    <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap">
+      <div style="flex:1 1 320px">
+        <div style="font-weight:700; font-size:15px; letter-spacing:-.25px"
+             data-i18n="hoTitle"></div>
+        <div class="meta" style="margin:4px 0 0" id="hoSub"></div>
+      </div>
+      <button class="btn-p" id="hoLoad" data-i18n="hoLoad"></button>
+      <button class="btn-g btn-s" id="hoDrop" data-i18n="hoDrop"></button>
+    </div>
+  </div></div>
 
   <!-- ============ STEP 1 : target set ============ -->
   <div class="panel"><div class="pad">
@@ -335,7 +349,11 @@ en:{
  normPrevNone:"Load a target set to preview the effect of these rules.",
  s3Title:"Recordings",
  s3Help:"One file per item: each recording should contain a single response to a single target sentence. Files named participantID_itemNN are recognized automatically; anything else can be assigned by hand in the table below. Audio never leaves your computer.",
- tabStart:"Start", tabScore:"Score", tabSeg:"Segment",
+ tabStart:"Start", tabAdm:"Administer", tabScore:"Score", tabSeg:"Segment",
+ hoTitle:"Recordings from the session you just administered are waiting.",
+ hoLoad:"Load them", hoDrop:"Discard",
+ fmtHo:(n,p)=>n+" responses for "+p+", with the target set that was used. Loading them fills the target set and the recordings below; nothing is uploaded.",
+ hoDone:"Loaded from the session.",
  segLink:"Have one long recording per participant instead? Split it into items first →",
  modelLbl:"Model:",
  speedNote:"Everything runs on your own computer, so speed depends on your hardware. The model is downloaded once (about 1.5 GB) and then kept in the browser cache. Each time you open this page it is loaded into memory before the first file is transcribed, which takes a couple of minutes; after that, transcription runs at a few seconds per recording. A 30-item set therefore takes roughly five to ten minutes on a recent laptop with WebGPU, and longer without it.",
@@ -397,7 +415,11 @@ ko:{
  normPrevNone:"목표 세트를 불러오면 규칙 적용 결과를 미리 볼 수 있습니다.",
  s3Title:"녹음 파일",
  s3Help:"한 파일에 한 문항씩 넣어 주십시오. 각 녹음 파일은 목표 문장 하나에 대한 응답 하나만 담고 있어야 합니다. 참가자ID_item번호 형식의 파일은 자동으로 인식되며, 그 외의 파일은 아래 표에서 직접 지정할 수 있습니다. 음성은 컴퓨터 밖으로 전송되지 않습니다.",
- tabStart:"시작", tabScore:"채점", tabSeg:"분절",
+ tabStart:"시작", tabAdm:"시행", tabScore:"채점", tabSeg:"분절",
+ hoTitle:"방금 시행한 세션의 녹음이 기다리고 있습니다.",
+ hoLoad:"불러오기", hoDrop:"버리기",
+ fmtHo:(n,p)=>p+"의 응답 "+n+"개와 사용된 목표 문장 세트입니다. 불러오면 아래의 목표 문장과 녹음 파일이 채워집니다. 업로드되는 것은 없습니다.",
+ hoDone:"세션에서 불러왔습니다.",
  segLink:"참가자별로 긴 녹음 파일 하나만 있으신가요? 먼저 문항별로 나누기 →",
  modelLbl:"모델:",
  speedNote:"모든 처리가 사용자의 컴퓨터에서 이루어지므로 속도는 하드웨어에 따라 달라집니다. 모델은 최초 1회만 내려받아(약 1.5 GB) 브라우저에 저장되며, 이후에는 페이지를 열 때마다 메모리에 올리는 과정이 필요해 첫 파일이 전사되기까지 2~3분이 걸립니다. 그 다음부터는 파일당 수 초 정도이므로, 30문항 기준으로는 WebGPU를 지원하는 최신 노트북에서 대략 5~10분이 소요되며 지원하지 않는 환경에서는 더 오래 걸립니다.",
@@ -1090,6 +1112,59 @@ function dl(blob,name){
   applyLang();
   updateRunState();
 })();
+
+/* ---- recordings handed over by the administration page --------------------
+   The session writes each response to IndexedDB as it is recorded; this reads
+   that store, fills the two panels the session already determined, and clears
+   it so that participant recordings do not accumulate in the browser. */
+const HO_DB="eit-studio", HO_STORE="handoff";
+function hoOpen(){
+  return new Promise((res,rej)=>{
+    const r=indexedDB.open(HO_DB,1);
+    r.onupgradeneeded=()=>{ if(!r.result.objectStoreNames.contains(HO_STORE))
+      r.result.createObjectStore(HO_STORE,{keyPath:"id"}); };
+    r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error);
+  });
+}
+function hoAll(){
+  return hoOpen().then(db=>new Promise(res=>{
+    const tx=db.transaction(HO_STORE,"readonly");
+    const q=tx.objectStore(HO_STORE).getAll();
+    q.onsuccess=()=>res(q.result||[]); q.onerror=()=>res([]);
+  }));
+}
+function hoClear(){
+  return hoOpen().then(db=>new Promise(res=>{
+    const tx=db.transaction(HO_STORE,"readwrite");
+    tx.objectStore(HO_STORE).clear(); tx.oncomplete=()=>res(); tx.onerror=()=>res();
+  })).catch(()=>{});
+}
+let HO=null;
+async function checkHandoff(){
+  try{
+    const all=await hoAll();
+    const meta=all.find(r=>r.id==="meta");
+    const items=all.filter(r=>/^item-/.test(r.id)&&r.blob).sort((a,b)=>a.n-b.n);
+    if(!meta||!items.length) return;
+    HO={meta,items};
+    $("hoSub").textContent=T("fmtHo")(items.length,meta.pid||"");
+    $("handoff").classList.remove("hidden");
+  }catch(e){}
+}
+$("hoLoad").onclick=async()=>{
+  if(!HO) return;
+  if(HO.meta.targets&&HO.meta.targets.length){
+    $("tgtBox").value=HO.meta.targets.map(r=>r.join("\t")).join("\n");
+    applyTargets($("tgtBox").value,true);
+  }
+  const files=HO.items.map(r=>new File([r.blob],r.name,{type:"audio/wav"}));
+  takeFiles(files);
+  $("handoff").classList.add("hidden");
+  setStatus("stReady");
+  await hoClear(); HO=null;
+};
+$("hoDrop").onclick=async()=>{ $("handoff").classList.add("hidden"); await hoClear(); HO=null; };
+checkHandoff();
 </script>
 </body>
 </html>
