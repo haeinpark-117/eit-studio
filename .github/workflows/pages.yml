@@ -17,22 +17,47 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 60
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      # Stamp the commit into the site so publication can be verified from outside.
+      - name: Stamp build
+        run: echo "$GITHUB_SHA" > build.txt
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
+
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
           path: .
+
+      # actions/deploy-pages caps its wait at 600000 ms (10 min). When the Pages
+      # queue is slow the action aborts even though the deployment still completes
+      # server-side a few minutes later, so the abort is not treated as fatal here;
+      # the verification step below decides whether the run actually succeeded.
       - name: Deploy
         id: deployment
+        continue-on-error: true
         uses: actions/deploy-pages@v4
         with:
-          timeout: 3600000
-          error_count: 20
+          timeout: 600000
+
+      - name: Verify publication
+        run: |
+          url="https://haeinpark-117.github.io/eit-studio/build.txt"
+          for i in $(seq 1 60); do
+            live=$(curl -fsSL --max-time 20 "$url?cb=$i" || true)
+            if [ "$live" = "$GITHUB_SHA" ]; then
+              echo "Published $GITHUB_SHA (confirmed after $((i * 20))s)"
+              exit 0
+            fi
+            sleep 20
+          done
+          echo "::error::Site did not report commit $GITHUB_SHA within 20 minutes."
+          exit 1
