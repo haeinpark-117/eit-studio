@@ -13,34 +13,34 @@
   }
   *{box-sizing:border-box}
   body{margin:0; background:var(--bg); color:var(--ink);
-    font:14.5px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,
     "Apple SD Gothic Neo","Malgun Gothic",sans-serif;
     padding:66px 18px 60px; display:flex; flex-direction:column; align-items:center}
   .hd{position:fixed; top:0; left:0; right:0; z-index:20; height:50px;
     background:rgba(242,242,244,.95); border-bottom:1px solid var(--line);
     display:flex; align-items:center; justify-content:space-between; padding:0 22px}
-  .hd .t{font-weight:700; font-size:15px}
-  .hd .t span{font-weight:400; color:var(--muted); font-size:11px; margin-left:9px;
+  .hd .t{font-weight:700; font-size:16.5px}
+  .hd .t span{font-weight:400; color:var(--muted); font-size:12.1px; margin-left:9px;
     text-transform:uppercase; letter-spacing:.08em}
   .tabs2{display:flex; gap:6px; margin-left:auto; margin-right:14px}
-  .tabs2 a{font-size:12.5px; font-weight:600; text-decoration:none; color:var(--muted);
+  .tabs2 a{font-size:13.8px; font-weight:600; text-decoration:none; color:var(--muted);
     padding:5px 12px; border-radius:8px; border:1px solid transparent; white-space:nowrap}
   .tabs2 a:hover{color:var(--ink); background:#f0f0f5}
   .tabs2 a.on{background:var(--accent-soft); border-color:var(--accent-line); color:var(--accent)}
   .hd .rt{display:flex; align-items:center; gap:12px}
-  .hd .badge{font-family:var(--mono); font-size:11.5px; color:var(--muted)}
+  .hd .badge{font-family:var(--mono); font-size:12.7px; color:var(--muted)}
   .lang{display:flex; border:1px solid #d4d4d8; border-radius:7px; overflow:hidden}
-  .lang button{font-size:12px; font-weight:600; padding:5px 11px; border:none;
+  .lang button{font-size:13.2px; font-weight:600; padding:5px 11px; border:none;
     background:#fff; color:#52525b; border-radius:0}
   .lang button.on{background:var(--accent); color:#fff}
   .stage{width:100%; max-width:1280px}
   .hero{padding:22px 4px 18px; display:flex; align-items:baseline; gap:14px;
     flex-wrap:wrap; border-bottom:1px solid var(--line); margin-bottom:20px}
-  .hero-t{margin:0; font-size:19px; line-height:1.2; font-weight:800;
+  .hero-t{margin:0; font-size:20.9px; line-height:1.2; font-weight:800;
     letter-spacing:-.5px; color:var(--ink)}
   .hero-t span{color:var(--accent)}
-  .hero-s{margin:0; flex:1 1 340px; font-size:12.5px; line-height:1.6; color:var(--muted)}
-  .hero-back{font-size:12.5px; color:var(--accent); text-decoration:none; font-weight:600;
+  .hero-s{margin:0; flex:1 1 340px; font-size:13.8px; line-height:1.6; color:var(--muted)}
+  .hero-back{font-size:13.8px; color:var(--accent); text-decoration:none; font-weight:600;
     white-space:nowrap}
   .hero-back:hover{text-decoration:underline}
   @media(max-width:640px){ .hero{padding:16px 4px 14px} }
@@ -49,11 +49,11 @@
   .pad{padding:20px 24px}
   .step{display:flex; align-items:center; gap:10px; margin-bottom:10px}
   .step .n{width:22px; height:22px; border-radius:50%; background:var(--accent);
-    color:#fff; font-size:12px; font-weight:700; display:flex; align-items:center;
+    color:#fff; font-size:13.2px; font-weight:700; display:flex; align-items:center;
     justify-content:center; flex:none}
-  .step h2{font-size:16px; margin:0; letter-spacing:-.01em}
-  .step .ok{margin-left:auto; font-size:12px; color:var(--accent); font-weight:600}
-  .meta{font-size:13.2px; color:var(--muted); margin:0 0 12px}
+  .step h2{font-size:17.6px; margin:0; letter-spacing:-.01em}
+  .step .ok{margin-left:auto; font-size:13.2px; color:var(--accent); font-weight:600}
+  .meta{font-size:14.5px; color:var(--muted); margin:0 0 12px}
   button{font:inherit; font-weight:600; cursor:pointer; border-radius:8px;
     padding:9px 18px; border:1px solid transparent}
   button:disabled{opacity:.4; cursor:not-allowed}
@@ -61,65 +61,65 @@
   .btn-p:hover:not(:disabled){background:var(--accent-dark)}
   .btn-g{background:#fff; color:#3f3f46; border-color:#d4d4d8}
   .btn-g:hover:not(:disabled){background:var(--accent-soft)}
-  .btn-s{font-size:12.5px; padding:6px 12px; border-radius:6px}
+  .btn-s{font-size:13.8px; padding:6px 12px; border-radius:6px}
   select,input[type=text]{font:inherit; padding:6px 10px; border:1px solid #d4d4d8;
-    border-radius:7px; background:#fff; font-size:13px}
-  textarea{font-family:var(--mono); font-size:12.5px; width:100%; min-height:120px;
+    border-radius:7px; background:#fff; font-size:14.3px}
+  textarea{font-family:var(--mono); font-size:13.8px; width:100%; min-height:120px;
     padding:10px 12px; border:1px solid #d4d4d8; border-radius:8px; resize:vertical;
     line-height:1.6}
   .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:10px}
   .drop{border:2px dashed #c9c9d2; border-radius:10px; padding:24px 20px; text-align:center;
-    color:var(--muted); font-size:14px; margin:12px 0; cursor:pointer}
+    color:var(--muted); font-size:15.4px; margin:12px 0; cursor:pointer}
   .drop.on{border-color:var(--accent); background:var(--accent-soft); color:var(--accent)}
   .prog{height:6px; background:var(--line); border-radius:3px; overflow:hidden; flex:1; min-width:110px}
   .prog div{height:100%; background:var(--accent); width:0%; transition:width .2s}
-  .status{font-size:13px; color:var(--muted); min-height:20px; margin-top:9px; font-family:var(--mono)}
+  .status{font-size:14.3px; color:var(--muted); min-height:20px; margin-top:9px; font-family:var(--mono)}
   .warnbox{background:var(--pink-soft); border:1px solid #fbcfe8; color:var(--sev);
-    border-radius:8px; padding:9px 13px; font-size:12.5px; margin-top:10px}
+    border-radius:8px; padding:9px 13px; font-size:13.8px; margin-top:10px}
   .infobox{background:var(--accent-soft); border:1px solid #c7d2fe; color:#3730a3;
-    border-radius:8px; padding:9px 13px; font-size:12.5px; margin-top:10px}
+    border-radius:8px; padding:9px 13px; font-size:13.8px; margin-top:10px}
   .hidden{display:none}
-  label.chk{display:inline-flex; align-items:center; gap:7px; font-size:13px; cursor:pointer}
-  details{margin-top:10px} summary{cursor:pointer; font-size:13px; color:var(--accent); font-weight:600}
-  table{width:100%; border-collapse:collapse; font-size:13.5px}
-  th{text-align:left; font-size:10.5px; letter-spacing:.09em; text-transform:uppercase;
+  label.chk{display:inline-flex; align-items:center; gap:7px; font-size:14.3px; cursor:pointer}
+  details{margin-top:10px} summary{cursor:pointer; font-size:14.3px; color:var(--accent); font-weight:600}
+  table{width:100%; border-collapse:collapse; font-size:14.9px}
+  th{text-align:left; font-size:11.6px; letter-spacing:.09em; text-transform:uppercase;
     color:var(--muted); font-weight:600; padding:9px 12px; border-bottom:1px solid var(--line);
     background:#fafafb; white-space:nowrap}
   td{padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top}
   tbody tr:hover td{background:#fbfbfd}
   .sumhead{display:flex; align-items:baseline; gap:16px; padding:16px 22px 10px; flex-wrap:wrap}
-  .sumhead h2{font-size:16px; margin:0}
+  .sumhead h2{font-size:17.6px; margin:0}
   .sumhead .right{margin-left:auto; display:flex; gap:8px; align-items:center}
   .sumtab th{border-top:1px solid var(--line)}
   .sumtab td{font-variant-numeric:tabular-nums}
   .sumtab .pid{font-weight:700}
   .itemtab thead th{position:sticky; top:50px; z-index:5}
   .c-pid{font-weight:600; white-space:nowrap}
-  .c-it{font-family:var(--mono); font-size:12.5px; color:var(--muted); white-space:nowrap}
-  .c-tgt{font-family:var(--mono); font-size:12.5px; color:var(--muted); line-height:1.7}
-  .c-hyp{font-family:var(--mono); font-size:12.5px; line-height:1.7}
+  .c-it{font-family:var(--mono); font-size:13.8px; color:var(--muted); white-space:nowrap}
+  .c-tgt{font-family:var(--mono); font-size:13.8px; color:var(--muted); line-height:1.7}
+  .c-hyp{font-family:var(--mono); font-size:13.8px; line-height:1.7}
   .c-n{font-family:var(--mono); font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap}
-  .acc{font-size:14px; font-weight:700; color:var(--accent)}
+  .acc{font-size:15.4px; font-weight:700; color:var(--accent)}
   .acc.low{color:var(--sev)}
   .pill{display:inline-block; min-width:48px; text-align:center; border-radius:4px;
-    padding:2px 7px; font-weight:600; font-size:12.5px}
+    padding:2px 7px; font-weight:600; font-size:13.8px}
   .p0{background:#eef2ff; color:#4338ca}
   .p1{background:#f4f4f5; color:#52525b}
   .p2{background:var(--pink-soft); color:var(--sev)}
   .conf{font-family:var(--mono); font-variant-numeric:tabular-nums; text-align:right;
-    color:var(--muted); white-space:nowrap; font-size:11.5px}
-  .conf b{color:var(--ink); font-size:13px; font-weight:600}
+    color:var(--muted); white-space:nowrap; font-size:12.7px}
+  .conf b{color:var(--ink); font-size:14.3px; font-weight:600}
   .mini{background:none; border:1px solid var(--line); border-radius:5px; width:26px;
-    height:26px; cursor:pointer; color:var(--accent); font-size:10px; padding:0}
-  .errcell{color:var(--sev); font-size:12.5px}
+    height:26px; cursor:pointer; color:var(--accent); font-size:11px; padding:0}
+  .errcell{color:var(--sev); font-size:13.8px}
   .w-sub{background:#cffafe; border-radius:3px; padding:0 3px}
   .w-ins{background:#fbcfe8; border-radius:3px; padding:0 3px}
   .w-om{color:#db2777; font-weight:700}
   .w-rep{color:#9c9cae; text-decoration:line-through; text-decoration-thickness:1px}
-  .foot{font-size:11.5px; color:var(--muted); padding:11px 22px;
+  .foot{font-size:12.7px; color:var(--muted); padding:11px 22px;
     border-top:1px solid var(--line); background:#fafafb; font-family:var(--mono)}
   .maptab td{padding:6px 10px}
-  .maptab input[type=text]{width:100%; padding:4px 8px; font-size:12.5px}
+  .maptab input[type=text]{width:100%; padding:4px 8px; font-size:13.8px}
   .maptab .unmatched td{background:var(--pink-soft)}
   .tgt-inline{display:none}
   @media(max-width:900px){
@@ -136,15 +136,15 @@
     body{padding-top:94px}
     body.running{padding-top:94px}
     .hd{height:auto; flex-wrap:wrap; padding:9px 14px 0; align-items:center}
-    .hd .t{font-size:14px}
+    .hd .t{font-size:15.4px}
     .hd .t span{display:none}
     .hd .rt{margin-left:auto; gap:8px}
-    .lang button{font-size:11.5px; padding:4px 9px}
+    .lang button{font-size:12.7px; padding:4px 9px}
     .tabs2{order:3; width:100%; margin:9px -14px 0; padding:0 14px 9px;
       gap:5px; overflow-x:auto; -webkit-overflow-scrolling:touch;
       scrollbar-width:none; -ms-overflow-style:none}
     .tabs2::-webkit-scrollbar{display:none}
-    .tabs2 a{font-size:12px; padding:5px 10px; flex:0 0 auto}
+    .tabs2 a{font-size:13.2px; padding:5px 10px; flex:0 0 auto}
     select,input[type=text]{max-width:100%}
   }
 </style>
@@ -176,7 +176,7 @@
        background:var(--accent-soft)"><div class="pad" style="padding:18px 22px 20px">
     <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap">
       <div style="flex:1 1 320px">
-        <div style="font-weight:700; font-size:15px; letter-spacing:-.25px"
+        <div style="font-weight:700; font-size:16.5px; letter-spacing:-.25px"
              id="hoTitleT" data-i18n="hoTitle"></div>
         <div class="meta" style="margin:4px 0 0" id="hoSub"></div>
       </div>
@@ -233,7 +233,7 @@
   <!-- ============ STEP 3 : audio ============ -->
   <div class="panel"><div class="pad">
     <div class="step"><span class="n">3</span><h2 data-i18n="s3Title"></h2>
-      <a href="segment.html" style="margin-left:auto; font-size:12.5px; font-weight:600;
+      <a href="segment.html" style="margin-left:auto; font-size:13.8px; font-weight:600;
          color:var(--accent); text-decoration:none" data-i18n="segLink"></a></div>
     <p class="meta" data-i18n="s3Help"></p>
     <div class="row">
@@ -274,7 +274,7 @@
   <div class="panel hidden" id="resPanel">
     <div class="sumhead">
       <h2 data-i18n="resTitle"></h2>
-      <a href="how.html#reading" style="font-size:12.5px; font-weight:600; color:var(--accent);
+      <a href="how.html#reading" style="font-size:13.8px; font-weight:600; color:var(--accent);
          text-decoration:none; margin-left:12px" data-i18n="readGuide"></a>
       <span class="right">
         <select id="sortSel">
