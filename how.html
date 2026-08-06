@@ -317,7 +317,7 @@
       </div>
     </details>
     <details>
-      <summary><span class="chev">›</span>Reading the output table — column by column</summary>
+      <summary><span class="chev">›</span>Reading the output table</summary>
       <div class="body">
         <p>One row per recording. Rows can be sorted by participant and item, by lowest accuracy,
           or by lowest confidence; the last two are the fastest way into the items that need
@@ -359,12 +359,8 @@
             cover only the items that were actually scored, so check the count before comparing
             participants.</figcaption>
         </figure>
-      </div>
-    </details>
 
-    <details>
-      <summary><span class="chev">›</span>How the alignment is marked</summary>
-      <div class="body">
+        <h4>How the alignment is marked</h4>
         <p>The three edit types that enter the word error rate are marked in the transcription
           itself, so a score can be traced to the words that produced it.</p>
         <table class="def"><tbody>
@@ -392,50 +388,38 @@
           <p class="calc">Two substitutions, no insertions, no omissions, over seven target words:
             WER = 2 / 7 = .286, accuracy = 71.4 %.</p>
         </div>
-        <h4>Self-corrections</h4>
-        <p>By default the transcription is scored as produced, so a false start is aligned as an
-          insertion and counts against the score. The scoring-rules panel offers an alternative:
-          where a stretch of words is restarted, the first attempt is removed and only the repair
-          is scored, following the convention that a self-corrected response is credited on its
-          final attempt. The rule is applied to the transcription only, never to the target
-          sentence, and a stretch that also occurs in the target sentence is never removed.
-          Whichever setting is used is recorded in both exports, and the removed words are listed
-          item by item, so the decision remains reportable. Because no heuristic distinguishes a
-          self-correction from a genuine repetition in every case, items scored under this rule
-          warrant review.</p>
-        <p>Because normalization is applied to both strings before comparison, capitalization,
+        <p>Normalization is applied to both strings before the comparison, so capitalization,
           punctuation, and whichever variants you configured never affect the score. A response
-          that is correct but differently punctuated scores as a match; a response that
-          substitutes a grammatical morpheme does not.</p>
-      </div>
-    </details>
+          that is correct but differently punctuated scores as a match; one that substitutes a
+          grammatical morpheme does not. Where the self-correction rule is enabled, a restarted
+          stretch is removed from the transcription only — never from the target, and never when
+          it also occurs in the target — so that the response is credited on its final attempt.
+          The setting used and the removed words are recorded in both exports, and since no
+          heuristic distinguishes a self-correction from a genuine repetition in every case, items
+          scored under this rule warrant review.</p>
 
-    <details>
-      <summary><span class="chev">›</span>What the numbers do and do not license</summary>
-      <div class="body">
-        <h4>Accuracy has a floor</h4>
-        <p>Word error rate is truncated at 1.0, following the standard definition. A response with
-          more errors than there are target words therefore scores 0 % rather than a negative
-          value, so very disfluent responses are not distinguished from silent ones by the score
+        <h4>What the numbers do and do not license</h4>
+        <p><b>Accuracy has a floor.</b> Word error rate is truncated at 1.0, so a response with
+          more errors than there are target words scores 0 % rather than a negative value; very
+          disfluent responses are therefore not distinguished from silent ones by the score
           alone.</p>
-        <h4>Confidence is not a probability of being correct</h4>
-        <p>Confidence is internal to the model: the mean probability assigned to the tokens it
-          chose. It is comparable across items processed in the same session with the same model
-          and decoding settings, and not comparable across checkpoints or decoding strategies. A
-          high figure means the model was not hesitating, which is not the same as being right.</p>
-        <p>The combination is what is informative. Low accuracy with high confidence usually means
-          the participant really did produce something different from the target. Low accuracy
-          with low confidence more often points to the recording — background noise, a clipped
-          onset, a boundary in the wrong place. Those are the rows to open the audio on.</p>
-        <h4>An empty transcription is ambiguous</h4>
-        <p>An item with no recognized speech is scored WER 1.0 and 0 % accuracy. That is correct if
-          the participant said nothing, and wrong if a segment boundary was misplaced. Inspect
-          these directly rather than reading them as non-responses.</p>
-        <h4>Automatic scores still need a human subsample</h4>
-        <p>Whisper transcribes toward an intended reading and can normalize morphosyntactic detail
-          toward more expected forms — precisely the deviations an elicited imitation task
-          measures. The <a href="asr.html" style="color:var(--accent); font-weight:650">speech
-          recognition page</a> sets out the evidence, and the
+        <p><b>Confidence is not a probability of being correct.</b> It is internal to the model:
+          the mean probability assigned to the tokens it chose, comparable across items processed
+          in the same session with the same model and decoding settings, and not comparable across
+          checkpoints or decoding strategies. The combination is what is informative. Low accuracy
+          with high confidence usually indicates that the participant produced something different
+          from the target; low accuracy with low confidence more often points to the recording —
+          background noise, a clipped onset, a boundary in the wrong place. Those are the rows to
+          open the audio on.</p>
+        <p><b>An empty transcription is ambiguous.</b> An item with no recognized speech is scored
+          WER 1.0 and 0 % accuracy, which is correct if the participant said nothing and wrong if a
+          segment boundary was misplaced. Inspect these directly rather than reading them as
+          non-responses.</p>
+        <p><b>Automatic scores still need a human subsample.</b> Whisper transcribes toward an
+          intended reading and can normalize morphosyntactic detail toward more expected forms —
+          precisely the deviations an elicited imitation task measures. The
+          <a href="asr.html" style="color:var(--accent); font-weight:650">speech recognition
+          page</a> sets out the evidence, and the
           <a href="cite.html" style="color:var(--accent); font-weight:650">citation page</a> gives
           a methods-section template that includes reporting the agreement with a human-verified
           subsample.</p>
@@ -443,12 +427,8 @@
     </details>
 
     <details>
-      <summary><span class="chev">›</span>Checking efficiently, and what the exports contain</summary>
+      <summary><span class="chev">›</span>What the exports contain</summary>
       <div class="body">
-        <p>The table is built for triage rather than for reading every row. Sort by lowest
-          accuracy to see where the transcription and the target diverge most, and by lowest
-          confidence to see where the model itself was least certain; the two orderings surface
-          different problems. Play the audio for any row you are unsure about.</p>
         <p>Export to JSON when you intend to correct by hand: each item carries a
           <span class="mono2">transcription_corrected</span> field, a
           <span class="mono2">flag</span> field, and a <span class="mono2">reviewed</span> marker,
