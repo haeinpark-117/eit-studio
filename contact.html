@@ -101,7 +101,20 @@
     .steps{grid-template-columns:1fr}
     .split{grid-template-columns:1fr}
     .split .main{border-right:0; border-bottom:1px solid var(--accent-line)}
-    .navlinks{display:none}
+  }
+
+  .navtoggle{display:none; background:none; border:1px solid var(--line); border-radius:9px;
+    padding:7px 11px; cursor:pointer; font:inherit; font-size:17px; line-height:1; color:var(--ink)}
+  @media(max-width:820px){
+    .nav .wrap{position:relative}
+    .navtoggle{display:block; order:3; margin-left:10px}
+    .nav .btn{order:2; padding:8px 14px; font-size:13px}
+    .navlinks{display:none; position:absolute; left:0; right:0; top:60px; flex-direction:column;
+      gap:0; background:#fff; border-bottom:1px solid var(--line);
+      box-shadow:0 12px 24px rgba(8,8,15,.08); padding:6px 26px 14px; z-index:40}
+    .navlinks.open{display:flex}
+    .navlinks a{padding:12px 0; font-size:15px; border-bottom:1px solid var(--line)}
+    .navlinks a:last-child{border-bottom:0}
   }
 </style>
 </head>
@@ -111,13 +124,14 @@
   <a class="logo" href="index.html">EIT <span>Studio</span></a>
   <div class="navlinks">
     <a href="about.html">About</a>
-    <a href="index.html#how">How it works</a>
+    <a href="how.html">How it works</a>
     <a href="why-eit.html">Why elicited imitation</a>
     <a href="asr.html">Speech recognition</a>
     <a href="cite.html">How to cite</a>
     <a href="contact.html" class="on">Contact</a>
   </div>
   <a class="btn" href="start.html">Start here</a>
+  <button class="navtoggle" aria-label="Menu" aria-expanded="false">☰</button>
 </div></div>
 
 <header class="pg"><div class="wrap">
@@ -157,5 +171,16 @@
   <div class="mono">whisper-large-v3-turbo · transformers.js</div>
 </div></footer>
 
+<script>
+(function(){
+  var t=document.querySelector('.navtoggle'), l=document.querySelector('.navlinks');
+  if(!t||!l) return;
+  t.addEventListener('click',function(){
+    var open=l.classList.toggle('open');
+    t.setAttribute('aria-expanded',open?'true':'false');
+    t.textContent=open?'\u2715':'\u2630';
+  });
+})();
+</script>
 </body>
 </html>

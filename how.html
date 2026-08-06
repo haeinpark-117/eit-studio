@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>How it works — EIT Studio</title>
+<meta name="description" content="A walkthrough of EIT Studio: administering the task in the browser, splitting one long recording into items, and reading the scored output table column by column.">
+<style>
+  :root{
+    --ink:#08080f; --muted:#6a6a7d; --line:#e8e8ef;
+    --accent:#3840f3; --accent-dk:#2a31d4; --accent-soft:#eef0ff; --accent-line:#d9dcff;
+    --coral:#ff5c35; --soft:#f5f5f9;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; color:var(--ink); background:#fff;
+    font:16px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  a{color:var(--accent)}
+  .wrap{max-width:1120px; margin:0 auto; padding:0 26px}
+  .narrow{max-width:730px}
+
+  .nav{position:sticky; top:0; z-index:30; background:rgba(255,255,255,.88);
+    backdrop-filter:blur(12px); border-bottom:1px solid var(--line)}
+  .nav .wrap{display:flex; align-items:center; justify-content:space-between; height:60px}
+  .logo{font-weight:800; letter-spacing:-.4px; font-size:16px; text-decoration:none; color:var(--ink)}
+  .logo span{color:var(--accent)}
+  .navlinks{display:flex; gap:26px; font-size:13.5px}
+  .navlinks a{text-decoration:none; color:var(--muted)}
+  .navlinks a:hover,.navlinks a.on{color:var(--ink)}
+  .btn{display:inline-block; border-radius:9px; font-weight:650; text-decoration:none;
+    padding:10px 18px; font-size:14px; background:var(--accent); color:#fff; transition:.15s}
+  .btn:hover{background:var(--accent-dk)}
+  .btn-g{background:#fff; color:var(--ink); border:1px solid var(--line)}
+  .btn-g:hover{border-color:#c9c9d4; background:#fff}
+
+  header.pg{border-bottom:1px solid var(--line);
+    background:radial-gradient(900px 340px at 20% -160px,#e4e6ff 0%,rgba(255,255,255,0) 72%)}
+  header.pg .wrap{padding:64px 26px 52px}
+  .kicker{font-family:var(--mono); font-size:11.5px; letter-spacing:.13em;
+    text-transform:uppercase; color:var(--accent); margin:0 0 14px}
+  h1{margin:0; font-size:44px; line-height:1.12; letter-spacing:-1.6px; font-weight:800;
+    max-width:760px}
+  header.pg p{margin:20px 0 0; max-width:680px; font-size:17.5px; color:var(--muted)}
+
+  section{padding:46px 0; border-bottom:1px solid var(--line)}
+  h2{font-size:27px; letter-spacing:-.85px; line-height:1.25; font-weight:800; margin:0 0 18px}
+  h3{font-size:17.5px; letter-spacing:-.35px; margin:30px 0 10px}
+  p{margin:0 0 17px}
+  .lead{font-size:17.5px}
+
+  .stack{display:flex; flex-direction:column; gap:14px; margin:30px 0 8px}
+  .phase{border:1px solid var(--line); border-radius:14px; padding:22px 24px; display:grid;
+    grid-template-columns:82px 1fr; gap:20px; align-items:start}
+  .phase.live{background:var(--accent-soft); border-color:var(--accent-line)}
+  .phase.ghost{border-style:dashed; background:#fcfcfd}
+  .phase .ph{font-family:var(--mono); font-size:10px; letter-spacing:.13em;
+    text-transform:uppercase; color:var(--muted); padding-top:3px}
+  .phase.live .ph{color:var(--accent); font-weight:700}
+  .phase h3{margin:0 0 7px; font-size:17px; letter-spacing:-.35px}
+  .phase p{margin:0; font-size:14.5px; color:var(--muted); line-height:1.7}
+  .phase.live p{color:#3b3e73}
+
+  pre.cite{background:var(--soft); border:1px solid var(--line); border-radius:11px;
+    padding:20px 22px; font-family:var(--mono); font-size:12.5px; line-height:1.85;
+    white-space:pre-wrap; word-break:break-word; margin:0 0 16px}
+  .tabs{display:flex; gap:8px; margin:0 0 14px; flex-wrap:wrap}
+  .tab{font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:5px 13px}
+
+  .callout{border-left:2px solid var(--accent); background:var(--accent-soft);
+    border-radius:0 10px 10px 0; padding:20px 24px; margin:24px 0}
+  .callout p{margin:0; font-size:15px; color:#3b3e73; line-height:1.72}
+  .callout p+p{margin-top:12px}
+
+  .split{display:grid; grid-template-columns:1.15fr 1fr; margin-top:28px;
+    border:1px solid var(--line); border-radius:14px; overflow:hidden}
+  .split .main{padding:26px 26px; background:var(--accent-soft);
+    border-right:1px solid var(--accent-line)}
+  .split .main .k{font-family:var(--mono); font-size:10.5px; letter-spacing:.12em;
+    text-transform:uppercase; color:var(--accent); margin-bottom:9px}
+  .split .main .mail{font-size:19px; font-weight:700; letter-spacing:-.3px; text-decoration:none;
+    color:var(--accent-dk); word-break:break-all}
+  .split .main p{margin:12px 0 0; font-size:13.5px; color:#3b3e73; line-height:1.65}
+  .split .side{padding:22px 24px; display:flex; flex-direction:column; gap:14px;
+    justify-content:center}
+  .split .side .row{font-size:14px; line-height:1.5}
+  .split .side .row .k{font-family:var(--mono); font-size:10px; letter-spacing:.12em;
+    text-transform:uppercase; color:var(--muted); display:block; margin-bottom:2px}
+  .split .side .row a{word-break:break-all}
+  ul.plain{margin:0; padding-left:20px}
+  ul.plain li{margin-bottom:9px; line-height:1.7}
+
+  .endcta{background:linear-gradient(180deg,#fff 0%,#f2f3ff 100%); text-align:center;
+    padding:66px 0; border-bottom:1px solid var(--line)}
+  .endcta h2{margin-bottom:12px}
+  .endcta p{color:var(--muted); max-width:540px; margin:0 auto 26px}
+
+  footer{padding:32px 0; font-size:13px; color:var(--muted)}
+  footer .wrap{display:flex; justify-content:space-between; gap:18px; flex-wrap:wrap}
+  footer .mono{font-family:var(--mono); font-size:11.5px}
+
+  @media(max-width:820px){
+    h1{font-size:31px; letter-spacing:-1px}
+    .steps{grid-template-columns:1fr}
+    .split{grid-template-columns:1fr}
+    .split .main{border-right:0; border-bottom:1px solid var(--accent-line)}
+  }
+
+  .acc{margin-top:34px; border-top:1px solid var(--line)}
+  .acc details{border-bottom:1px solid var(--line)}
+  .acc summary{cursor:pointer; list-style:none; display:flex; align-items:center; gap:12px;
+    padding:18px 2px; font-weight:700; font-size:16.5px; letter-spacing:-.3px}
+  .acc summary::-webkit-details-marker{display:none}
+  .acc summary:hover{color:var(--accent)}
+  .acc .chev{color:var(--accent); font-size:18px; font-weight:700; line-height:1;
+    transition:transform .15s; display:inline-block; width:12px}
+  .acc details[open] .chev{transform:rotate(90deg)}
+  .acc .body{padding:0 2px 26px 26px; max-width:820px}
+  .acc .body p{margin:0 0 15px; color:var(--muted); font-size:15px; line-height:1.72}
+  .acc .body p b, .acc .body p strong{color:var(--ink)}
+  .acc h4{margin:22px 0 8px; font-size:15.5px; letter-spacing:-.2px}
+  .sw-sub{background:#cffafe}
+  .sw-om{color:#db2777; font-weight:700}
+  .sw-rep{color:#9c9cae; text-decoration:line-through; text-decoration-thickness:1px}
+  .exbox{border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin:6px 0 18px;
+    background:#fafafb}
+  .exbox .k{font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--muted); margin-bottom:4px}
+  .exbox .ln{font-family:var(--mono); font-size:13.5px; line-height:2}
+  .exbox .calc{margin:10px 0 0; font-size:13.5px; color:var(--muted)}
+  .acc figure{margin:4px 0 18px}
+  .acc figure img{width:100%; display:block; border:1px solid var(--line); border-radius:10px}
+  .acc figcaption{margin-top:9px; font-size:13.5px; color:var(--muted); line-height:1.6}
+  .soon{display:inline-block; font-family:var(--mono); font-size:10px; letter-spacing:.12em;
+    text-transform:uppercase; background:var(--accent); color:#fff; border-radius:999px;
+    padding:4px 10px; margin-right:8px}
+  .note{border-left:2px solid var(--accent); background:var(--accent-soft); border-radius:0 10px 10px 0;
+    padding:20px 24px; margin-top:34px; max-width:760px}
+  .note h3{margin:0 0 7px; font-size:15px}
+  .note p{margin:0; font-size:14.5px; color:#4a4d80; line-height:1.7}
+  .acc{margin-top:0; border-top:0}
+
+  .navtoggle{display:none; background:none; border:1px solid var(--line); border-radius:9px;
+    padding:7px 11px; cursor:pointer; font:inherit; font-size:17px; line-height:1; color:var(--ink)}
+  @media(max-width:820px){
+    .nav .wrap{position:relative}
+    .navtoggle{display:block; order:3; margin-left:10px}
+    .nav .btn{order:2; padding:8px 14px; font-size:13px}
+    .navlinks{display:none; position:absolute; left:0; right:0; top:60px; flex-direction:column;
+      gap:0; background:#fff; border-bottom:1px solid var(--line);
+      box-shadow:0 12px 24px rgba(8,8,15,.08); padding:6px 26px 14px; z-index:40}
+    .navlinks.open{display:flex}
+    .navlinks a{padding:12px 0; font-size:15px; border-bottom:1px solid var(--line)}
+    .navlinks a:last-child{border-bottom:0}
+  }
+</style>
+</head>
+<body>
+<div class="nav"><div class="wrap">
+  <a class="logo" href="index.html">EIT <span>Studio</span></a>
+  <div class="navlinks">
+    <a href="about.html">About</a>
+    <a href="how.html" class="on">How it works</a>
+    <a href="why-eit.html">Why elicited imitation</a>
+    <a href="asr.html">Speech recognition</a>
+    <a href="cite.html">How to cite</a>
+    <a href="contact.html">Contact</a>
+  </div>
+  <a class="btn" href="start.html">Start here</a>
+  <button class="navtoggle" aria-label="Menu" aria-expanded="false">☰</button>
+</div></div>
+
+<header class="pg"><div class="wrap">
+  <p class="kicker">How it works</p>
+  <h1>A walkthrough,<br>step by step.</h1>
+  <p>How the task is administered, how a long recording is split into items, and how to read
+    every column of the scored output.</p>
+</div></header>
+
+<section><div class="wrap narrow" style="max-width:860px">
+  <div class="acc" id="reading">
+    <details>
+      <summary><span class="chev">›</span>Administering the task in the browser</summary>
+      <div class="body">
+        <p>The <a href="administer.html" style="color:var(--accent); font-weight:650">administration
+          tool</a> delivers a sentence set on the schedule specified in the original design: the
+          stimulus plays, a fixed silent pause of 2.5&nbsp;s follows, a ring tone marks the end of
+          the pause, and the response window opens. The window is not the same for every item — it
+          is the stimulus articulation time plus 2&nbsp;s, plus a further 0.5&nbsp;s for each
+          syllable beyond seven, so that longer sentences are given proportionally more time
+          (Ortega et al., 2002; Wu et al., 2022).</p>
+        <p>Every boundary is placed on the browser's audio clock rather than on page timers, so the
+          schedule does not drift over a session. Each response is written to storage as it is
+          recorded, which means an interruption costs one item rather than all of them, and the
+          session ends with one audio file per item plus a log of the schedule actually used —
+          exactly what the scoring tool expects, with no segmentation step and no target list to
+          enter a second time.</p>
+        <p>Two checks run before a participant is seated: a real test recording that is played back
+          and listened to, and a test write to browser storage that catches a private window or a
+          blocked database. Neither failure is recoverable once a session is under way.</p>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span>Splitting one long recording into items</summary>
+      <div class="body">
+        <p>If a whole session sits in a single file, the
+          <a href="segment.html" style="color:var(--accent); font-weight:650">segmentation
+          tool</a> writes it out as one file per item, ready to drop straight into scoring.
+          Boundaries can be placed in three ways, and which one to use depends on what the
+          recording contains.</p>
+        <figure>
+          <img src="segment-modes.png" alt="The boundary-source selector, offering silence in the
+            recording, a timing grid from the sentence set plus stimulus audio, and a timing grid
+            from the sentence set only.">
+          <figcaption>If the beep that opens each response window is audible, use a timing grid:
+            every window is placed from the beep directly, and the sentence-set-only mode is the
+            simpler of the two because it needs no stimulus files. Without a beep, supplying the
+            stimulus audio is more accurate than estimating stimulus length from syllable counts.
+            Silence detection is the right choice when the recording contains the responses only
+            and they are evenly spaced.</figcaption>
+        </figure>
+        <p>Recordings usually open with the researcher's spoken instructions.
+          <b>Find task start</b> locates the point where the regularly spaced run of responses
+          begins, and everything before it is ignored; <b>Fit to expected count</b> adjusts the
+          silence threshold until the number of segments matches the number of items you
+          declared.</p>
+        <figure>
+          <img src="segment-detect.png" alt="The detection controls: boundary source, ignore-before
+            time with a find-task-start button, maximum response length, minimum silence, minimum
+            response, padding, and buttons to detect again, fit to the expected count, and find the
+            task run.">
+          <figcaption>The confirmation line reports how many segments were found against how many
+            were expected.</figcaption>
+        </figure>
+        <p>Nothing is exported until you have seen it. The waveform shows every boundary in place,
+          each segment can be played by clicking its row, boundaries can be dragged, added, or
+          deleted, and each row carries a confidence level with a note when something looks
+          wrong — a segment that is very short, one that appears clipped, or spacing that departs
+          from the rest of the run.</p>
+        <figure>
+          <img src="segment-adjust.png" alt="The adjust step: a waveform with numbered boundaries,
+            an ignored region shaded at the start, and a table of items with output file names,
+            start and end times, length, and a confidence label.">
+          <figcaption>Output files are named participantID_itemNN and exported as 16-bit 16 kHz
+            mono WAV in a ZIP, together with a CSV of the boundary times and confidence levels.
+            The note above the table states plainly what the marks do and do not establish.</figcaption>
+        </figure>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="chev">›</span>Reading the output table — column by column</summary>
+      <div class="body">
+        <p>One row per recording. Rows can be sorted by participant and item, by lowest accuracy,
+          or by lowest confidence; the last two are the fastest way into the items that need
+          checking.</p>
+        <figure>
+          <img src="scoring-table.png" alt="The EIT Studio output table, with participant, item,
+            target, the Whisper transcription with its alignment marked, accuracy, word error
+            rate, confidence, and an audio button on each row.">
+          <figcaption>Item 06 shows what a low-accuracy row looks like: several substituted words,
+            an accuracy of 30.0 %, and a confidence figure well below the others — the combination
+            that usually means the audio is worth listening to.</figcaption>
+        </figure>
+        <table class="def"><tbody>
+          <tr><td>Participant</td><td>Read from the file name when it follows
+            <span class="mono2">participantID_itemNN</span>; otherwise whatever you assigned by
+            hand in the file table.</td></tr>
+          <tr><td>Item</td><td>The item number, which is what links the recording to a target
+            sentence.</td></tr>
+          <tr><td>Target</td><td>Your target sentence <em>after</em> normalization — lowercased,
+            punctuation stripped, scoring rules applied. This is the string the comparison
+            actually uses, not the string you pasted in.</td></tr>
+          <tr><td>Whisper</td><td>The transcription after the same normalization, with the
+            alignment against the target marked. Hovering a marked word shows what it was aligned
+            to.</td></tr>
+          <tr><td>Accuracy</td><td>100 × (1 − WER), in percent.</td></tr>
+          <tr><td>WER</td><td>Word error rate: (S + D + I) / N over a word-level minimum-edit
+            alignment, where N is the number of words in the normalized target. Truncated at
+            1.0.</td></tr>
+          <tr><td>Confidence</td><td>The mean probability of the tokens the model selected, shown
+            as a percentage with the raw mean log probability beneath it.</td></tr>
+          <tr><td>Audio</td><td>Plays that recording, so a questionable item can be checked
+            without leaving the table.</td></tr>
+        </tbody></table>
+        <figure>
+          <img src="summary-table.png" alt="The per-participant summary row, showing items scored,
+            mean accuracy, mean word error rate, and mean confidence.">
+          <figcaption>Above the output table, one row per participant reports the number of items
+            scored, and the mean accuracy, word error rate, and confidence across them. The means
+            cover only the items that were actually scored, so check the count before comparing
+            participants.</figcaption>
+        </figure>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="chev">›</span>How the alignment is marked</summary>
+      <div class="body">
+        <p>The three edit types that enter the word error rate are marked in the transcription
+          itself, so a score can be traced to the words that produced it.</p>
+        <table class="def"><tbody>
+          <tr><td><span class="sw sw-sub">white</span></td>
+            <td><b>Substitution.</b> A word produced in place of a target word. Hover to see the
+              target word it replaced.</td></tr>
+          <tr><td><span class="sw sw-ins">of</span></td>
+            <td><b>Insertion.</b> A word in the transcription with no counterpart in the
+              target.</td></tr>
+          <tr><td><span class="sw sw-om">▲</span></td>
+            <td><b>Omission.</b> A target word with no counterpart in the transcription. Hover to
+              see which word is missing.</td></tr>
+          <tr><td>unmarked</td><td>A match, which contributes nothing to the error rate.</td></tr>
+          <tr><td><span class="sw sw-rep">the boy was</span></td>
+            <td><b>Self-correction, if that rule is enabled.</b> A restarted stretch that was
+              excluded from the comparison. It contributes nothing to the error rate, and is shown
+              so that the exclusion remains visible.</td></tr>
+        </tbody></table>
+        <div class="exbox">
+          <div class="k">Target (7 words)</div>
+          <div class="ln">the streets in this city are wide</div>
+          <div class="k" style="margin-top:10px">Whisper</div>
+          <div class="ln">the streets in <span class="sw sw-sub">the</span> city are
+            <span class="sw sw-sub">white</span></div>
+          <p class="calc">Two substitutions, no insertions, no omissions, over seven target words:
+            WER = 2 / 7 = .286, accuracy = 71.4 %.</p>
+        </div>
+        <h4>Self-corrections</h4>
+        <p>By default the transcription is scored as produced, so a false start is aligned as an
+          insertion and counts against the score. The scoring-rules panel offers an alternative:
+          where a stretch of words is restarted, the first attempt is removed and only the repair
+          is scored, following the convention that a self-corrected response is credited on its
+          final attempt. The rule is applied to the transcription only, never to the target
+          sentence, and a stretch that also occurs in the target sentence is never removed.
+          Whichever setting is used is recorded in both exports, and the removed words are listed
+          item by item, so the decision remains reportable. Because no heuristic distinguishes a
+          self-correction from a genuine repetition in every case, items scored under this rule
+          warrant review.</p>
+        <p>Because normalization is applied to both strings before comparison, capitalization,
+          punctuation, and whichever variants you configured never affect the score. A response
+          that is correct but differently punctuated scores as a match; a response that
+          substitutes a grammatical morpheme does not.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="chev">›</span>What the numbers do and do not license</summary>
+      <div class="body">
+        <h4>Accuracy has a floor</h4>
+        <p>Word error rate is truncated at 1.0, following the standard definition. A response with
+          more errors than there are target words therefore scores 0 % rather than a negative
+          value, so very disfluent responses are not distinguished from silent ones by the score
+          alone.</p>
+        <h4>Confidence is not a probability of being correct</h4>
+        <p>Confidence is internal to the model: the mean probability assigned to the tokens it
+          chose. It is comparable across items processed in the same session with the same model
+          and decoding settings, and not comparable across checkpoints or decoding strategies. A
+          high figure means the model was not hesitating, which is not the same as being right.</p>
+        <p>The combination is what is informative. Low accuracy with high confidence usually means
+          the participant really did produce something different from the target. Low accuracy
+          with low confidence more often points to the recording — background noise, a clipped
+          onset, a boundary in the wrong place. Those are the rows to open the audio on.</p>
+        <h4>An empty transcription is ambiguous</h4>
+        <p>An item with no recognized speech is scored WER 1.0 and 0 % accuracy. That is correct if
+          the participant said nothing, and wrong if a segment boundary was misplaced. Inspect
+          these directly rather than reading them as non-responses.</p>
+        <h4>Automatic scores still need a human subsample</h4>
+        <p>Whisper transcribes toward an intended reading and can normalize morphosyntactic detail
+          toward more expected forms — precisely the deviations an elicited imitation task
+          measures. The <a href="asr.html" style="color:var(--accent); font-weight:650">speech
+          recognition page</a> sets out the evidence, and the
+          <a href="cite.html" style="color:var(--accent); font-weight:650">citation page</a> gives
+          a methods-section template that includes reporting the agreement with a human-verified
+          subsample.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary><span class="chev">›</span>Checking efficiently, and what the exports contain</summary>
+      <div class="body">
+        <p>The table is built for triage rather than for reading every row. Sort by lowest
+          accuracy to see where the transcription and the target diverge most, and by lowest
+          confidence to see where the model itself was least certain; the two orderings surface
+          different problems. Play the audio for any row you are unsure about.</p>
+        <p>Export to JSON when you intend to correct by hand: each item carries a
+          <span class="mono2">transcription_corrected</span> field, a
+          <span class="mono2">flag</span> field, and a <span class="mono2">reviewed</span> marker,
+          so a corrected transcription is recorded alongside the automatic one rather than
+          replacing it.</p>
+        <h4>CSV</h4>
+        <p class="mono2" style="color:var(--muted)">participant, item, target, whisper, wer,
+          accuracy_pct, confidence, avg_logprob, duration_s, file, model, rules,
+          self_corrections_removed</p>
+        <h4>JSON</h4>
+        <p>The same item-level fields, plus the alignment operations under
+          <span class="mono2">ops</span>, the string the score was computed on under
+          <span class="mono2">transcription_scored</span>, and a <span class="mono2">meta</span> block recording
+          the Whisper model, the decoding description, how confidence was computed, the full
+          scoring-rule configuration, the number of target items, and a timestamp.</p>
+      </div>
+    </details>
+  </div>
+
+  <p style="margin:26px 0 0; color:var(--muted); font-size:14px">
+    <span class="soon">Coming soon</span> A short demonstration video, showing a set of recordings
+    scored from beginning to end and the table read row by row.</p>
+
+</div></section>
+
+<footer><div class="wrap">
+  <div>EIT Studio · Hae In Park · Kyung Hee University, Seoul, South Korea</div>
+  <div class="mono">whisper-large-v3-turbo · transformers.js</div>
+</div></footer>
+
+<script>
+(function(){
+  var t=document.querySelector('.navtoggle'), l=document.querySelector('.navlinks');
+  if(!t||!l) return;
+  t.addEventListener('click',function(){
+    var open=l.classList.toggle('open');
+    t.setAttribute('aria-expanded',open?'true':'false');
+    t.textContent=open?'\u2715':'\u2630';
+  });
+})();
+</script>
+</body>
+</html>
