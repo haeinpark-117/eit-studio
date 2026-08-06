@@ -215,6 +215,19 @@
 <!-- ================= SETUP ================= -->
 <div id="setup">
 
+  <div class="panel hidden" id="recover" style="border-color:var(--pink-line);
+       background:var(--pink-soft)"><div class="pad" style="padding:18px 22px 20px">
+    <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap">
+      <div style="flex:1 1 320px">
+        <div style="font-weight:700; font-size:15px; letter-spacing:-.25px"
+             data-i18n="recTitle"></div>
+        <div id="recN" style="margin:4px 0 0; font-size:13px; color:var(--muted)"></div>
+      </div>
+      <button class="btn-p" id="recGo" data-i18n="recGo"></button>
+      <button class="btn-g" id="recDrop" data-i18n="recDrop"></button>
+    </div>
+  </div></div>
+
   <div class="gpanel"><div class="pad"><details class="g" open>
     <summary><span class="chev">›</span><span class="badge-read" data-i18n="gBadge"></span>
       <span class="gtitle" data-i18n="gTitle"></span></summary>
@@ -437,6 +450,12 @@ const STR={
   p2t:"Sentence set",
   p2h:"Two things go in: what the participant hears, and what the responses will be scored against. The item count comes from what you load — nothing assumes thirty.",
   btnEitA:"Load EIT A (Ortega et al., 2002)", btnClear:"Clear",
+  recTitle:"An unfinished session is still in storage.",
+  recGo:"Recover them →", recDrop:"Discard",
+  fmtRec:(n,p)=>n+" response"+(n===1?"":"s")+" recorded for "+p+" before the session stopped. "+
+    "They can be scored as they are. Starting a new session clears them.",
+  fmtDiscard:(n)=>"This deletes "+n+" recorded response"+(n===1?"":"s")+
+    " from the unfinished session. They cannot be retrieved afterwards. Continue?",
   p2src:"Preset EIT A — sentences: Ortega, L., Iwashita, N., Norris, J. M., &amp; Rabie, S. (2002). <em>An investigation of elicited imitation tasks in crosslinguistic SLA research</em> [Paper presentation]. Second Language Research Forum, Toronto, Canada.<br>Stimulus recordings: Park, H. I. (under 2nd review). <em>Revisiting parallel form equivalence for the English Elicited Imitation Task: A conceptual replication</em>.",
   s2at:"What they hear", s2ad:"One recorded stimulus per item, named so that the files sort in item order.",
   zoneIdle:"Drop audio files here, or click to choose",
@@ -510,6 +529,11 @@ const STR={
   p2t:"문장 세트",
   p2h:"두 가지가 들어갑니다. 참가자가 듣는 것과, 응답을 대조할 목표 문장입니다. 문항 수는 불러온 자료에서 정해지며 30개를 가정하지 않습니다.",
   btnEitA:"EIT A (Ortega et al., 2002) 불러오기", btnClear:"지우기",
+  recTitle:"완료되지 않은 세션이 저장소에 남아 있습니다.",
+  recGo:"복구하기 →", recDrop:"버리기",
+  fmtRec:(n,p)=>"세션이 중단되기 전 "+p+"의 응답 "+n+"개가 녹음되어 있습니다. "+
+    "그대로 채점할 수 있습니다. 새 세션을 시작하면 삭제됩니다.",
+  fmtDiscard:(n)=>"완료되지 않은 세션의 녹음 "+n+"개가 삭제되며 복구할 수 없습니다. 계속하시겠습니까?",
   p2src:"기본 제공 EIT A — 문항: Ortega, L., Iwashita, N., Norris, J. M., &amp; Rabie, S. (2002). <em>An investigation of elicited imitation tasks in crosslinguistic SLA research</em> [Paper presentation]. Second Language Research Forum, Toronto, Canada.<br>자극 녹음: Park, H. I. (under 2nd review). <em>Revisiting parallel form equivalence for the English Elicited Imitation Task: A conceptual replication</em>.",
   s2at:"참가자가 듣는 것", s2ad:"문항당 자극 녹음 하나씩. 파일명이 문항 순서대로 정렬되도록 하십시오.",
   zoneIdle:"음성 파일을 끌어다 놓거나 클릭해 선택",
@@ -866,6 +890,12 @@ async function idbDel(key){
   return new Promise(res=>{ const tx=db.transaction(STORE,"readwrite");
     tx.objectStore(STORE).delete(key); tx.oncomplete=()=>res(); tx.onerror=()=>res(); });
 }
+async function idbAll(){
+  const db=await idb();
+  return new Promise(res=>{ const tx=db.transaction(STORE,"readonly");
+    const q=tx.objectStore(STORE).getAll();
+    q.onsuccess=()=>res(q.result||[]); q.onerror=()=>res([]); });
+}
 async function idbClear(){
   const db=await idb();
   return new Promise(res=>{ const tx=db.transaction(STORE,"readwrite");
@@ -988,7 +1018,12 @@ $("btnStart").onclick=async()=>{
   const pid=$("pid").value.trim().replace(/[^\w.-]+/g,"_");
   SESSION={pid,group:$("grp").value.trim(),started:new Date().toISOString(),
            schedule:consts(),practice:$("pracLang").value,items:[]};
+  if(!(await confirmOverwrite())) return;
   await idbClear();
+  /* The session record is written now rather than at the end, so that an
+     interrupted session can still be identified and its responses recovered. */
+  try{ await idbPut({id:"meta",...SESSION,targets:TGT,total_items:STIM.length,
+                     in_progress:true}); }catch(e){}
   showScreen("run");
   try{ if(CTX.state==="suspended") await CTX.resume(); }catch(e){}
 
@@ -1019,7 +1054,7 @@ $("btnStart").onclick=async()=>{
   SESSION.ended_early=!!ABORT; SESSION.ended_at_item=ENDED_AT;
   SESSION.total_items=STIM.length; SESSION.recorded=RESULTS.length;
   SESSION.sample_rate=SR;
-  try{ await idbPut({id:"meta",...SESSION,targets:TGT}); }catch(e){}
+  try{ await idbPut({id:"meta",...SESSION,targets:TGT,in_progress:false}); }catch(e){}
   finish();
 };
 
@@ -1048,12 +1083,43 @@ $("btnZip").onclick=async()=>{
 };
 $("btnScore").onclick=()=>{ location.href="app.html?from=administer"; };
 
+/* ------------------------------------------------- unfinished session ----
+   Responses are written item by item, so a session cut short by a reload,
+   a closed tab, or a power failure leaves its recordings in storage. They
+   are of no use unless the researcher is told they are there, and starting
+   a new session clears the store, so both are handled here. */
+let LEFTOVER=0;
+async function checkLeftover(){
+  try{
+    const all=await idbAll();
+    const items=all.filter(r=>/^item-/.test(r.id)&&r.blob);
+    const meta=all.find(r=>r.id==="meta");
+    if(!items.length){ LEFTOVER=0; return; }
+    if(meta && meta.in_progress===false && meta.recorded===meta.total_items){
+      LEFTOVER=0; return;            /* a completed session, already offered on the scoring page */
+    }
+    LEFTOVER=items.length;
+    $("recN").textContent=T("fmtRec")(items.length,(meta&&meta.pid)||"—");
+    $("recover").classList.remove("hidden");
+  }catch(e){ LEFTOVER=0; }
+}
+async function confirmOverwrite(){
+  if(!LEFTOVER) return true;
+  return confirm(T("fmtDiscard")(LEFTOVER));
+}
+$("recGo").onclick=()=>{ location.href="app.html?from=administer"; };
+$("recDrop").onclick=async()=>{
+  if(!confirm(T("fmtDiscard")(LEFTOVER))) return;
+  await idbClear(); LEFTOVER=0; $("recover").classList.add("hidden");
+};
+
 /* -------------------------------------------------------------- start-up */
 (async()=>{
   applyLang();
   await loadPractice();
   await listMics();
   paintSchedule(); paintTally(); paintStart();
+  await checkLeftover();
 })();
 window.addEventListener("beforeunload",e=>{
   if(!$("run").classList.contains("hidden")||(RESULTS.length&&!$("done").classList.contains("hidden"))){
