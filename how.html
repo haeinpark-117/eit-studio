@@ -184,23 +184,63 @@
       <summary><span class="chev">›</span>Administering the task in the browser</summary>
       <div class="body">
         <p>The <a href="administer.html" style="color:var(--accent); font-weight:650">administration
-          tool</a> delivers a sentence set on the schedule specified in the original design: the
-          stimulus plays, a fixed silent pause of 2.5&nbsp;s follows, a ring tone marks the end of
-          the pause, and the response window opens. The window is not the same for every item — it
-          is the stimulus articulation time plus 2&nbsp;s, plus a further 0.5&nbsp;s for each
-          syllable beyond seven, so that longer sentences are given proportionally more time
-          (Ortega et al., 2002; Wu et al., 2022).</p>
-        <p>Every boundary is placed on the browser's audio clock rather than on page timers, so the
-          schedule does not drift over a session. Each response is written to storage as it is
-          recorded, which means an interruption costs one item rather than all of them, and the
-          session ends with one audio file per item plus a log of the schedule actually used —
-          exactly what the scoring tool expects, with no segmentation step and no target list to
-          enter a second time.</p>
-        <p>Two checks run before a participant is seated: a real test recording that is played back
-          and listened to, and a test write to browser storage that catches a private window or a
-          blocked database. Neither failure is recoverable once a session is under way.</p>
+          tool</a> plays your sentence set to the participant, records each answer, and hands the
+          files to the scoring tool. Setting up a session takes four steps, and the participant sees
+          none of them.</p>
+
+        <h4>1 · Load the sentence set</h4>
+        <p>Two things go in: the recorded stimuli the participant will hear, and the target sentence
+          for each item with its syllable count. The button loads the 30-item English EIT of
+          Ortega et al. (2002) with both at once; otherwise drop in your own files and paste your
+          own targets. The tool checks that the two counts match before it will start.</p>
+        <figure><img src="adm-set.png" alt="The sentence set panel, with stimulus files on the left and target sentences on the right">
+          <figcaption>Loading the sentence set. The line underneath confirms that thirty stimulus
+            files match thirty targets.</figcaption></figure>
+
+        <h4>2 · Choose the practice items</h4>
+        <p>Three practice items come before the scored set so that the participant meets the timing
+          once before it counts. They are provided in English and in Korean; practice answers are
+          recorded but left out of the export.</p>
+
+        <h4>3 · Check the microphone and the storage</h4>
+        <p>This is the step worth not skipping. Record five seconds, play it back, and listen —
+          a level meter alone will not catch a muted headset microphone or a browser writing
+          silence. The storage check writes and deletes one test record, which is what catches a
+          private browsing window before the participant arrives rather than after.</p>
+        <figure><img src="adm-check.png" alt="The recording panel, with a microphone test on the left and a storage check on the right">
+          <figcaption>Neither failure can be undone once a session is running, so both are checked
+            beforehand.</figcaption></figure>
+
+        <h4>4 · Start the session</h4>
+        <p>From here the screen belongs to the participant. A short instruction screen comes first,
+          then the practice items, then a screen naming how many sentences are about to follow.</p>
+        <figure><img src="adm-begin.png" alt="The screen shown to the participant before the scored items begin">
+          <figcaption>The item count comes from the set that was loaded.</figcaption></figure>
+
+        <p>Each item then runs the same way: the sentence plays, a short pause follows, a ring tone
+          marks the end of the pause, and a bar counts down the time available to answer. Longer
+          sentences are given proportionally longer to answer, following the original design
+          (Ortega et al., 2002; Wu et al., 2022). Nothing else appears on screen — no waveform of
+          the participant's own voice and no transcription — so nothing invites them to monitor or
+          correct themselves.</p>
+        <figure><img src="adm-run.png" alt="The response window, with the countdown bar running">
+          <figcaption>The one control on this screen is <b>End session</b>, in the corner: it
+            belongs to the researcher, for a participant who has to stop.</figcaption></figure>
+
+        <h4>When the session ends</h4>
+        <p>Download the ZIP first. It contains one audio file per item, the target list, and a log
+          of the schedule that was actually used, which is what you would report in a methods
+          section. Then send the recordings straight to the scoring tool: the targets and the audio
+          are already there, so nothing has to be uploaded or typed a second time.</p>
+        <figure><img src="adm-done.png" alt="The completion screen, offering the ZIP download first and scoring second">
+          <figcaption>A participant's session cannot be repeated, so saving to disk comes before
+            anything else.</figcaption></figure>
+
+        <p class="soon">Ending a session early changes what was collected, not what can be done with
+          it: the answers already recorded are complete files, and the log records where the session
+          stopped.</p>
       </div>
-    </details>
+      </details>
     <details>
       <summary><span class="chev">›</span>Splitting one long recording into items</summary>
       <div class="body">
