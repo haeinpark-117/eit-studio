@@ -15,28 +15,28 @@
   }
   *{box-sizing:border-box}
   body{margin:0; background:var(--bg); color:var(--ink); padding:66px 18px 60px;
-    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+    font:17.6px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
     display:flex; justify-content:center; -webkit-font-smoothing:antialiased}
   .hd{position:fixed; top:0; left:0; right:0; z-index:20; height:50px;
     background:rgba(255,255,255,.92); backdrop-filter:blur(10px);
     border-bottom:1px solid var(--line); display:flex; align-items:center;
     justify-content:space-between; padding:0 22px}
-  .hd .t{font-weight:800; font-size:16.5px; letter-spacing:-.3px}
+  .hd .t{font-weight:800; font-size:18.2px; letter-spacing:-.3px}
   .hd .t a{text-decoration:none; color:inherit}
-  .hd .t span{font-weight:400; color:var(--muted); font-size:12.1px; margin-left:9px;
+  .hd .t span{font-weight:400; color:var(--muted); font-size:13.3px; margin-left:9px;
     letter-spacing:.08em; text-transform:uppercase; font-family:var(--mono)}
   .tabs2{display:flex; gap:6px; margin-left:auto; margin-right:14px}
-  .tabs2 a{font-size:13.8px; font-weight:600; text-decoration:none; color:var(--muted);
+  .tabs2 a{font-size:15.2px; font-weight:600; text-decoration:none; color:var(--muted);
     padding:5px 12px; border-radius:8px; border:1px solid transparent; white-space:nowrap}
   .tabs2 a:hover{color:var(--ink); background:#f0f0f5}
   .tabs2 a.on{background:var(--accent-soft); border-color:var(--accent-line); color:var(--accent)}
   .hd .rt{display:flex; align-items:center; gap:12px}
-  .lang button{font:inherit; font-size:13.8px; padding:4px 11px; border:1px solid var(--line);
+  .lang button{font:inherit; font-size:15.2px; padding:4px 11px; border:1px solid var(--line);
     background:#fff; cursor:pointer}
   .lang button:first-child{border-radius:7px 0 0 7px}
   .lang button:last-child{border-radius:0 7px 7px 0; border-left:0}
   .lang button.on{background:var(--accent); color:#fff; border-color:var(--accent)}
-  .stage{width:100%; max-width:1120px}
+  .stage{width:100%; max-width:1320px}
 
   .panel{background:var(--panel); border:1px solid var(--line); border-radius:14px;
     margin-bottom:18px; overflow:hidden}
@@ -44,7 +44,7 @@
 
   h1.q{margin:0 0 8px; font-size:33px; line-height:1.2; letter-spacing:-.9px; font-weight:800;
     text-align:center}
-  p.qs{margin:0 auto 30px; color:var(--muted); font-size:15.4px; line-height:1.65;
+  p.qs{margin:0 auto 30px; color:var(--muted); font-size:16.9px; line-height:1.65;
     text-align:center; max-width:60ch}
 
   /* ---------- choice cards ---------- */
@@ -58,17 +58,14 @@
   .card:hover{border-color:var(--accent-line); box-shadow:0 6px 18px rgba(56,64,243,.08)}
   .card.alt:hover{border-color:var(--pink-line); box-shadow:0 6px 18px rgba(255,20,147,.08)}
   .card .ic{width:34px; height:34px; border-radius:10px; display:grid; place-items:center;
-    font-size:18.7px; background:var(--accent-soft); color:var(--accent)}
+    font-size:20.6px; background:var(--accent-soft); color:var(--accent)}
   .card.alt .ic{background:var(--pink-soft); color:var(--pink)}
-  .card h3{margin:0; font-size:18.2px; font-weight:700; letter-spacing:-.3px}
-  .card p{margin:0; color:var(--muted); font-size:15.4px; line-height:1.6; flex:1 1 auto}
-  .card .files{font-family:var(--mono); font-size:12.7px; color:var(--muted); background:#f7f7fa;
-    border:1px solid var(--line); border-radius:8px; padding:8px 10px; line-height:1.8;
-    min-height:70px}
-  .foot-note{margin:18px 0 0; font-size:14.5px; color:var(--muted); line-height:1.65}
+  .card h3{margin:0; font-size:20px; font-weight:700; letter-spacing:-.3px}
+  .card p{margin:0; color:var(--muted); font-size:16.9px; line-height:1.6; flex:1 1 auto}
+  .foot-note{margin:18px 0 0; font-size:16px; color:var(--muted); line-height:1.65}
 
   /* ---------- CTA ---------- */
-  .btn{display:inline-block; align-self:flex-start; text-decoration:none; font-size:14.9px;
+  .btn{display:inline-block; align-self:flex-start; text-decoration:none; font-size:16.4px;
     font-weight:650; padding:10px 18px; border-radius:10px; border:1px solid transparent;
     margin-top:2px}
   .btn-p{background:var(--accent); color:#fff}
@@ -79,14 +76,14 @@
   /* ---------- checklist ---------- */
   .need{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:6px}
   .need .it{border:1px solid var(--line); border-radius:12px; padding:16px 18px; background:#fff}
-  .need .it h3{margin:0 0 5px; font-size:16px; letter-spacing:-.2px}
-  .need .it p{margin:0; color:var(--muted); font-size:14.5px; line-height:1.6}
-  .need .it pre{margin:9px 0 0; font-family:var(--mono); font-size:12.7px; color:var(--muted);
+  .need .it h3{margin:0 0 5px; font-size:17.6px; letter-spacing:-.2px}
+  .need .it p{margin:0; color:var(--muted); font-size:16px; line-height:1.6}
+  .need .it pre{margin:9px 0 0; font-family:var(--mono); font-size:14px; color:var(--muted);
     background:#f7f7fa; border:1px solid var(--line); border-radius:8px; padding:8px 10px;
     line-height:1.7; overflow-x:auto}
-  h2.sec{margin:0 0 4px; font-size:18.7px; letter-spacing:-.35px}
-  p.secs{margin:0 0 16px; color:var(--muted); font-size:14.3px; line-height:1.65}
-  .foot{font-size:12.7px; color:var(--muted); padding:11px 22px; border-top:1px solid var(--line);
+  h2.sec{margin:0 0 4px; font-size:20.6px; letter-spacing:-.35px}
+  p.secs{margin:0 0 16px; color:var(--muted); font-size:15.7px; line-height:1.65}
+  .foot{font-size:14px; color:var(--muted); padding:11px 22px; border-top:1px solid var(--line);
     background:#fafafb; font-family:var(--mono)}
   @media(max-width:720px){
     h1.q{font-size:26px}
@@ -102,15 +99,15 @@
     body{padding-top:94px}
     body.running{padding-top:94px}
     .hd{height:auto; flex-wrap:wrap; padding:9px 14px 0; align-items:center}
-    .hd .t{font-size:15.4px}
+    .hd .t{font-size:16.9px}
     .hd .t span{display:none}
     .hd .rt{margin-left:auto; gap:8px}
-    .lang button{font-size:12.7px; padding:4px 9px}
+    .lang button{font-size:14px; padding:4px 9px}
     .tabs2{order:3; width:100%; margin:9px -14px 0; padding:0 14px 9px;
       gap:5px; overflow-x:auto; -webkit-overflow-scrolling:touch;
       scrollbar-width:none; -ms-overflow-style:none}
     .tabs2::-webkit-scrollbar{display:none}
-    .tabs2 a{font-size:13.2px; padding:5px 10px; flex:0 0 auto}
+    .tabs2 a{font-size:14.5px; padding:5px 10px; flex:0 0 auto}
   }
 </style>
 </head>
@@ -140,21 +137,18 @@
         <div class="ic">🎙</div>
         <h3 data-i18n="cCt"></h3>
         <p data-i18n="cCs"></p>
-        <div class="files">targets.txt<br>→ <span data-i18n="cCx"></span><br>→ P01_item01.wav …</div>
         <a class="btn btn-p" href="administer.html" data-i18n="cCb"></a>
       </div>
       <div class="card alt">
         <div class="ic">✓</div>
         <h3 data-i18n="cAt"></h3>
         <p data-i18n="cAs"></p>
-        <div class="files">P01_item01.wav<br>P01_item02.wav<br>P01_item03.wav …</div>
         <a class="btn btn-k" href="app.html" data-i18n="cAb"></a>
       </div>
       <div class="card cy">
         <div class="ic">✂</div>
         <h3 data-i18n="cBt"></h3>
         <p data-i18n="cBs"></p>
-        <div class="files">P01_session.mp3 <span style="opacity:.6" data-i18n="cBx"></span></div>
         <a class="btn btn-c" href="segment.html" data-i18n="cBb"></a>
       </div>
     </div>

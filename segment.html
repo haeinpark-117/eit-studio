@@ -14,23 +14,23 @@
   }
   *{box-sizing:border-box}
   body{margin:0; background:var(--bg); color:var(--ink); padding:66px 18px 60px;
-    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+    font:17.6px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
     display:flex; justify-content:center; -webkit-font-smoothing:antialiased}
   .hd{position:fixed; top:0; left:0; right:0; z-index:20; height:50px;
     background:rgba(255,255,255,.92); backdrop-filter:blur(10px);
     border-bottom:1px solid var(--line); display:flex; align-items:center;
     justify-content:space-between; padding:0 22px}
-  .hd .t{font-weight:800; font-size:16.5px; letter-spacing:-.3px}
+  .hd .t{font-weight:800; font-size:18.2px; letter-spacing:-.3px}
   .hd .t a{text-decoration:none; color:inherit}
-  .hd .t span{font-weight:400; color:var(--muted); font-size:12.1px; margin-left:9px;
+  .hd .t span{font-weight:400; color:var(--muted); font-size:13.3px; margin-left:9px;
     letter-spacing:.08em; text-transform:uppercase; font-family:var(--mono)}
   .tabs2{display:flex; gap:6px; margin-left:auto; margin-right:14px}
-  .tabs2 a{font-size:13.8px; font-weight:600; text-decoration:none; color:var(--muted);
+  .tabs2 a{font-size:15.2px; font-weight:600; text-decoration:none; color:var(--muted);
     padding:5px 12px; border-radius:8px; border:1px solid transparent; white-space:nowrap}
   .tabs2 a:hover{color:var(--ink); background:#f0f0f5}
   .tabs2 a.on{background:var(--accent-soft); border-color:var(--accent-line); color:var(--accent)}
   .hd .rt{display:flex; align-items:center; gap:12px}
-  .lang button{font:inherit; font-size:13.8px; padding:4px 11px; border:1px solid var(--line);
+  .lang button{font:inherit; font-size:15.2px; padding:4px 11px; border:1px solid var(--line);
     background:#fff; cursor:pointer}
   .lang button:first-child{border-radius:7px 0 0 7px}
   .lang button:last-child{border-radius:0 7px 7px 0; border-left:0}
@@ -39,10 +39,10 @@
 
   .hero{padding:22px 4px 18px; display:flex; align-items:baseline; gap:14px; flex-wrap:wrap;
     border-bottom:1px solid var(--line); margin-bottom:20px}
-  .hero-t{margin:0; font-size:20.9px; font-weight:800; letter-spacing:-.5px}
+  .hero-t{margin:0; font-size:23px; font-weight:800; letter-spacing:-.5px}
   .hero-t span{color:var(--accent)}
-  .hero-s{margin:0; flex:1 1 340px; font-size:13.8px; line-height:1.6; color:var(--muted)}
-  .hero-back{font-size:13.8px; color:var(--accent); text-decoration:none; font-weight:600;
+  .hero-s{margin:0; flex:1 1 340px; font-size:15.2px; line-height:1.6; color:var(--muted)}
+  .hero-back{font-size:15.2px; color:var(--accent); text-decoration:none; font-weight:600;
     white-space:nowrap}
 
   .panel{background:var(--panel); border:1px solid var(--line); border-radius:14px;
@@ -50,31 +50,31 @@
   .pad{padding:22px 24px}
   .step{display:flex; align-items:center; gap:10px; margin-bottom:6px}
   .step .n{width:22px; height:22px; border-radius:50%; background:var(--accent); color:#fff;
-    font-size:13.2px; font-weight:700; display:grid; place-items:center; flex:0 0 auto}
-  .step h2{margin:0; font-size:18.2px; letter-spacing:-.3px}
-  .meta{color:var(--muted); font-size:14.5px; margin:6px 0 14px; line-height:1.65}
+    font-size:14.5px; font-weight:700; display:grid; place-items:center; flex:0 0 auto}
+  .step h2{margin:0; font-size:20px; letter-spacing:-.3px}
+  .meta{color:var(--muted); font-size:16px; margin:6px 0 14px; line-height:1.65}
   .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:12px}
-  label.fl{font-size:14.3px; color:var(--muted)}
-  input[type=text],input[type=number],select{font:inherit; font-size:14.9px; padding:7px 10px;
+  label.fl{font-size:15.7px; color:var(--muted)}
+  input[type=text],input[type=number],select{font:inherit; font-size:16.4px; padding:7px 10px;
     border:1px solid var(--line); border-radius:8px; background:#fff}
   input[type=number]{width:92px}
   input[type=text]{width:170px}
   button{font:inherit; cursor:pointer}
   .btn-p{background:var(--accent); color:#fff; border:0; border-radius:9px; padding:10px 18px;
-    font-weight:650; font-size:15.4px}
+    font-weight:650; font-size:16.9px}
   .btn-p:hover{background:var(--accent-dark)}
   .btn-p:disabled{background:#c3c5e8; cursor:default}
   .btn-g{background:#fff; border:1px solid var(--line); border-radius:9px; padding:9px 15px;
-    font-size:14.9px; font-weight:600}
+    font-size:16.4px; font-weight:600}
   .btn-g:hover{border-color:#c0c0cf}
-  .btn-s{padding:6px 11px; font-size:13.8px; border-radius:7px}
+  .btn-s{padding:6px 11px; font-size:15.2px; border-radius:7px}
 
   .drop{border:2px dashed var(--accent-line); border-radius:12px; padding:34px 20px;
-    text-align:center; color:var(--muted); font-size:14.9px; cursor:pointer;
+    text-align:center; color:var(--muted); font-size:16.4px; cursor:pointer;
     background:#fcfcff; transition:.15s}
   .drop:hover,.drop.over{border-color:var(--accent); background:var(--accent-soft)}
 
-  .infobox{background:var(--accent-soft); border-radius:9px; padding:10px 13px; font-size:14.3px;
+  .infobox{background:var(--accent-soft); border-radius:9px; padding:10px 13px; font-size:15.7px;
     color:#3b3e73; line-height:1.65}
   .warn{background:#fff4f0; color:#7a3b28}
 
@@ -84,7 +84,7 @@
   .marks{position:absolute; inset:0; pointer-events:none}
   .seg{position:absolute; top:0; bottom:22px; background:rgba(56,64,243,.07);
     border-left:2px solid var(--accent); border-right:2px solid var(--accent)}
-  .seg .lab{position:absolute; top:4px; left:4px; font-family:var(--mono); font-size:11px;
+  .seg .lab{position:absolute; top:4px; left:4px; font-family:var(--mono); font-size:12.1px;
     color:#fff; background:var(--accent); border-radius:4px; padding:1px 5px}
   .hnd{position:absolute; top:0; bottom:22px; width:9px; margin-left:-4px; cursor:col-resize;
     pointer-events:auto}
@@ -93,39 +93,39 @@
   .hnd.end::after{background:var(--accent)}
   .ruler{position:absolute; left:0; right:0; bottom:0; height:22px; border-top:1px solid var(--line);
     background:#fff}
-  .tick{position:absolute; bottom:2px; font-family:var(--mono); font-size:10.5px; color:var(--muted);
+  .tick{position:absolute; bottom:2px; font-family:var(--mono); font-size:11.6px; color:var(--muted);
     transform:translateX(-50%)}
   .tick i{position:absolute; left:50%; bottom:13px; width:1px; height:5px; background:var(--line);
     display:block}
   .cursor{position:absolute; top:0; bottom:22px; width:1px; background:var(--coral)}
   .skip{position:absolute; left:0; top:0; bottom:22px; background:rgba(255,92,53,.10);
     border-right:2px solid var(--coral)}
-  .skip .lab{position:absolute; top:4px; right:5px; font-family:var(--mono); font-size:11px;
+  .skip .lab{position:absolute; top:4px; right:5px; font-family:var(--mono); font-size:12.1px;
     color:#fff; background:var(--coral); border-radius:4px; padding:1px 5px; white-space:nowrap}
   .skiphnd{position:absolute; top:0; bottom:22px; width:11px; margin-left:-5px;
     cursor:col-resize; pointer-events:auto}
   .skiphnd::after{content:""; position:absolute; left:4px; top:0; bottom:0; width:3px;
     background:var(--coral); border-radius:2px}
 
-  table.segs{width:100%; border-collapse:collapse; font-size:14.3px; margin-top:14px}
-  table.segs th{text-align:left; font-family:var(--mono); font-size:11px; letter-spacing:.1em;
+  table.segs{width:100%; border-collapse:collapse; font-size:15.7px; margin-top:14px}
+  table.segs th{text-align:left; font-family:var(--mono); font-size:12.1px; letter-spacing:.1em;
     text-transform:uppercase; color:var(--muted); font-weight:600; padding:9px 10px;
     border-bottom:1px solid var(--line)}
   table.segs td{padding:8px 10px; border-bottom:1px solid #f2f2f6; font-family:var(--mono);
-    font-size:13.8px}
+    font-size:15.2px}
   table.segs tr:last-child td{border-bottom:0}
   table.segs tr.short td{background:#fff4f0}
   table.segs .nm{font-family:var(--mono); color:var(--accent)}
   .iconbtn{border:1px solid var(--line); background:#fff; border-radius:6px; padding:4px 11px;
-    font-size:13.2px; line-height:1.2}
+    font-size:14.5px; line-height:1.2}
   .iconbtn:hover{border-color:var(--coral); color:var(--coral)}
-  .chip{display:inline-block; font-family:var(--mono); font-size:11.6px; padding:2px 8px;
+  .chip{display:inline-block; font-family:var(--mono); font-size:12.8px; padding:2px 8px;
     border-radius:999px; letter-spacing:.04em}
   .chip.ok{background:#e8f5ec; color:#186a3b}
   .chip.mid{background:#fff4e5; color:#8a5a00}
   .chip.low{background:#fff0ec; color:#a2381c}
   .hidden{display:none}
-  .foot{font-size:12.7px; color:var(--muted); padding:11px 22px; border-top:1px solid var(--line);
+  .foot{font-size:14px; color:var(--muted); padding:11px 22px; border-top:1px solid var(--line);
     background:#fafafb; font-family:var(--mono)}
   /* ---------- read-me-first guide ---------- */
   .panel.gpanel{background:var(--accent-soft); border-color:var(--accent-line)}
@@ -133,13 +133,13 @@
   #guide summary{cursor:pointer; list-style:none; display:flex; align-items:center; gap:10px;
     flex-wrap:wrap}
   #guide summary::-webkit-details-marker{display:none}
-  #guide .chev{color:var(--accent); font-size:20.9px; line-height:1; transition:transform .15s;
+  #guide .chev{color:var(--accent); font-size:23px; line-height:1; transition:transform .15s;
     display:inline-block; font-weight:700}
   #guide[open] .chev{transform:rotate(90deg)}
-  #guide .badge-read{font-family:var(--mono); font-size:11px; letter-spacing:.12em;
+  #guide .badge-read{font-family:var(--mono); font-size:12.1px; letter-spacing:.12em;
     text-transform:uppercase; background:var(--accent); color:#fff; border-radius:999px;
     padding:4px 10px; white-space:nowrap}
-  #guide .gtitle{font-weight:700; font-size:17.1px; letter-spacing:-.2px; color:var(--ink)}
+  #guide .gtitle{font-weight:700; font-size:18.8px; letter-spacing:-.2px; color:var(--ink)}
   #guide summary:hover .gtitle{color:var(--accent-dark)}
   #guide .gbody{margin:14px 0 0; padding-top:14px; border-top:1px solid var(--accent-line)}
   #guide .gbody b{color:var(--ink)}
@@ -155,15 +155,15 @@
     body{padding-top:94px}
     body.running{padding-top:94px}
     .hd{height:auto; flex-wrap:wrap; padding:9px 14px 0; align-items:center}
-    .hd .t{font-size:15.4px}
+    .hd .t{font-size:16.9px}
     .hd .t span{display:none}
     .hd .rt{margin-left:auto; gap:8px}
-    .lang button{font-size:12.7px; padding:4px 9px}
+    .lang button{font-size:14px; padding:4px 9px}
     .tabs2{order:3; width:100%; margin:9px -14px 0; padding:0 14px 9px;
       gap:5px; overflow-x:auto; -webkit-overflow-scrolling:touch;
       scrollbar-width:none; -ms-overflow-style:none}
     .tabs2::-webkit-scrollbar{display:none}
-    .tabs2 a{font-size:13.2px; padding:5px 10px; flex:0 0 auto}
+    .tabs2 a{font-size:14.5px; padding:5px 10px; flex:0 0 auto}
   }
 </style>
 </head>
@@ -254,7 +254,7 @@
         <button class="btn-g btn-s" id="clearTgt" data-i18n="btnClearTgt"></button>
         <span class="meta" id="tgtCount" style="margin:0"></span>
       </div>
-      <textarea id="tgtBox" spellcheck="false" style="width:100%; height:110px; font:13.8px/1.5
+      <textarea id="tgtBox" spellcheck="false" style="width:100%; height:110px; font:15.2px/1.5
         var(--mono); padding:9px 11px; border:1px solid var(--line); border-radius:9px"></textarea>
     </div>
     <div class="row hidden" id="gridConst">
@@ -325,7 +325,7 @@
       <span class="bar"><i id="expBar"></i></span>
     </div>
     <p class="meta" id="expStatus" style="margin:2px 0 0"></p>
-    <p style="margin:12px 0 0"><a href="app.html" style="font-size:14.3px; font-weight:600;
+    <p style="margin:12px 0 0"><a href="app.html" style="font-size:15.7px; font-weight:600;
        color:var(--accent); text-decoration:none" data-i18n="toApp"></a></p>
   </div></div>
 
