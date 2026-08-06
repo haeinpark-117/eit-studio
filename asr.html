@@ -73,6 +73,7 @@
   table.ev tr:last-child td{border-bottom:0}
   table.ev td:first-child{white-space:nowrap; font-weight:650}
   .num{font-family:var(--mono); color:var(--accent); font-weight:700; white-space:nowrap}
+  p .mono, td .mono{font-family:var(--mono); font-size:13px}
 
   ol.refs{list-style:none; counter-reset:r; padding:0; margin:8px 0 0}
   ol.refs li{counter-increment:r; padding:15px 0 15px 34px; border-bottom:1px solid #f1f1f5;
@@ -119,7 +120,6 @@
   <div class="navlinks">
     <a href="about.html">About</a>
     <a href="how.html">How it works</a>
-    <a href="why-eit.html">Why elicited imitation</a>
     <a href="asr.html" class="on">Speech recognition</a>
     <a href="cite.html">How to cite</a>
     <a href="contact.html">Contact</a>
@@ -140,28 +140,24 @@
 <section><div class="wrap narrow">
   <h2>Why Whisper large-v3-turbo</h2>
 
-  <h3>Recognizing second language speech</h3>
-  <p>For most of the history of speech recognition, systems were built around clear first-language
-    speech, and accuracy fell when the speaker was a learner. That is the practical reason
-    automated elicited imitation did not work: the responses a task collects are exactly the kind
-    of speech recognizers handled worst. Earlier attempts to automate the task relied on systems
-    that required extensive tuning to reach even modest accuracy on learner responses.</p>
-  <p>Those adjustments often included <em>forced alignment</em>: constraining the recognizer to
-    the words of the prompt. For elicited imitation this is self-defeating. A recognizer that can
-    only output the target sentence will tend to report the target sentence, and the very
-    deviations that constitute the measurement disappear. The task needs a recognizer that
-    transcribes what was said without being told what was expected.</p>
-
-  <h3>What Whisper changed</h3>
-  <p>Radford et al. (2023) report four properties of Whisper that matter for this task.</p>
+  <h3>Why Whisper is appropriate for L2 data</h3>
+  <p>Earlier recognizers were built around clear first-language speech, and reached usable
+    accuracy on learner responses only after extensive tuning — often including
+    <em>forced alignment</em>, which constrains the recognizer to the words of the prompt. For
+    elicited imitation that is self-defeating: a recognizer that can only output the target
+    sentence will tend to report the target sentence, and the deviations that constitute the
+    measurement disappear. What the task needs is a recognizer accurate enough on accented,
+    disfluent speech to be used without being told what was expected. The four properties
+    Radford et al. (2023) report are what make Whisper that recognizer.</p>
   <table class="ev">
     <tbody>
       <tr><td>Accuracy</td><td>Error rates on standard benchmarks that approach human
         transcription, and that are competitive with fully supervised systems</td></tr>
       <tr><td>Scale and breadth</td><td>Trained on 680,000 hours of multilingual, multitask
         supervision rather than on a single curated corpus of read speech</td></tr>
-      <tr><td>Robustness</td><td>Trained to generalize across recording conditions and speech
-        styles, so recordings made on participants' own phones and laptops remain usable</td></tr>
+      <tr><td>Robustness</td><td>Trained to generalize across recording conditions, accents, and
+        speech styles rather than to one variety, which is what makes accented learner speech and
+        recordings made on participants' own phones and laptops usable</td></tr>
       <tr><td>No adaptation needed</td><td>Used zero-shot, without dataset-specific fine-tuning —
         and, as above, without forced alignment, which is what makes the scores meaningful</td></tr>
     </tbody>
@@ -172,58 +168,58 @@
   <p>Whisper large-v3-turbo is large-v3 with its decoder layers reduced, retaining the same
     encoder and, per its model card, only minor quality degradation while running several times
     faster. That difference is what allows the model to run inside a browser on an ordinary
-    laptop rather than on a rented GPU. McGuire and Larson-Hall (2025) processed their 900
-    responses through a commercial API on a remote T4 GPU, at a cost of about USD 0.23 and
-    requiring a Python script and an API token; the turbo variant removes both the cost and the
-    token, at the price of running on the researcher's own hardware. The smaller
+    laptop rather than on rented hardware. Reaching Whisper through a commercial transcription
+    API is not expensive — OpenAI lists its <span class="mono">whisper-1</span> endpoint at USD
+    0.006 per minute of audio, so a session of thirty items costs a few cents per participant —
+    but it requires an account, an API token, and a script, and the recordings leave the
+    researcher's machine. The turbo weights are openly available, so the same model can be run
+    directly from Python, or here in the browser, at no cost and with nothing uploaded. The smaller
     <span class="mono">whisper-small</span> model remains selectable for quickly checking that a
     file set is configured correctly, but it should not be used for scoring.</p>
 
   <h3>How it performs on learner speech</h3>
-  <p>Whisper is not uniformly accurate, and what it is asked to transcribe matters more than any
-    other single factor. O'Connor Russell et al. (2024) benchmarked six systems across three
-    corpora and found Whisper at <span class="num">3.12 %</span> word error rate on read
+  <p>What Whisper is asked to transcribe matters more than any other single factor: O'Connor
+    Russell et al. (2024) found it at <span class="num">3.12 %</span> word error rate on read
     audiobook speech but <span class="num">19.4 %</span> on telephone conversation and
-    <span class="num">26.7 %</span> on videoconferencing speech, where commercial systems roughly
-    halved that error. Swain et al. (2026) report the extreme case: on spontaneous dyadic
-    conversation spanning 26 first- and second-language varieties of English, Whisper models
-    without fine-tuning produced word error rates of <span class="num">58–96 %</span>, with gaps
-    of <span class="num">92–124</span> points between the best and worst accent groups.</p>
-  <p>Elicited imitation responses sit at the favorable end of that range. They are short, single
-    sentences, produced in a controlled recording, with no overlapping talk — closer to read
-    speech than to conversation. On read speech from learners specifically, McGuire (2026)
-    compared five current systems on 2,400 recordings from the L2-ARCTIC corpus and found Whisper
-    large-v3 lowest in match error rate (<span class="num">.054</span>), though performance varied
-    by first language, from <span class="num">.007</span> for US English controls to
-    <span class="num">.124</span> for Vietnamese speakers. Error rates for all five systems were
-    substantially below those reported for the systems used in earlier work.</p>
+    <span class="num">26.7 %</span> on videoconferencing speech. Elicited imitation responses sit
+    at the favorable end of that range — short single sentences, recorded under controlled
+    conditions, with no overlapping talk. On read speech from learners specifically, McGuire
+    (2026) compared five current systems on 2,400 recordings from the L2-ARCTIC corpus and found
+    Whisper large-v3 lowest in match error rate (<span class="num">.054</span>), though
+    performance varied by first language, from <span class="num">.007</span> for US English
+    controls to <span class="num">.124</span> for Vietnamese speakers.</p>
 
   <h3>Two findings worth knowing before you rely on it</h3>
-  <p>First, Whisper's language identification is not reliable for learner speech, and can return
-    the speaker's first language rather than the target language. Ballier et al. (2024) found that
-    the L1 of intermediate French learners of English was identified in <span class="num">80
-    %</span> of cases, while advanced learners were identified as speaking English in
-    <span class="num">90 %</span>. EIT Studio therefore fixes the language to English rather than
-    leaving detection to the model. The same study found that the subtoken probabilities Whisper
-    assigns carry information about learner level, which is part of why a confidence figure is
+  <p><b>Language identification is unreliable for learner speech.</b> Ballier et al. (2024) found
+    that intermediate French learners of English were identified as speaking French in
+    <span class="num">80 %</span> of cases, while advanced learners were identified as speaking
+    English in <span class="num">90 %</span>. EIT Studio therefore fixes the language to English
+    rather than leaving detection to the model. The same study found that Whisper's subtoken
+    probabilities carry information about learner level, which is why a confidence figure is
     reported for every item.</p>
-  <p>Second, Whisper does not always transcribe verbatim. Shen et al. (2026) show that its
-    normalization extends beyond orthographic conventions into morphosyntax: transcribing Spanish
-    determiner–noun sequences, Whisper large-v3 regularized grammatical gender violations toward
-    the prescriptively correct form for regular nouns, while repeating the same violations
-    verbatim for nouns whose gender marking varies in usage. Whisper also tends to omit fillers,
-    repetitions, and other disfluencies (Zusag et al., 2024), and performs less well on non-native
-    than native accents, with proficiency negatively predicting error (Graham &amp; Roll, 2024).
-    For elicited imitation, where deviations from the target constitute the measurement, this is
-    the property to keep in view: an automatic transcription is not a neutral record of what was
-    produced, and a human-verified subsample remains necessary.</p>
+  <p><b>Whisper does not always transcribe verbatim.</b> Its normalization reaches into
+    morphosyntax: on Spanish determiner–noun sequences, Whisper large-v3 corrected grammatical
+    gender violations toward the prescriptively correct form for regular nouns, while repeating
+    the same violations for nouns whose gender marking varies in usage (Shen et al., 2026). It
+    also omits fillers and repetitions (Zusag et al., 2024) and is less accurate on non-native
+    than native accents (Graham &amp; Roll, 2024). Where deviations from the target are the
+    measurement, an automatic transcription is not a neutral record of what was produced.</p>
 
   <h3>What to check in your own data</h3>
-  <p>Verify a subsample by hand and report the agreement. Items where the participant produced
-    nothing are worth inspecting directly, as are items containing the structures a study is
-    designed to measure — those are where normalization would do the most damage. None of this is
-    a reason to avoid the method; it is the ordinary reporting practice that makes an automated
-    procedure auditable.</p>
+  <p>Two things support treating word error rate as a proficiency measure, and both belong in a
+    methods section. The first is <b>consistency with human raters</b>: transcribe and score a
+    subsample by hand and report how closely the automatic scores track it. The second is the
+    <b>relationship with an independent proficiency measure</b> — a standardized test, a C-test,
+    or another established instrument. Agreement with human raters establishes only that the
+    transcription is faithful; it is the external correlation that supports word error rate as a
+    proxy for proficiency rather than as a transcription statistic. Agreement of the first kind
+    has been reported for this method — McGuire and Larson-Hall (2025) found an ICC of
+    <span class="num">.929</span> between human and automatic error rates across 900 English
+    elicited imitation responses — but that compares two ways of scoring the same responses. The
+    external correlation is what each study has to establish for its own sample.</p>
+  <p>Items where the participant produced nothing are worth inspecting directly, as are items
+    containing the structures a study is designed to measure — those are where normalization
+    would do the most damage.</p>
 
   <h3>If the model changes</h3>
   <p>Speech recognition models improve, and this tool will adopt better ones when the evidence
@@ -321,10 +317,6 @@
       (2026). Listening to variation: Human and Whisper responses to grammatical gender agreement.
       <em>Computer Speech &amp; Language</em>, Article 102038. Advance online publication.
       <a href="https://doi.org/10.1016/j.csl.2026.102038">https://doi.org/10.1016/j.csl.2026.102038</a></li>
-    <li>Swain, M., Maji, B., Mishra, J., Schedl, M., Søgaard, A., &amp; Rindom Jensen, J. (2026).
-      Towards fair ASR for second language speakers using fairness prompted finetuning. In
-      <em>ICASSP 2026 — IEEE International Conference on Acoustics, Speech and Signal
-      Processing</em>. IEEE.</li>
     <li>Zusag, M., Wagner, L., &amp; Thallinger, B. (2024). CrisperWhisper: Accurate timestamps
       on verbatim speech transcriptions. In <em>Proceedings of Interspeech 2024</em>.
       <a href="https://www.isca-archive.org/interspeech_2024/zusag24_interspeech.pdf">ISCA Archive</a></li>
@@ -332,12 +324,6 @@
 </div></section>
 
 </main>
-
-<div class="endcta"><div class="wrap">
-  <h2>See it run on your own data.</h2>
-  <p>The model is downloaded once and cached; nothing is uploaded at any point.</p>
-  <a class="btn" href="start.html">Start here</a>
-</div></div>
 
 <footer><div class="wrap">
   <div>EIT Studio · <a href="about.html">About</a> · <a href="cite.html">How to cite</a> ·
