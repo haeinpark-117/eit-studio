@@ -34,11 +34,10 @@
     background:#fff; color:#52525b; border-radius:0}
   .lang button.on{background:var(--accent); color:#fff}
   .stage{width:100%; max-width:1280px}
-  .hero{padding:22px 4px 18px; display:flex; align-items:baseline; gap:14px;
+  .hero{padding:22px 4px 18px; display:flex; align-items:center; gap:14px;
     flex-wrap:wrap; border-bottom:1px solid var(--line); margin-bottom:20px}
   .hero-t{margin:0; font-size:23px; line-height:1.2; font-weight:800;
-    letter-spacing:-.5px; color:var(--ink)}
-  .hero-t span{color:var(--accent)}
+    letter-spacing:-.5px; color:var(--accent); white-space:nowrap}
   .hero-s{margin:0; flex:1 1 340px; font-size:15.2px; line-height:1.6; color:var(--muted)}
   .hero-back{font-size:15.2px; color:var(--accent); text-decoration:none; font-weight:600;
     white-space:nowrap}
@@ -168,7 +167,7 @@
 <body>
 <div class="hd">
   <div class="t" id="brand"><a href="index.html" style="text-decoration:none; color:inherit"
-     >EIT&nbsp;Studio</a><span data-i18n="hdSub"></span></div>
+     >EIT&nbsp;Studio</a></div>
   <div class="tabs2">
     <a href="start.html" data-i18n="tabStart"></a>
     <a href="administer.html" data-i18n="tabAdm"></a>
@@ -183,7 +182,7 @@
 <div class="stage">
 
   <div class="hero">
-    <h1 class="hero-t">EIT <span>Studio</span></h1>
+    <h1 class="hero-t" data-i18n="heroT"></h1>
     <p class="hero-s" data-i18n="heroSub"></p>
     <a class="hero-back" href="index.html" data-i18n="heroBack"></a>
   </div>
@@ -363,7 +362,7 @@ const PRESET_EITA = [
    ============================================================ */
 const I18N={
 en:{
- hdSub:"English EIT · for researchers",
+ heroT:"Score",
  heroSub:"Transcribe and score any English elicited imitation task. Everything runs in your browser — no audio leaves your computer.",
  heroBack:"← Home",
  s1Title:"Target sentences", s1Ok:"loaded",
@@ -432,7 +431,7 @@ en:{
  errPrefix:"Error: ", noSpeech:"(no speech detected)", unassigned:"unassigned"
 },
 ko:{
- hdSub:"English EIT · 연구자용",
+ heroT:"채점",
  heroSub:"영어 elicited imitation task 응답을 자동으로 전사하고 WER로 채점합니다. 모든 처리는 브라우저 안에서 이루어지며, 음성 파일은 외부로 전송되지 않습니다.",
  heroBack:"← 홈",
  s1Title:"목표 문장 세트", s1Ok:"불러옴",

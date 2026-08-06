@@ -37,10 +37,10 @@
   .lang button.on{background:var(--accent); color:#fff; border-color:var(--accent)}
   .stage{width:100%; max-width:1180px}
 
-  .hero{padding:22px 4px 18px; display:flex; align-items:baseline; gap:14px; flex-wrap:wrap;
+  .hero{padding:22px 4px 18px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;
     border-bottom:1px solid var(--line); margin-bottom:20px}
-  .hero-t{margin:0; font-size:23px; font-weight:800; letter-spacing:-.5px}
-  .hero-t span{color:var(--accent)}
+  .hero-t{margin:0; font-size:23px; line-height:1.2; font-weight:800;
+    letter-spacing:-.5px; color:var(--accent); white-space:nowrap}
   .hero-s{margin:0; flex:1 1 340px; font-size:15.2px; line-height:1.6; color:var(--muted)}
   .hero-back{font-size:15.2px; color:var(--accent); text-decoration:none; font-weight:600;
     white-space:nowrap}
@@ -170,7 +170,7 @@
 <body>
 
 <div class="hd">
-  <div class="t"><a href="index.html">EIT&nbsp;Studio</a><span data-i18n="hdSub"></span></div>
+  <div class="t"><a href="index.html">EIT&nbsp;Studio</a></div>
   <div class="tabs2">
     <a href="start.html" data-i18n="tabStart"></a>
     <a href="administer.html" data-i18n="tabAdm"></a>
@@ -184,7 +184,7 @@
 
 <div class="stage">
   <div class="hero">
-    <h1 class="hero-t">Segment</h1>
+    <h1 class="hero-t" data-i18n="heroT"></h1>
     <p class="hero-s" data-i18n="heroSub"></p>
     <a class="hero-back" href="app.html" data-i18n="heroBack"></a>
   </div>
@@ -343,7 +343,6 @@ const $=id=>document.getElementById(id);
 /* ---------- localization ---------- */
 const I18N={
 en:{
- hdSub:"English EIT · for researchers",
  guideBadge:"Read first",
  guideTitle:"Which recordings split cleanly",
  guideIntro:"Splitting works best when the recording carries some regular marker of where each item begins. In descending order of reliability:",
@@ -355,7 +354,8 @@ en:{
  guideNaming:"One recording per participant. Whatever the format, play through a few boundaries before exporting.",
  guideSpeed:"<b>Speed.</b> A 30-item recording of six to eight minutes is analysed in about five seconds and exported in about one more, so roughly <b>five to ten seconds per participant</b> — the time you spend is the checking, not the computing. Everything runs on your own machine, so a slower computer takes proportionally longer.",
 
- heroSub:"Split one continuous recording into one file per item. Runs in your browser — no audio leaves your computer.",
+ heroT:"Segment",
+ heroSub:"Split one continuous recording into one file per item. Everything runs in your browser — no audio leaves your computer.",
  tabStart:"Start", tabAdm:"Administer", tabScore:"Score", tabSeg:"Segment",
  heroBack:"Go to the scoring tool →",
  s1Title:"Recording",
@@ -434,7 +434,6 @@ en:{
  needPid:"Enter a participant ID first."
 },
 ko:{
- hdSub:"English EIT · 연구자용",
  guideBadge:"먼저 읽기",
  guideTitle:"어떤 녹음이 잘 나뉘는지",
  guideIntro:"각 문항의 시작을 알려주는 규칙적인 표지가 녹음에 있을수록 분절이 잘 됩니다. 신뢰도가 높은 순서입니다.",
@@ -446,7 +445,8 @@ ko:{
  guideNaming:"참가자 한 명당 녹음 파일 하나입니다. 어떤 형식이든 내보내기 전에 경계 몇 개를 재생해 확인해 주십시오.",
  guideSpeed:"<b>소요 시간.</b> 6~8분 길이의 30문항 녹음은 분석에 약 5초, 내보내기에 약 1초가 걸립니다. 참가자 한 명당 <b>5~10초</b> 정도이며, 실제로 시간이 드는 것은 계산이 아니라 확인 작업입니다. 모든 처리가 사용자 컴퓨터에서 이루어지므로 사양이 낮으면 그만큼 더 걸립니다.",
 
- heroSub:"하나로 이어진 녹음을 문항별 파일로 나눕니다. 브라우저 안에서 처리되며 음성은 외부로 전송되지 않습니다.",
+ heroT:"분절",
+ heroSub:"하나로 이어진 녹음을 문항별 파일로 나눕니다. 모든 처리는 브라우저 안에서 이루어지며, 음성 파일은 외부로 전송되지 않습니다.",
  tabStart:"시작", tabAdm:"시행", tabScore:"채점", tabSeg:"분절",
  heroBack:"채점 도구로 이동 →",
  s1Title:"녹음 파일",

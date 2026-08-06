@@ -40,6 +40,19 @@
   .lang button.on{background:var(--accent); color:#fff; border-color:var(--accent)}
   .stage{width:100%; max-width:1120px}
 
+  /* ---- page hero ---------------------------------------------------------
+     The name of the tool and a one-line description of it, matching the
+     scoring and segmentation pages. */
+  .hero{padding:22px 4px 18px; display:flex; align-items:center; gap:14px;
+    flex-wrap:wrap; border-bottom:1px solid var(--line); margin-bottom:20px}
+  .hero-t{margin:0; font-size:23px; line-height:1.2; font-weight:800;
+    letter-spacing:-.5px; color:var(--accent); white-space:nowrap}
+  .hero-s{margin:0; flex:1 1 340px; font-size:15.2px; line-height:1.6; color:var(--muted)}
+  .hero-back{font-size:15.2px; color:var(--accent); text-decoration:none; font-weight:600;
+    white-space:nowrap}
+  .hero-back:hover{text-decoration:underline}
+  @media(max-width:640px){ .hero{padding:16px 4px 14px} }
+
   /* ---- one step at a time ------------------------------------------------
      Five panels open at once is more than a researcher needs to see. Only one
      is open; every step stays on the page as a title row and can be opened at
@@ -244,7 +257,7 @@
 <body>
 
 <div class="hd">
-  <div class="t"><a href="index.html">EIT&nbsp;Studio</a><span data-i18n="hdSub"></span></div>
+  <div class="t"><a href="index.html">EIT&nbsp;Studio</a></div>
   <div class="tabs2">
     <a href="start.html" data-i18n="tabStart"></a>
     <a href="administer.html" class="on" data-i18n="tabAdm"></a>
@@ -260,6 +273,12 @@
 
 <!-- ================= SETUP ================= -->
 <div id="setup">
+
+  <div class="hero">
+    <h1 class="hero-t" data-i18n="heroT"></h1>
+    <p class="hero-s" data-i18n="heroSub"></p>
+    <a class="hero-back" href="index.html" data-i18n="heroBack"></a>
+  </div>
 
   <div class="panel hidden" id="recover" style="border-color:var(--pink-line);
        background:var(--pink-soft)"><div class="pad" style="padding:18px 22px 20px">
@@ -482,7 +501,10 @@ const PRACTICE={
 /* ---------------------------------------------------------------- language */
 const STR={
  en:{
-  hdSub:"administer", tabStart:"Start", tabAdm:"Administer", tabScore:"Score", tabSeg:"Segment",
+  heroT:"Administer",
+  heroSub:"Present an English elicited imitation task on a fixed schedule and record one response file per item. Everything runs in your browser — no audio leaves your computer.",
+  heroBack:"← Home",
+  tabStart:"Start", tabAdm:"Administer", tabScore:"Score", tabSeg:"Segment",
   gBadge:"Read first", gTitle:"Before you seat the participant",
   g1b:"Do not use a private or incognito window.",
   g1:"Responses are held in the browser until you save them, and such windows discard that storage when they close. The storage check in panel 5 will refuse to proceed if one is detected.",
@@ -561,7 +583,10 @@ const STR={
   dNote:"A session log is written alongside the audio so that the exact schedule used can be reported in the methods section."
  },
  ko:{
-  hdSub:"시행", tabStart:"시작", tabAdm:"시행", tabScore:"채점", tabSeg:"분절",
+  heroT:"시행",
+  heroSub:"영어 elicited imitation task를 정해진 시간 설계에 따라 제시하고 문항별로 응답을 녹음합니다. 모든 처리는 브라우저 안에서 이루어지며, 음성 파일은 외부로 전송되지 않습니다.",
+  heroBack:"← 홈",
+  tabStart:"시작", tabAdm:"시행", tabScore:"채점", tabSeg:"분절",
   gBadge:"먼저 읽기", gTitle:"참가자를 앉히기 전에",
   g1b:"시크릿·프라이빗 창을 사용하지 마십시오.",
   g1:"응답은 저장하기 전까지 브라우저에 보관되는데, 그런 창은 닫는 순간 저장소를 폐기합니다. 5번 패널의 저장소 점검이 이를 감지하면 진행을 막습니다.",
