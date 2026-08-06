@@ -138,22 +138,27 @@
     display:flex; align-items:center; gap:14px; flex-wrap:wrap}
   .foot .m{font-size:15.2px; color:var(--muted)}
 
-  .gpanel{background:#fff; border:1px solid var(--pink-line); border-radius:14px;
+  .gpanel{background:var(--accent-soft); border:1px solid var(--accent-line); border-radius:14px;
     margin-bottom:14px; overflow:hidden}
-  .gpanel .pad{padding:18px 24px 20px}
-  details.g summary{list-style:none; cursor:pointer; display:flex; align-items:center; gap:11px}
+  .gpanel .pad{padding:18px 22px 20px}
+  details.g summary{list-style:none; cursor:pointer; display:flex; align-items:center; gap:10px;
+    flex-wrap:wrap}
   details.g summary::-webkit-details-marker{display:none}
-  .chev{color:var(--pink); font-size:18.2px; transition:transform .15s; width:12px; text-align:center}
+  .chev{color:var(--accent); font-size:23px; line-height:1; transition:transform .15s;
+    display:inline-block; font-weight:700}
   details.g[open] .chev{transform:rotate(90deg)}
-  .badge-read{font-family:var(--mono); font-size:12.1px; letter-spacing:.14em; text-transform:uppercase;
-    background:var(--pink); color:#fff; border-radius:999px; padding:4px 11px; font-weight:700}
-  .gtitle{font-size:18.8px; font-weight:750; letter-spacing:-.3px}
-  .glist{margin:15px 0 0; padding:0; list-style:none}
+  .badge-read{font-family:var(--mono); font-size:12.1px; letter-spacing:.12em; text-transform:uppercase;
+    background:var(--accent); color:#fff; border-radius:999px; padding:4px 10px; font-weight:700;
+    white-space:nowrap}
+  .gtitle{font-size:18.8px; font-weight:700; letter-spacing:-.2px; color:var(--ink)}
+  details.g summary:hover .gtitle{color:var(--accent-dark)}
+  .glist{margin:14px 0 0; padding:14px 0 0; list-style:none;
+    border-top:1px solid var(--accent-line)}
   .glist li{position:relative; padding:0 0 0 22px; margin-bottom:11px; font-size:16.1px;
     line-height:1.65; color:var(--muted)}
   .glist li:last-child{margin-bottom:0}
   .glist li:before{content:""; position:absolute; left:6px; top:8px; width:5px; height:5px;
-    border-radius:50%; background:var(--pink-line)}
+    border-radius:50%; background:var(--accent-line)}
   .glist li b{color:var(--ink); font-weight:650}
 
   .pscreen{background:#fff; border:1px solid var(--line); border-radius:14px; overflow:hidden;
