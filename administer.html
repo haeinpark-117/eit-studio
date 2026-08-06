@@ -775,6 +775,8 @@ function hhmm(s){const m=Math.floor(s/60);return m+" min "+String(Math.round(s-m
 
 /* ---------------------------------------------------------- audio capture */
 let CTX=null, STREAM=null, PROC=null, ANALYSER=null, ARM=null, CHUNKS=[], SR=48000;
+const CAP_GRACE=0.14;            /* held open one buffer past the window, so a late
+                                    callback still arrives while ARM is set */
 let MIC_OK=false, STORE_OK=false;
 
 async function initAudio(deviceId){
@@ -795,8 +797,15 @@ async function initAudio(deviceId){
   const mute=CTX.createGain(); mute.gain.value=0; PROC.connect(mute); mute.connect(CTX.destination);
   PROC.onaudioprocess=e=>{
     if(!ARM) return;
-    const now=CTX.currentTime;
-    if(now>=ARM.start && now<=ARM.end) CHUNKS.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+    /* ScriptProcessor callbacks run on the main thread, so one can arrive late.
+       Only the opening boundary is judged by the clock; the closing boundary is
+       not, because a late callback would otherwise be read as falling past the
+       end of the window and its audio discarded. Capture instead stops when the
+       gate is released, one buffer after the window closes, and the exact window
+       is cut from the assembled samples afterwards. */
+    if(CTX.currentTime>=ARM.start){
+      CHUNKS.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+    }
   };
   MIC_OK=true;
 }
@@ -810,15 +819,25 @@ async function listMics(){
     });
   }catch(e){}
 }
+/* The meter allocated a fresh array on every frame and kept running through the
+   whole session, where it is not even on screen. Both cost main-thread time that
+   the capture callback competes for, so the array is reused and the loop is
+   stopped while a session is running. */
+let METER_BUF=null, METER_ON=false;
 function meterLoop(){
+  if(!METER_ON) return;
   if(ANALYSER){
-    const a=new Uint8Array(ANALYSER.fftSize); ANALYSER.getByteTimeDomainData(a);
-    let peak=0; for(let i=0;i<a.length;i++) peak=Math.max(peak,Math.abs(a[i]-128)/128);
-    $("lvl").style.width=Math.min(100,Math.round(peak*180))+"%";
+    if(!METER_BUF||METER_BUF.length!==ANALYSER.fftSize) METER_BUF=new Uint8Array(ANALYSER.fftSize);
+    ANALYSER.getByteTimeDomainData(METER_BUF);
+    let peak=0;
+    for(let i=0;i<METER_BUF.length;i++) peak=Math.max(peak,Math.abs(METER_BUF[i]-128)/128);
+    const l=$("lvl"); if(l) l.style.width=Math.min(100,Math.round(peak*180))+"%";
   }
   requestAnimationFrame(meterLoop);
 }
-requestAnimationFrame(meterLoop);
+function startMeter(){ if(!METER_ON){ METER_ON=true; requestAnimationFrame(meterLoop); } }
+function stopMeter(){ METER_ON=false; }
+startMeter();
 
 let TESTBLOB=null;
 $("btnRec").onclick=async()=>{
@@ -1042,12 +1061,18 @@ async function runItem(item,idx,total,isPractice){
       requestAnimationFrame(tick);
     })();
   });
+  if(!ABORT) await sleep(CAP_GRACE*1000);
   ARM=null;
-  const samples=flatten(CHUNKS); CHUNKS=[];
+  const raw=flatten(CHUNKS); CHUNKS=[];
   /* A window cut short by the researcher would look like an omission once it is
      scored, so an interrupted item is discarded rather than kept as a fragment. */
   if(ABORT) return {aborted:true};
-  return {blob:wavBlob(samples,SR),win,dur:item.dur};
+  /* Capture is deliberately allowed to run a little past the window, so the
+     stored file is cut back to exactly the window here. */
+  const want=Math.round(win*SR);
+  const samples=raw.subarray(0,Math.min(raw.length,want));
+  return {blob:wavBlob(samples,SR),win,dur:item.dur,
+          captured_s:+(samples.length/SR).toFixed(3)};
 }
 
 $("btnEnd").onclick=()=>{ if(confirm(T("confirmEnd"))) ABORT=true; };
@@ -1058,6 +1083,7 @@ $("btnStart").onclick=async()=>{
   SESSION={pid,group:$("grp").value.trim(),started:new Date().toISOString(),
            schedule:consts(),practice:$("pracLang").value,items:[]};
   if(!(await confirmOverwrite())) return;
+  stopMeter();
   await idbClear();
   /* The session record is written now rather than at the end, so that an
      interrupted session can still be identified and its responses recovered. */
@@ -1083,7 +1109,8 @@ $("btnStart").onclick=async()=>{
     const name=pid+"_item"+String(i+1).padStart(2,"0")+".wav";
     const rec={n:i+1,name,target:TGT[i]?TGT[i][1]:"",syl,
                stimulus:STIM[i].name,stimulus_s:+STIM[i].dur.toFixed(3),
-               window_s:+r.win.toFixed(3)};
+               window_s:+r.win.toFixed(3),
+               captured_s:r.captured_s};
     RESULTS.push({...rec,blob:r.blob});
     SESSION.items.push(rec);
     try{ await idbPut({id:"item-"+String(i+1).padStart(2,"0"),...rec,blob:r.blob}); }catch(e){}
@@ -1098,6 +1125,7 @@ $("btnStart").onclick=async()=>{
 };
 
 function finish(){
+  startMeter();
   showScreen("done");
   $("dSum").textContent=SESSION.ended_early
     ? T("fmtEnded")(RESULTS.length,SESSION.pid,ENDED_AT||RESULTS.length,SESSION.total_items)
