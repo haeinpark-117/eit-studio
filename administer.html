@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Administer — EIT Studio</title>
+<meta name="description" content="Administer an elicited imitation task in the browser on the schedule of Ortega et al. (2002), with each response saved as its own audio file.">
+<style>
+  :root{
+    --bg:#f2f2f4; --panel:#fff; --ink:#08080f; --muted:#6a6a7d; --line:#e8e8ef; --soft:#f5f5f9;
+    --accent:#3840f3; --accent-dark:#2a31d4; --accent-soft:#eef0ff; --accent-line:#d9dcff;
+    --pink:#ff1493; --pink-dark:#d1097a; --pink-soft:#fff0f8; --pink-line:#ffcfe8;
+    --cy:#0891b2; --cy-soft:#ecfeff; --cy-line:#a5f3fc;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); padding:66px 18px 60px;
+    font:14.5px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+    display:flex; justify-content:center; -webkit-font-smoothing:antialiased}
+  body.running{padding:66px 18px 40px}
+  a{color:var(--accent)}
+  .hd{position:fixed; top:0; left:0; right:0; z-index:20; height:50px;
+    background:rgba(255,255,255,.92); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line); display:flex; align-items:center;
+    justify-content:space-between; padding:0 22px}
+  .hd .t{font-weight:800; font-size:15px; letter-spacing:-.3px}
+  .hd .t a{text-decoration:none; color:inherit}
+  .hd .t span{font-weight:400; color:var(--muted); font-size:11px; margin-left:9px;
+    letter-spacing:.08em; text-transform:uppercase; font-family:var(--mono)}
+  .tabs2{display:flex; gap:6px; margin-left:auto; margin-right:14px}
+  .tabs2 a{font-size:12.5px; font-weight:600; text-decoration:none; color:var(--muted);
+    padding:5px 12px; border-radius:8px; border:1px solid transparent; white-space:nowrap}
+  .tabs2 a:hover{color:var(--ink); background:#f0f0f5}
+  .tabs2 a.on{background:var(--accent-soft); border-color:var(--accent-line); color:var(--accent)}
+  .hd .rt{display:flex; align-items:center; gap:12px}
+  .lang button{font:inherit; font-size:12.5px; padding:4px 11px; border:1px solid var(--line);
+    background:#fff; cursor:pointer}
+  .lang button:first-child{border-radius:7px 0 0 7px}
+  .lang button:last-child{border-radius:0 7px 7px 0; border-left:0}
+  .lang button.on{background:var(--accent); color:#fff; border-color:var(--accent)}
+  .stage{width:100%; max-width:900px}
+
+  .panel{background:var(--panel); border:1px solid var(--line); border-radius:14px;
+    margin-bottom:14px; overflow:hidden}
+  .pad{padding:22px 24px 24px}
+  .ph{display:flex; align-items:center; gap:11px; margin:0 0 4px}
+  .ph .n{width:23px; height:23px; border-radius:7px; background:var(--accent-soft);
+    color:var(--accent); display:grid; place-items:center; font-family:var(--mono);
+    font-size:11.5px; font-weight:700; flex:none}
+  .ph h3{margin:0; font-size:16px; letter-spacing:-.3px}
+  .ph .st{margin-left:auto; font-family:var(--mono); font-size:10.5px; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--cy); background:var(--cy-soft);
+    border:1px solid var(--cy-line); border-radius:999px; padding:4px 10px; white-space:nowrap}
+  .ph .st.wait{color:var(--muted); background:var(--soft); border-color:var(--line)}
+  .ph .st.bad{color:#b91c1c; background:#fef2f2; border-color:#fecaca}
+  .hint{margin:0 0 15px; color:var(--muted); font-size:13px; line-height:1.65; padding-left:34px}
+  .row{display:flex; align-items:center; gap:9px; flex-wrap:wrap; margin:0 0 10px; padding-left:34px}
+  .fl{font-size:12.5px; color:var(--muted)}
+  input.inp,select.inp{font:inherit; border:1px solid var(--line); border-radius:8px;
+    padding:7px 10px; font-size:13px; background:#fff; color:var(--ink); min-width:120px}
+  input.inp.sm{min-width:74px; width:74px; font-family:var(--mono); font-size:12.5px}
+  .btn-g{font:inherit; border:1px solid var(--line); background:#fff; border-radius:9px;
+    padding:7px 13px; font-size:12.5px; font-weight:600; color:var(--ink); cursor:pointer}
+  .btn-g:hover:not(:disabled){border-color:#c9c9d4; background:#fafafb}
+  .btn-g:disabled{opacity:.45; cursor:default}
+  .btn-p{font:inherit; background:var(--accent); color:#fff; border:0; border-radius:10px;
+    padding:11px 20px; font-size:14px; font-weight:650; cursor:pointer}
+  .btn-p:hover:not(:disabled){background:var(--accent-dark)}
+  .btn-p:disabled{opacity:.4; cursor:default}
+  .btn-k{font:inherit; background:var(--pink); color:#fff; border:0; border-radius:10px;
+    padding:11px 20px; font-size:14px; font-weight:650; cursor:pointer}
+  .btn-k:hover{background:var(--pink-dark)}
+  .mono{font-family:var(--mono); font-size:11.5px; color:var(--muted); line-height:1.85;
+    word-break:break-all}
+  .box{margin:0 0 4px 34px; background:#f7f7fa; border:1px solid var(--line); border-radius:9px;
+    padding:10px 12px}
+  .box .d{margin:9px 0 0; font-size:12.6px; color:var(--muted); line-height:1.68}
+  table.pw{border-collapse:collapse; font-family:var(--mono); font-size:11.5px; margin:10px 0 0}
+  table.pw td{padding:5px 16px 5px 0; color:var(--muted); white-space:nowrap}
+  table.pw td:first-child{color:var(--ink)}
+  .two{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-left:34px}
+  .sub{border:1px solid var(--line); border-radius:11px; padding:14px 16px 15px; background:#fafafb}
+  .sub .k{font-size:13px; font-weight:700; letter-spacing:-.2px; margin:0 0 3px}
+  .sub .d{margin:0 0 11px; font-size:12.3px; color:var(--muted); line-height:1.6}
+  .sub .ln{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:0 0 10px}
+  .sub .ln:last-child{margin-bottom:0}
+  .zone{border:1px dashed #c8c8d4; border-radius:9px; background:#fff; padding:13px 12px;
+    text-align:center; font-size:12.3px; color:var(--muted); cursor:pointer}
+  .zone.on{border-color:var(--accent); background:var(--accent-soft); color:var(--accent-dark)}
+  .fmt{display:flex; font-family:var(--mono); font-size:11px; background:#fff;
+    border:1px solid var(--line); border-radius:8px; overflow:hidden}
+  .fmt s{text-decoration:none; padding:8px 9px; color:var(--ink); white-space:nowrap}
+  .fmt s+s{border-left:1px solid var(--line)}
+  .fmt s i{display:block; font-style:normal; font-size:9px; letter-spacing:.09em;
+    text-transform:uppercase; color:var(--muted); margin-top:3px}
+  textarea{width:100%; height:120px; font:12.5px/1.5 var(--mono); padding:9px 11px;
+    border:1px solid var(--line); border-radius:9px; resize:vertical}
+  .tally{margin:14px 0 0 34px; font-family:var(--mono); font-size:11.5px; color:var(--cy);
+    background:var(--cy-soft); border:1px solid var(--cy-line); border-radius:8px;
+    padding:8px 12px; display:inline-block}
+  .tally.bad{color:#b91c1c; background:#fef2f2; border-color:#fecaca}
+  .src{margin:16px 0 0 34px; font-size:11.5px; color:#a0a0ae; line-height:1.7}
+  .meter{height:9px; border-radius:6px; background:var(--soft); border:1px solid var(--line);
+    overflow:hidden; width:100%}
+  .meter i{display:block; height:100%; background:var(--cy); width:0%; transition:width .08s}
+  .foot{padding:16px 24px; border-top:1px solid var(--line); background:#fafafb;
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap}
+  .foot .m{font-size:12.5px; color:var(--muted)}
+
+  .gpanel{background:#fff; border:1px solid var(--pink-line); border-radius:14px;
+    margin-bottom:14px; overflow:hidden}
+  .gpanel .pad{padding:18px 24px 20px}
+  details.g summary{list-style:none; cursor:pointer; display:flex; align-items:center; gap:11px}
+  details.g summary::-webkit-details-marker{display:none}
+  .chev{color:var(--pink); font-size:15px; transition:transform .15s; width:12px; text-align:center}
+  details.g[open] .chev{transform:rotate(90deg)}
+  .badge-read{font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase;
+    background:var(--pink); color:#fff; border-radius:999px; padding:4px 11px; font-weight:700}
+  .gtitle{font-size:15.5px; font-weight:750; letter-spacing:-.3px}
+  .glist{margin:15px 0 0; padding:0; list-style:none}
+  .glist li{position:relative; padding:0 0 0 22px; margin-bottom:11px; font-size:13.3px;
+    line-height:1.65; color:var(--muted)}
+  .glist li:last-child{margin-bottom:0}
+  .glist li:before{content:""; position:absolute; left:6px; top:8px; width:5px; height:5px;
+    border-radius:50%; background:var(--pink-line)}
+  .glist li b{color:var(--ink); font-weight:650}
+
+  .pscreen{background:#fff; border:1px solid var(--line); border-radius:14px; overflow:hidden;
+    margin-bottom:14px}
+  .pbar{display:flex; align-items:center; gap:12px; padding:13px 22px;
+    border-bottom:1px solid var(--line); background:#fafafb}
+  .pbar .cnt{font-family:var(--mono); font-size:11px; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--muted)}
+  .dots{display:flex; gap:4px; margin-left:auto; flex-wrap:wrap; max-width:430px}
+  .dots s{width:7px; height:7px; border-radius:50%; background:#e3e3ea; text-decoration:none}
+  .dots s.done{background:var(--accent-line)}
+  .dots s.now{background:var(--pink)}
+  .endx{font-size:11.5px; color:var(--muted); border:1px solid var(--line); border-radius:8px;
+    padding:5px 11px; background:#fff; cursor:pointer; font:inherit; font-size:11.5px;
+    margin-left:14px; white-space:nowrap}
+  .endx:hover{border-color:#e5b4b4; color:#b91c1c}
+  .pbody{padding:52px 34px 46px; text-align:center}
+  .pbody.tint{background:var(--pink-soft)}
+  .pbody.tint2{background:var(--accent-soft)}
+  .plabel{display:inline-flex; align-items:center; gap:8px; font-family:var(--mono);
+    font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; border-radius:999px;
+    padding:6px 14px; background:#fff; border:1px solid var(--accent-line);
+    color:var(--accent-dark); font-weight:700}
+  .pbody.tint .plabel{border-color:var(--pink-line); color:var(--pink-dark)}
+  .pbody h3{margin:20px 0 8px; font-size:34px; font-weight:800; letter-spacing:-1.1px;
+    line-height:1.16}
+  .pbody p.s{margin:0 auto; color:var(--muted); font-size:15px; max-width:46ch; line-height:1.65}
+  .pbar2{height:8px; border-radius:5px; background:#fff; border:1px solid var(--pink-line);
+    margin:30px auto 9px; max-width:420px; overflow:hidden}
+  .pbar2 i{display:block; height:100%; background:var(--pink); width:0%}
+  .psecs{font-family:var(--mono); font-size:12px; color:var(--muted); margin:0}
+  .pwave{display:flex; align-items:flex-end; justify-content:center; gap:4px; height:34px;
+    margin:30px 0 0}
+  .pwave s{width:4px; border-radius:3px; background:var(--accent-line); text-decoration:none;
+    height:20%}
+  .pfoot{padding:14px 22px; border-top:1px solid var(--line); background:#fafafb;
+    font-size:12.5px; color:var(--muted)}
+  .done-h{text-align:center; padding:8px 0 4px}
+  .done-h .ic{width:46px; height:46px; border-radius:14px; background:var(--cy-soft);
+    border:1px solid var(--cy-line); color:var(--cy); display:grid; place-items:center;
+    font-size:22px; margin:0 auto 14px}
+  .done-h h3{margin:0 0 6px; font-size:23px; letter-spacing:-.6px}
+  .done-h p{margin:0 auto 20px; color:var(--muted); font-size:14px; max-width:54ch}
+  .cta{display:flex; gap:0; justify-content:center; margin-bottom:6px; align-items:stretch;
+    flex-wrap:wrap}
+  .cta .st2{display:flex; align-items:center; gap:11px; border:1px solid var(--line);
+    background:#fff; padding:13px 18px; cursor:pointer; text-align:left}
+  .cta .st2:first-child{border-radius:12px 0 0 12px; border-right:0; background:var(--accent-soft);
+    border-color:var(--accent-line)}
+  .cta .st2:last-child{border-radius:0 12px 12px 0}
+  .cta .num{width:22px; height:22px; border-radius:50%; display:grid; place-items:center;
+    font-family:var(--mono); font-size:11px; font-weight:700; background:#fff; color:var(--muted);
+    border:1px solid var(--line); flex:none}
+  .cta .st2:first-child .num{background:var(--accent); color:#fff; border-color:var(--accent)}
+  .cta .lbl{line-height:1.35}
+  .cta .lbl b{display:block; font-size:14px; font-weight:700; letter-spacing:-.2px}
+  .cta .lbl i{font-style:normal; font-size:11.5px; color:var(--muted)}
+  .cta .st2:first-child .lbl i{color:var(--accent-dark); font-weight:650}
+  table.f{width:100%; border-collapse:collapse; font-family:var(--mono); font-size:11.5px}
+  table.f td{border-bottom:1px solid var(--line); padding:7px 4px; color:var(--muted)}
+  table.f tr:last-child td{border-bottom:0}
+  table.f td:last-child{text-align:right}
+  .hidden{display:none !important}
+  .err{color:#b91c1c; font-size:12.5px}
+  @media(max-width:720px){
+    .two{grid-template-columns:1fr}
+    .pbody h3{font-size:26px}
+    .tabs2 a{padding:5px 8px; font-size:11.5px}
+  }
+</style>
+</head>
+<body>
+
+<div class="hd">
+  <div class="t"><a href="index.html">EIT&nbsp;Studio</a><span data-i18n="hdSub"></span></div>
+  <div class="tabs2">
+    <a href="start.html" data-i18n="tabStart"></a>
+    <a href="administer.html" class="on" data-i18n="tabAdm"></a>
+    <a href="app.html" data-i18n="tabScore"></a>
+    <a href="segment.html" data-i18n="tabSeg"></a>
+  </div>
+  <div class="rt">
+    <span class="lang"><button id="langEn">English</button><button id="langKo">한국어</button></span>
+  </div>
+</div>
+
+<div class="stage">
+
+<!-- ================= SETUP ================= -->
+<div id="setup">
+
+  <div class="gpanel"><div class="pad"><details class="g" open>
+    <summary><span class="chev">›</span><span class="badge-read" data-i18n="gBadge"></span>
+      <span class="gtitle" data-i18n="gTitle"></span></summary>
+    <ul class="glist">
+      <li><b data-i18n="g1b"></b> <span data-i18n="g1"></span></li>
+      <li><b data-i18n="g2b"></b> <span data-i18n="g2"></span></li>
+      <li><b data-i18n="g3b"></b> <span data-i18n="g3"></span></li>
+    </ul>
+  </details></div></div>
+
+  <div class="panel"><div class="pad">
+    <div class="ph"><span class="n">1</span><h3 data-i18n="p1t"></h3>
+      <span class="st wait" id="st1" data-i18n="stNeed"></span></div>
+    <p class="hint" data-i18n="p1h"></p>
+    <div class="row">
+      <span class="fl" data-i18n="lblPid"></span>
+      <input class="inp sm" id="pid" value="P01" spellcheck="false">
+      <span class="fl" data-i18n="lblGrp"></span>
+      <input class="inp" id="grp" placeholder="—" spellcheck="false">
+    </div>
+  </div></div>
+
+  <div class="panel"><div class="pad">
+    <div class="ph"><span class="n">2</span><h3 data-i18n="p2t"></h3>
+      <span class="st wait" id="st2" data-i18n="stNeed"></span></div>
+    <p class="hint" data-i18n="p2h"></p>
+    <div class="row" style="margin-bottom:14px">
+      <button class="btn-g" id="loadEitA" data-i18n="btnEitA"></button>
+      <button class="btn-g" id="clearAll" data-i18n="btnClear"></button>
+    </div>
+    <div class="two">
+      <div class="sub">
+        <p class="k" data-i18n="s2at"></p>
+        <p class="d" data-i18n="s2ad"></p>
+        <div class="zone" id="zone"><span data-i18n="zoneIdle"></span></div>
+        <input type="file" id="stimIn" multiple accept="audio/*" class="hidden">
+        <div class="mono" id="stimList" style="margin-top:9px"></div>
+      </div>
+      <div class="sub">
+        <p class="k" data-i18n="s2bt"></p>
+        <p class="d" data-i18n="s2bd"></p>
+        <div class="fmt"><s>01<i data-i18n="fmtN"></i></s><s>I have to get a haircut<i data-i18n="fmtS"></i></s><s>7<i data-i18n="fmtY"></i></s></div>
+        <p class="d" style="margin:9px 0 10px" data-i18n="s2bd2"></p>
+        <textarea id="tgtBox" spellcheck="false"></textarea>
+      </div>
+    </div>
+    <div class="tally hidden" id="tally"></div>
+  </div></div>
+
+  <div class="panel"><div class="pad">
+    <div class="ph"><span class="n">3</span><h3 data-i18n="p3t"></h3>
+      <span class="st" id="st3"></span></div>
+    <p class="hint" data-i18n="p3h"></p>
+    <div class="row">
+      <span class="fl" data-i18n="lblPrac"></span>
+      <select class="inp" id="pracLang">
+        <option value="en">English</option>
+        <option value="ko">한국어</option>
+        <option value="off" data-i18n="optNone"></option>
+      </select>
+      <span class="mono" id="pracList"></span>
+    </div>
+  </div></div>
+
+  <div class="panel"><div class="pad">
+    <div class="ph"><span class="n">4</span><h3 data-i18n="p4t"></h3>
+      <span class="st" data-i18n="stSet"></span></div>
+    <p class="hint" data-i18n="p4h"></p>
+    <div class="row">
+      <span class="fl" data-i18n="lblPause"></span><input class="inp sm" type="number" id="cPause" step="0.001" value="2.5">
+      <span class="fl" data-i18n="lblTone"></span><input class="inp sm" type="number" id="cTone" step="0.001" value="0.25">
+      <span class="fl" data-i18n="lblHz"></span><input class="inp sm" type="number" id="cHz" step="10" value="1000">
+    </div>
+    <div class="row">
+      <span class="fl" data-i18n="lblBase"></span><input class="inp sm" type="number" id="cBase" step="0.1" value="2">
+      <span class="fl" data-i18n="lblPer"></span><input class="inp sm" type="number" id="cPer" step="0.1" value="0.5">
+      <span class="fl" data-i18n="lblThr"></span><input class="inp sm" type="number" id="cThr" step="1" value="7">
+    </div>
+    <div class="box">
+      <div class="mono" style="color:var(--ink)" data-i18n="formula"></div>
+      <p class="d" data-i18n="p4d"></p>
+      <table class="pw"><tbody id="pwRows"></tbody></table>
+    </div>
+    <p class="src" data-i18n="p4src"></p>
+  </div></div>
+
+  <div class="panel"><div class="pad">
+    <div class="ph"><span class="n">5</span><h3 data-i18n="p5t"></h3>
+      <span class="st wait" id="st5" data-i18n="stNotChecked"></span></div>
+    <p class="hint" data-i18n="p5h"></p>
+    <div class="two">
+      <div class="sub">
+        <p class="k" data-i18n="s5at"></p>
+        <p class="d" data-i18n="s5ad"></p>
+        <div class="ln"><span class="fl" data-i18n="lblInput"></span>
+          <select class="inp" id="mic" style="flex:1"></select></div>
+        <div class="ln"><span class="meter"><i id="lvl"></i></span></div>
+        <p class="d" style="margin:0 0 11px" data-i18n="s5ad2"></p>
+        <div class="ln">
+          <button class="btn-g" id="btnRec" data-i18n="btnRec"></button>
+          <button class="btn-g" id="btnPlay" disabled data-i18n="btnPlay"></button>
+        </div>
+        <div class="ln"><span class="mono" id="micInfo"></span></div>
+      </div>
+      <div class="sub">
+        <p class="k" data-i18n="s5bt"></p>
+        <p class="d" data-i18n="s5bd"></p>
+        <p class="d" style="margin:0 0 11px" data-i18n="s5bd2"></p>
+        <div class="ln"><button class="btn-g" id="btnStore" data-i18n="btnStore"></button></div>
+        <div class="ln"><span class="mono" id="storeInfo"></span></div>
+      </div>
+    </div>
+  </div></div>
+
+  <div class="panel"><div class="foot">
+    <button class="btn-p" id="btnStart" disabled data-i18n="btnStart"></button>
+    <span class="m" id="startNote"></span>
+  </div></div>
+</div>
+
+<!-- ================= SESSION ================= -->
+<div id="run" class="hidden">
+  <div class="pscreen">
+    <div class="pbar">
+      <span class="cnt" id="rCnt"></span>
+      <span class="dots" id="rDots"></span>
+      <button class="endx" id="btnEnd" data-i18n="btnEnd"></button>
+    </div>
+    <div class="pbody tint2" id="rBody">
+      <span class="plabel" id="rLabel"></span>
+      <h3 id="rHead"></h3>
+      <p class="s" id="rSub"></p>
+      <div id="rExtra"></div>
+    </div>
+    <div class="pfoot" id="rFoot"></div>
+  </div>
+</div>
+
+<!-- ================= DONE ================= -->
+<div id="done" class="hidden">
+  <div class="panel"><div class="pad">
+    <div class="done-h">
+      <div class="ic">✓</div>
+      <h3 data-i18n="dTitle"></h3>
+      <p id="dSum"></p>
+      <div class="cta">
+        <button class="st2" id="btnZip"><span class="num">1</span>
+          <span class="lbl"><b data-i18n="dZip"></b><i data-i18n="dZipS"></i></span></button>
+        <button class="st2" id="btnScore"><span class="num">2</span>
+          <span class="lbl"><b data-i18n="dScore"></b><i data-i18n="dScoreS"></i></span></button>
+      </div>
+      <p class="mono" id="dNote" style="margin-top:16px"></p>
+    </div>
+  </div></div>
+  <div class="panel"><div class="pad"><table class="f"><tbody id="dRows"></tbody></table></div></div>
+</div>
+
+</div>
+<script>
+/* ============================================================================
+   EIT Studio — administration
+   Schedule follows Ortega et al. (2002) as specified in Wu et al. (2022, p. 8):
+   stimulus, fixed silent pause, ring tone, then a response window equal to the
+   stimulus articulation time + base + per-syllable increment beyond a threshold.
+   ========================================================================== */
+const $=id=>document.getElementById(id);
+const PRESET_EITA=[[1,"I have to get a haircut",7],[2,"The red book is on the table",8],
+  [3,"The streets in this city are wide",8],[4,"He takes a shower every morning",9],
+  [5,"What did you say you were doing today",10],
+  [6,"I doubt that he knows how to drive that well",10],
+  [7,"After dinner I had a long, peaceful nap",11],
+  [8,"It is possible that it will rain tomorrow",12],
+  [9,"I enjoy movies which have a happy ending",12],
+  [10,"The houses are very nice but too expensive",12],
+  [11,"The little boy whose kitten died yesterday is sad",13],
+  [12,"That restaurant is supposed to have very good food",13],
+  [13,"I want a nice, big house in which my animals can live",14],
+  [14,"You really enjoy listening to country music, don't you",14],
+  [15,"She just finished painting the inside of her apartment",14],
+  [16,"Cross the street at the light and then just continue straight ahead",15],
+  [17,"The person I'm dating has a wonderful sense of humor",15],
+  [18,"She only orders meat dishes and never eats vegetables",15],
+  [19,"I wish the price of town houses would become affordable",15],
+  [20,"I hope it will get warmer sooner this year than it did last year",16],
+  [21,"A good friend of mine always takes care of my neighbor's three children",16],
+  [22,"The black cat that you fed yesterday was the one chased by the dog",16],
+  [23,"Before he can go outside, he has to finish cleaning his room",16],
+  [24,"The most fun I've ever had was when we went to the opera",16],
+  [25,"The terrible thief whom the police caught was very tall and thin",16],
+  [26,"Would you be so kind as to hand me the book which is on the table",17],
+  [27,"The number of people who smoke cigars is increasing every year",17],
+  [28,"I don't know if the eleven thirty train has left the station yet",17],
+  [29,"The exam wasn't nearly as difficult as you told me it would be",18],
+  [30,"There are a lot of people who don't eat anything at all in the morning",19]];
+const EITA_FILES=Array.from({length:30},(_,i)=>"audio/eit-a/item"+String(i+1).padStart(2,"0")+".mp3");
+const PRACTICE={
+  en:[{f:"audio/practice/en/en1.mp3",t:"The coffee is too hot",y:6},
+      {f:"audio/practice/en/en2.mp3",t:"The bakery closes at noon",y:8},
+      {f:"audio/practice/en/en3.mp3",t:"She smiled when she saw the photo",y:8}],
+  ko:[{f:"audio/practice/ko/ko1.mp3",t:"나는 편지를 쓴다",y:7},
+      {f:"audio/practice/ko/ko2.mp3",t:"비가 와서 밖에 안 나간다",y:10},
+      {f:"audio/practice/ko/ko3.mp3",t:"나는 집에 돌아가자마자 밥을 먹었다",y:15}]
+};
+
+/* ---------------------------------------------------------------- language */
+const STR={
+ en:{
+  hdSub:"administer", tabStart:"Start", tabAdm:"Administer", tabScore:"Score", tabSeg:"Segment",
+  gBadge:"Read first", gTitle:"Before you seat the participant",
+  g1b:"Do not use a private or incognito window.",
+  g1:"Responses are held in the browser until you save them, and such windows discard that storage when they close. The storage check in panel 5 will refuse to proceed if one is detected.",
+  g2b:"Headphones on the participant.",
+  g2:"Without them the stimulus is picked up by the microphone and reappears in the transcription as though it were the response.",
+  g3b:"Keep this window in the foreground",
+  g3:"for the whole session. Browsers throttle background tabs, which can disturb the schedule the responses are timed against.",
+  p1t:"Session",
+  p1h:"The participant identifier becomes the filename prefix, so it should match whatever you use in your data file. Items are always presented in the order listed, which in this instrument runs from the shortest sentence to the longest; the progression is part of the design and is therefore not offered as a setting.",
+  lblPid:"Participant ID", lblGrp:"Group or condition (optional)",
+  p2t:"Sentence set",
+  p2h:"Two things go in: what the participant hears, and what the responses will be scored against. The item count comes from what you load — nothing assumes thirty.",
+  btnEitA:"Load EIT A (Ortega et al., 2002)", btnClear:"Clear",
+  s2at:"What they hear", s2ad:"One recorded stimulus per item, named so that the files sort in item order.",
+  zoneIdle:"Drop audio files here, or click to choose",
+  s2bt:"What it is scored against", s2bd:"The target sentence for each item, with its syllable count.",
+  fmtN:"number", fmtS:"sentence", fmtY:"syllables",
+  s2bd2:"One item per line, the three fields separated by a tab or a comma. A column copied from a spreadsheet already has the tabs. Numbers may be omitted; syllable counts may not, since they set the response window.",
+  p3t:"Instructions and practice",
+  p3h:"Instructions and practice items are supplied in the participant's L1 in the original design, and are recorded in a different voice from the stimuli. Three practice items are provided in English and in Korean; another L1 means recording your own.",
+  lblPrac:"Practice items", optNone:"None",
+  p4t:"Schedule",
+  p4h:"Each item runs on the same cycle: the stimulus plays, a fixed silent pause follows, a ring tone marks the end of the pause, and the response window opens. The pause is the same for every item; the response window is not, since longer sentences take longer to repeat.",
+  lblPause:"Pause after stimulus (s)", lblTone:"Ring tone (s)", lblHz:"Ring tone frequency (Hz)",
+  lblBase:"Response window base (s)", lblPer:"Per syllable beyond base (s)", lblThr:"Base syllables",
+  formula:"response window = stimulus + base + per syllable × (syllables − base syllables)",
+  p4d:"Base syllables is the length at which no extra time is added beyond the base; every syllable above it adds the per-syllable amount, and every syllable below it subtracts one.",
+  p4src:"Ortega, L., Iwashita, N., Norris, J. M., &amp; Rabie, S. (2002). <em>An investigation of elicited imitation tasks in crosslinguistic SLA research</em> [Paper presentation]. Second Language Research Forum, Toronto, Canada.<br>Wu, S.-L., Tio, Y. P., &amp; Ortega, L. (2022). Elicited imitation as a measure of L2 proficiency. <em>Studies in Second Language Acquisition, 44</em>(1), 271–300.",
+  p5t:"Recording",
+  p5h:"Both checks run here, before the participant arrives, because neither failure is recoverable once a session is under way.",
+  s5at:"Microphone", s5ad:"Browser permission is requested now rather than mid-session.",
+  s5ad2:"A level meter shows only that something is arriving. Record, play it back, and listen — that is what catches a muted headset microphone or a browser writing silence.",
+  lblInput:"Input", btnRec:"● Record 5 s", btnRecing:"● Recording…", btnPlay:"▶ Play back",
+  s5bt:"Storage", s5bd:"Responses are written to the browser as each one is recorded, so an interruption costs a single item.",
+  s5bd2:"One test record is written and deleted now, so that a private window, a blocked database, or a full disk surfaces before the session rather than after it.",
+  btnStore:"Run storage check",
+  btnStart:"Start the session →", btnEnd:"✕ End session",
+  stNeed:"Needed", stSet:"Set", stNotChecked:"Not checked", stOk:"Ready", stFail:"Failed",
+  dTitle:"Session complete",
+  dZip:"Download all (ZIP)", dZipS:"Recommended — do this first",
+  dScore:"Score these now →", dScoreS:"Opens the scoring tool, already loaded",
+  /* participant-facing */
+  iLabel:"Instructions", iHead:"You will hear a sentence.",
+  iSub:"Listen to the whole sentence. After the ring tone, repeat as much as you can.",
+  iBtn:"Begin practice →",
+  tLabel:"The test begins", tHeadA:"You will now hear", tHeadB:"English sentences.",
+  tSub:"They become longer as you go. Repeat as much as you can after each ring tone. The test does not pause once it starts.",
+  tBtn:"Begin →",
+  phListen:"♪ Listening", phRepeat:"● Recording",
+  hListen:"Listen.", sListen:"The sentence is playing. Do not begin until the ring tone.",
+  hRepeat:"Now repeat.", sRepeat:"Speak until the bar runs out.",
+  fPractice:"Practice responses are recorded but excluded from the export.",
+  fTest:"Recording is saved item by item.",
+  cPractice:n=>"Practice · "+n[0]+" of "+n[1], cItem:n=>"Item "+n[0]+" of "+n[1],
+  secs:s=>s.toFixed(1)+" s remaining",
+  confirmEnd:"End the session now? The responses already recorded are kept.",
+  fmtTally:(a,b,c,d)=>a+" stimulus files · "+b+" targets · "+c+"–"+d+" syllables · counts agree",
+  fmtTallyBad:(a,b)=>a+" stimulus files but "+b+" targets — the two must match",
+  fmtStart:(n,s)=>n+" items · about "+s+" of stimuli and response windows",
+  fmtPrac:n=>n+" practice items loaded",
+  pracMissing:"practice recordings for this language could not be loaded — the session will start without practice",
+  fmtMic:(s,r)=>"test.wav · "+s.toFixed(1)+" s · "+Math.round(r/1000)+" kHz",
+  storeOk:"written and deleted · persistent storage granted",
+  storeOkNP:"written and deleted · persistent storage not granted (still usable)",
+  storeBad:"unavailable — a private window, or storage blocked by the browser",
+  micBad:"microphone unavailable — permission denied or no input device",
+  fmtDone:(n,p)=>n+" responses recorded for "+p+". Nothing has left this computer. Save the recordings to disk before anything else — a participant's session cannot be repeated.",
+  fmtEnded:(n,p,at,tot)=>"Ended at item "+at+" of "+tot+". "+n+" responses recorded for "+p+". Nothing has left this computer. Save the recordings to disk before anything else.",
+  dNote:"A session log is written alongside the audio so that the exact schedule used can be reported in the methods section."
+ },
+ ko:{
+  hdSub:"시행", tabStart:"시작", tabAdm:"시행", tabScore:"채점", tabSeg:"분절",
+  gBadge:"먼저 읽기", gTitle:"참가자를 앉히기 전에",
+  g1b:"시크릿·프라이빗 창을 사용하지 마십시오.",
+  g1:"응답은 저장하기 전까지 브라우저에 보관되는데, 그런 창은 닫는 순간 저장소를 폐기합니다. 5번 패널의 저장소 점검이 이를 감지하면 진행을 막습니다.",
+  g2b:"참가자에게 헤드폰을 씌우십시오.",
+  g2:"헤드폰이 없으면 자극 음성이 마이크에 잡혀 마치 응답인 것처럼 전사에 나타납니다.",
+  g3b:"이 창을 계속 화면 앞에 두십시오.",
+  g3:"브라우저는 백그라운드 탭의 타이머를 조절하므로, 응답이 맞춰지는 일정이 흐트러질 수 있습니다.",
+  p1t:"세션",
+  p1h:"참가자 식별자는 파일명 접두사가 되므로 데이터 파일에서 쓰시는 것과 같게 하십시오. 문항은 항상 입력된 순서대로 제시되며, 이 도구에서는 가장 짧은 문장에서 가장 긴 문장으로 나아갑니다. 이 점증적 배열은 설계의 일부이므로 설정으로 제공하지 않습니다.",
+  lblPid:"참가자 ID", lblGrp:"집단 또는 조건(선택)",
+  p2t:"문장 세트",
+  p2h:"두 가지가 들어갑니다. 참가자가 듣는 것과, 응답을 대조할 목표 문장입니다. 문항 수는 불러온 자료에서 정해지며 30개를 가정하지 않습니다.",
+  btnEitA:"EIT A (Ortega et al., 2002) 불러오기", btnClear:"지우기",
+  s2at:"참가자가 듣는 것", s2ad:"문항당 자극 녹음 하나씩. 파일명이 문항 순서대로 정렬되도록 하십시오.",
+  zoneIdle:"음성 파일을 끌어다 놓거나 클릭해 선택",
+  s2bt:"대조할 목표 문장", s2bd:"각 문항의 목표 문장과 음절 수입니다.",
+  fmtN:"번호", fmtS:"문장", fmtY:"음절",
+  s2bd2:"한 줄에 한 문항씩, 세 필드를 탭이나 쉼표로 구분합니다. 스프레드시트 열에서 복사하면 탭이 이미 들어 있습니다. 번호는 생략할 수 있지만 음절 수는 생략할 수 없습니다. 응답창 길이를 정하는 값이기 때문입니다.",
+  p3t:"지시문과 연습",
+  p3h:"원 설계에서 지시문과 연습 문항은 참가자의 L1으로 제시되며, 자극과는 다른 화자가 녹음합니다. 연습 문항은 영어와 한국어로 세 개씩 제공됩니다. 다른 L1이라면 직접 녹음하셔야 합니다.",
+  lblPrac:"연습 문항", optNone:"사용 안 함",
+  p4t:"일정",
+  p4h:"모든 문항이 같은 주기로 진행됩니다. 자극이 재생되고, 고정된 무음 휴지가 이어지고, 링톤이 휴지의 끝을 알리며, 응답창이 열립니다. 휴지는 모든 문항이 같지만 응답창은 다릅니다. 긴 문장일수록 되말하는 데 시간이 더 걸리기 때문입니다.",
+  lblPause:"자극 후 휴지(초)", lblTone:"링톤(초)", lblHz:"링톤 주파수(Hz)",
+  lblBase:"응답창 기준(초)", lblPer:"기준 초과 음절당(초)", lblThr:"기준 음절 수",
+  formula:"응답창 = 자극 + 기준 + 음절당 × (음절 수 − 기준 음절 수)",
+  p4d:"기준 음절 수는 기준 시간 외에 추가 시간이 붙지 않는 길이입니다. 이를 넘는 음절마다 음절당 시간이 더해지고, 이에 못 미치는 음절마다 그만큼 차감됩니다.",
+  p4src:"Ortega, L., Iwashita, N., Norris, J. M., &amp; Rabie, S. (2002). <em>An investigation of elicited imitation tasks in crosslinguistic SLA research</em> [Paper presentation]. Second Language Research Forum, Toronto, Canada.<br>Wu, S.-L., Tio, Y. P., &amp; Ortega, L. (2022). Elicited imitation as a measure of L2 proficiency. <em>Studies in Second Language Acquisition, 44</em>(1), 271–300.",
+  p5t:"녹음",
+  p5h:"두 점검 모두 참가자가 오기 전에 진행합니다. 세션이 시작된 뒤에는 어느 쪽도 되돌릴 수 없기 때문입니다.",
+  s5at:"마이크", s5ad:"브라우저 권한을 세션 중이 아니라 지금 요청합니다.",
+  s5ad2:"레벨 미터는 신호가 들어온다는 것만 보여줍니다. 녹음하고 재생해서 들어 보십시오. 음소거된 헤드셋 마이크나 무음을 기록하는 브라우저는 이 단계에서만 걸립니다.",
+  lblInput:"입력", btnRec:"● 5초 녹음", btnRecing:"● 녹음 중…", btnPlay:"▶ 재생",
+  s5bt:"저장소", s5bd:"응답은 녹음되는 즉시 브라우저에 기록되므로, 중단되더라도 잃는 것은 한 문항뿐입니다.",
+  s5bd2:"지금 테스트 레코드를 하나 쓰고 지웁니다. 프라이빗 창이나 차단된 데이터베이스, 꽉 찬 디스크가 세션 뒤가 아니라 앞에서 드러납니다.",
+  btnStore:"저장소 점검",
+  btnStart:"세션 시작 →", btnEnd:"✕ 세션 종료",
+  stNeed:"필요", stSet:"설정됨", stNotChecked:"미점검", stOk:"준비됨", stFail:"실패",
+  dTitle:"세션 완료",
+  dZip:"전체 다운로드 (ZIP)", dZipS:"권장 — 이것을 먼저",
+  dScore:"바로 채점하기 →", dScoreS:"채점 도구가 이미 불러온 상태로 열립니다",
+  iLabel:"안내", iHead:"문장을 듣게 됩니다.",
+  iSub:"문장을 끝까지 들으십시오. 링톤이 울린 뒤에 기억나는 만큼 따라 말하십시오.",
+  iBtn:"연습 시작 →",
+  tLabel:"시험 시작", tHeadA:"지금부터", tHeadB:"개의 영어 문장을 듣게 됩니다.",
+  tSub:"문장은 갈수록 길어집니다. 링톤이 울린 뒤에 기억나는 만큼 따라 말하십시오. 시작하면 중간에 멈추지 않습니다.",
+  tBtn:"시작 →",
+  phListen:"♪ 듣기", phRepeat:"● 녹음 중",
+  hListen:"들으십시오.", sListen:"문장이 재생되고 있습니다. 링톤 전에는 말하지 마십시오.",
+  hRepeat:"따라 말하십시오.", sRepeat:"막대가 끝날 때까지 말하십시오.",
+  fPractice:"연습 응답도 녹음되지만 내보내기에서는 제외됩니다.",
+  fTest:"녹음은 문항 단위로 저장됩니다.",
+  cPractice:n=>"연습 · "+n[0]+" / "+n[1], cItem:n=>"문항 "+n[0]+" / "+n[1],
+  secs:s=>s.toFixed(1)+"초 남음",
+  confirmEnd:"지금 세션을 종료할까요? 이미 녹음된 응답은 유지됩니다.",
+  fmtTally:(a,b,c,d)=>"자극 "+a+"개 · 목표 문장 "+b+"개 · "+c+"–"+d+"음절 · 개수 일치",
+  fmtTallyBad:(a,b)=>"자극 "+a+"개인데 목표 문장은 "+b+"개입니다 — 두 수가 일치해야 합니다",
+  fmtStart:(n,s)=>n+"문항 · 자극과 응답창 합계 약 "+s,
+  fmtPrac:n=>"연습 문항 "+n+"개 불러옴",
+  pracMissing:"이 언어의 연습 녹음을 불러오지 못했습니다 — 연습 없이 세션이 시작됩니다",
+  fmtMic:(s,r)=>"test.wav · "+s.toFixed(1)+"초 · "+Math.round(r/1000)+" kHz",
+  storeOk:"기록 후 삭제 완료 · 지속 저장 허용됨",
+  storeOkNP:"기록 후 삭제 완료 · 지속 저장은 허용되지 않음(사용에는 지장 없음)",
+  storeBad:"사용할 수 없습니다 — 프라이빗 창이거나 브라우저가 저장소를 차단했습니다",
+  micBad:"마이크를 사용할 수 없습니다 — 권한이 거부되었거나 입력 장치가 없습니다",
+  fmtDone:(n,p)=>p+"의 응답 "+n+"개가 녹음되었습니다. 이 컴퓨터를 벗어난 자료는 없습니다. 무엇보다 먼저 디스크에 저장하십시오 — 참가자 세션은 다시 찍을 수 없습니다.",
+  fmtEnded:(n,p,at,tot)=>tot+"문항 중 "+at+"번에서 종료했습니다. "+p+"의 응답 "+n+"개가 녹음되었습니다. 무엇보다 먼저 디스크에 저장하십시오.",
+  dNote:"정확한 시행 일정을 방법 절에 그대로 보고할 수 있도록 세션 로그가 음성과 함께 저장됩니다."
+ }
+};
+let LANG=localStorage.getItem("eitLang")==="ko"?"ko":"en";
+const T=k=>STR[LANG][k];
+function applyLang(){
+  document.documentElement.lang=LANG;
+  document.querySelectorAll("[data-i18n]").forEach(el=>{
+    const v=STR[LANG][el.dataset.i18n];
+    if(typeof v==="string") el.innerHTML=v;
+  });
+  $("langEn").classList.toggle("on",LANG==="en");
+  $("langKo").classList.toggle("on",LANG==="ko");
+  paintTally(); paintPractice(); paintSchedule(); paintStart();
+}
+$("langEn").onclick=()=>{LANG="en"; localStorage.setItem("eitLang","en"); applyLang();};
+$("langKo").onclick=()=>{LANG="ko"; localStorage.setItem("eitLang","ko"); applyLang();};
+
+/* ------------------------------------------------------------ sentence set */
+let STIM=[];      /* [{name, dur, buf|null, src:File|url}] */
+let TGT=[];       /* [[n, text, syl]] */
+
+function parseTargets(text){
+  const out=[]; let auto=0;
+  String(text||"").split(/\r?\n/).forEach(line=>{
+    const raw=line.trim(); if(!raw) return;
+    const cells=raw.indexOf("\t")>=0?raw.split("\t").map(c=>c.trim()):raw.split(",").map(c=>c.trim());
+    if(cells.length>=3&&/^\d+$/.test(cells[0])&&/^\d+$/.test(cells[cells.length-1]))
+      out.push([parseInt(cells[0],10),cells.slice(1,-1).join(","),parseInt(cells[cells.length-1],10)]);
+    else if(cells.length>=2&&/^\d+$/.test(cells[cells.length-1])&&!/^\d+$/.test(cells[0]))
+      out.push([++auto,cells.slice(0,-1).join(","),parseInt(cells[cells.length-1],10)]);
+  });
+  return out;
+}
+function readTargets(){ TGT=parseTargets($("tgtBox").value); paintTally(); paintSchedule(); paintStart(); }
+$("tgtBox").addEventListener("input",readTargets);
+
+/* stimulus intake ---------------------------------------------------------- */
+const zone=$("zone");
+zone.onclick=()=>$("stimIn").click();
+zone.ondragover=e=>{e.preventDefault(); zone.classList.add("on");};
+zone.ondragleave=()=>zone.classList.remove("on");
+zone.ondrop=e=>{e.preventDefault(); zone.classList.remove("on"); takeStim(e.dataTransfer.files);};
+$("stimIn").onchange=e=>takeStim(e.target.files);
+
+async function takeStim(list){
+  const fs=[...list].filter(f=>/\.(wav|mp3|m4a|webm|ogg|flac|aac)$/i.test(f.name))
+                    .sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
+  STIM=fs.map(f=>({name:f.name,src:f,buf:null,dur:null}));
+  await measure();
+}
+$("loadEitA").onclick=async()=>{
+  STIM=EITA_FILES.map(u=>({name:u.split("/").pop(),src:u,buf:null,dur:null}));
+  $("tgtBox").value=PRESET_EITA.map(r=>r[0]+"\t"+r[1]+"\t"+r[2]).join("\n");
+  readTargets(); await measure();
+};
+$("clearAll").onclick=()=>{ STIM=[]; $("tgtBox").value=""; readTargets(); paintStimList(); paintTally(); paintStart(); };
+
+/* Durations are read from the files themselves: the articulation-time term of
+   the response window must reflect the recording actually used, so that
+   re-recorded stimuli need no further adjustment. */
+async function measure(){
+  const ctx=new (window.AudioContext||window.webkitAudioContext)();
+  let done=0;
+  for(const s of STIM){
+    try{
+      const ab=s.src instanceof File ? await s.src.arrayBuffer()
+                                     : await (await fetch(s.src)).arrayBuffer();
+      s.buf=await ctx.decodeAudioData(ab);
+      s.dur=s.buf.duration;
+    }catch(e){ s.dur=null; s.err=String(e&&e.message||e); }
+    done++; $("stimList").textContent=done+" / "+STIM.length;
+  }
+  ctx.close();
+  paintStimList(); paintTally(); paintSchedule(); paintStart();
+}
+function paintStimList(busy){
+  const el=$("stimList");
+  if(busy){ el.textContent="…"; return; }
+  if(!STIM.length){ el.textContent=""; return; }
+  const names=STIM.map(s=>s.name);
+  el.textContent=names.slice(0,3).join("  ")+(names.length>3?"  … "+names.length:"");
+}
+function paintTally(){
+  const t=$("tally"); const a=STIM.length, b=TGT.length;
+  if(!a&&!b){ t.classList.add("hidden"); }
+  else if(a&&b&&a===b){
+    const ys=TGT.map(r=>r[2]).filter(Boolean);
+    t.className="tally"; t.textContent=T("fmtTally")(a,b,Math.min(...ys),Math.max(...ys));
+  } else { t.className="tally bad"; t.textContent=T("fmtTallyBad")(a,b); }
+  $("st2").textContent=(a&&b&&a===b)?T("stOk"):T("stNeed");
+  $("st2").className="st"+((a&&b&&a===b)?"":" wait");
+  $("st1").textContent=$("pid").value.trim()?T("stSet"):T("stNeed");
+  $("st1").className="st"+($("pid").value.trim()?"":" wait");
+}
+$("pid").addEventListener("input",()=>{paintTally(); paintStart();});
+
+/* ------------------------------------------------------------ practice set */
+let PRAC=[];
+async function loadPractice(){
+  const k=$("pracLang").value;
+  PRAC=[];
+  if(k!=="off"){
+    const ctx=new (window.AudioContext||window.webkitAudioContext)();
+    for(const p of PRACTICE[k]){
+      try{
+        const ab=await (await fetch(p.f)).arrayBuffer();
+        const buf=await ctx.decodeAudioData(ab.slice(0));
+        PRAC.push({name:p.f.split("/").pop(),buf,dur:buf.duration,text:p.t,syl:p.y});
+      }catch(e){}
+    }
+    ctx.close();
+  }
+  paintPractice();
+}
+function paintPractice(){
+  const want=$("pracLang").value!=="off";
+  if(want && !PRAC.length){
+    $("pracList").innerHTML='<span class="err">'+T("pracMissing")+"</span>";
+    $("st3").textContent=T("stFail"); $("st3").className="st bad"; return;
+  }
+  $("pracList").textContent=PRAC.length?T("fmtPrac")(PRAC.length):"";
+  $("st3").textContent=PRAC.length?T("stOk"):T("stSet");
+  $("st3").className="st";
+}
+$("pracLang").onchange=loadPractice;
+
+/* --------------------------------------------------------------- schedule */
+const num=id=>parseFloat($(id).value)||0;
+function consts(){return{pause:num("cPause"),tone:num("cTone"),hz:num("cHz"),
+                         base:num("cBase"),per:num("cPer"),thr:num("cThr")};}
+function windowFor(dur,syl){
+  const c=consts();
+  return Math.max(0.5,(dur||0)+c.base+c.per*((syl||c.thr)-c.thr));
+}
+function paintSchedule(){
+  const c=consts(), rows=[];
+  const mk=(y,note)=>"<tr><td>"+y+" "+(LANG==="ko"?"음절":"syllables")+"</td><td>"+note+
+      "</td><td>"+(LANG==="ko"?"자극":"stimulus")+" + "+(c.base+c.per*(y-c.thr)).toFixed(1)+" s</td></tr>";
+  const ys=TGT.length?[...new Set(TGT.map(r=>r[2]))].sort((a,b)=>a-b):[7,13,19];
+  const pick=[ys[0],ys[Math.floor(ys.length/2)],ys[ys.length-1]];
+  pick.forEach((y,i)=>rows.push(mk(y,i===0?"= "+(LANG==="ko"?"기준 음절 수":"base syllables")
+      :"+ "+(y-c.thr)+" × "+c.per+" s")));
+  $("pwRows").innerHTML=rows.join("");
+}
+["cPause","cTone","cHz","cBase","cPer","cThr"].forEach(id=>
+  $(id).addEventListener("input",()=>{paintSchedule(); paintStart();}));
+
+function totalSeconds(){
+  const c=consts();
+  return STIM.reduce((a,s,i)=>{
+    const syl=TGT[i]?TGT[i][2]:c.thr;
+    return a+(s.dur||0)+c.pause+c.tone+windowFor(s.dur,syl);
+  },0);
+}
+function hhmm(s){const m=Math.floor(s/60);return m+" min "+String(Math.round(s-m*60)).padStart(2,"0")+" s";}
+
+/* ---------------------------------------------------------- audio capture */
+let CTX=null, STREAM=null, PROC=null, ANALYSER=null, ARM=null, CHUNKS=[], SR=48000;
+let MIC_OK=false, STORE_OK=false;
+
+async function initAudio(deviceId){
+  if(STREAM) STREAM.getTracks().forEach(t=>t.stop());
+  if(CTX && CTX.state!=="closed") await CTX.close();
+  CTX=new (window.AudioContext||window.webkitAudioContext)();
+  SR=CTX.sampleRate;
+  STREAM=await navigator.mediaDevices.getUserMedia({audio:deviceId?
+      {deviceId:{exact:deviceId},echoCancellation:false,noiseSuppression:false,autoGainControl:false}:
+      {echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+  const src=CTX.createMediaStreamSource(STREAM);
+  ANALYSER=CTX.createAnalyser(); ANALYSER.fftSize=1024; src.connect(ANALYSER);
+  /* ScriptProcessor is deprecated but is the one capture node available in every
+     browser this tool is likely to meet; the audio clock it reads is the same
+     one the stimuli are scheduled against, so frames and schedule stay aligned. */
+  PROC=CTX.createScriptProcessor(4096,1,1);
+  src.connect(PROC);
+  const mute=CTX.createGain(); mute.gain.value=0; PROC.connect(mute); mute.connect(CTX.destination);
+  PROC.onaudioprocess=e=>{
+    if(!ARM) return;
+    const now=CTX.currentTime;
+    if(now>=ARM.start && now<=ARM.end) CHUNKS.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+  };
+  MIC_OK=true;
+}
+async function listMics(){
+  try{
+    const ds=await navigator.mediaDevices.enumerateDevices();
+    const sel=$("mic"); sel.innerHTML="";
+    ds.filter(d=>d.kind==="audioinput").forEach((d,i)=>{
+      const o=document.createElement("option");
+      o.value=d.deviceId; o.textContent=d.label||("Input "+(i+1)); sel.appendChild(o);
+    });
+  }catch(e){}
+}
+function meterLoop(){
+  if(ANALYSER){
+    const a=new Uint8Array(ANALYSER.fftSize); ANALYSER.getByteTimeDomainData(a);
+    let peak=0; for(let i=0;i<a.length;i++) peak=Math.max(peak,Math.abs(a[i]-128)/128);
+    $("lvl").style.width=Math.min(100,Math.round(peak*180))+"%";
+  }
+  requestAnimationFrame(meterLoop);
+}
+requestAnimationFrame(meterLoop);
+
+let TESTBLOB=null;
+$("btnRec").onclick=async()=>{
+  try{
+    if(!MIC_OK) { await initAudio($("mic").value||null); await listMics(); }
+    if(CTX.state==="suspended") await CTX.resume();
+  }catch(e){ $("micInfo").innerHTML='<span class="err">'+T("micBad")+"</span>"; return; }
+  const b=$("btnRec"); b.disabled=true; b.textContent=T("btnRecing");
+  CHUNKS=[]; ARM={start:CTX.currentTime,end:CTX.currentTime+5};
+  await sleep(5100);
+  ARM=null;
+  TESTBLOB=wavBlob(flatten(CHUNKS),SR); CHUNKS=[];
+  b.disabled=false; b.textContent=T("btnRec"); $("btnPlay").disabled=false;
+  $("micInfo").textContent=T("fmtMic")(TESTBLOB.size/(SR*2),SR);
+  $("st5").textContent=STORE_OK?T("stOk"):T("stNotChecked");
+  $("st5").className="st"+(STORE_OK?"":" wait");
+  paintStart();
+};
+$("btnPlay").onclick=()=>{ if(TESTBLOB) new Audio(URL.createObjectURL(TESTBLOB)).play(); };
+$("mic").onchange=async()=>{ try{ await initAudio($("mic").value); }catch(e){} };
+
+/* ------------------------------------------------------------- WAV / ZIP */
+function flatten(chunks){
+  let n=0; chunks.forEach(c=>n+=c.length);
+  const out=new Float32Array(n); let o=0;
+  chunks.forEach(c=>{ out.set(c,o); o+=c.length; });
+  return out;
+}
+function wavBlob(samples,rate){
+  const b=new ArrayBuffer(44+samples.length*2), v=new DataView(b);
+  const s=(o,str)=>{for(let i=0;i<str.length;i++)v.setUint8(o+i,str.charCodeAt(i));};
+  s(0,"RIFF"); v.setUint32(4,36+samples.length*2,true); s(8,"WAVE"); s(12,"fmt ");
+  v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+  v.setUint32(24,rate,true); v.setUint32(28,rate*2,true); v.setUint16(32,2,true);
+  v.setUint16(34,16,true); s(36,"data"); v.setUint32(40,samples.length*2,true);
+  let o=44;
+  for(let i=0;i<samples.length;i++,o+=2){
+    const x=Math.max(-1,Math.min(1,samples[i]));
+    v.setInt16(o,x<0?x*0x8000:x*0x7fff,true);
+  }
+  return new Blob([b],{type:"audio/wav"});
+}
+const CRCT=(()=>{const t=new Uint32Array(256);
+  for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0;}
+  return t;})();
+function crc32(u8){let c=0xFFFFFFFF;for(let i=0;i<u8.length;i++)c=CRCT[(c^u8[i])&0xFF]^(c>>>8);
+  return (c^0xFFFFFFFF)>>>0;}
+/* Store-only ZIP: the payload is 16-bit PCM and a short JSON log, so deflating
+   would add a dependency for very little. */
+async function makeZip(entries){
+  const enc=new TextEncoder(), parts=[], central=[]; let off=0;
+  for(const e of entries){
+    const name=enc.encode(e.name);
+    const data=new Uint8Array(await e.blob.arrayBuffer());
+    const crc=crc32(data);
+    const lh=new DataView(new ArrayBuffer(30));
+    lh.setUint32(0,0x04034b50,true); lh.setUint16(4,20,true); lh.setUint16(6,0,true);
+    lh.setUint16(8,0,true); lh.setUint16(10,0,true); lh.setUint16(12,0x21,true);
+    lh.setUint32(14,crc,true); lh.setUint32(18,data.length,true); lh.setUint32(22,data.length,true);
+    lh.setUint16(26,name.length,true); lh.setUint16(28,0,true);
+    parts.push(new Uint8Array(lh.buffer),name,data);
+    const ch=new DataView(new ArrayBuffer(46));
+    ch.setUint32(0,0x02014b50,true); ch.setUint16(4,20,true); ch.setUint16(6,20,true);
+    ch.setUint16(8,0,true); ch.setUint16(10,0,true); ch.setUint16(12,0,true); ch.setUint16(14,0x21,true);
+    ch.setUint32(16,crc,true); ch.setUint32(20,data.length,true); ch.setUint32(24,data.length,true);
+    ch.setUint16(28,name.length,true); ch.setUint32(42,off,true);
+    central.push(new Uint8Array(ch.buffer),name);
+    off+=30+name.length+data.length;
+  }
+  let csize=0; central.forEach(c=>csize+=c.length);
+  const eo=new DataView(new ArrayBuffer(22));
+  eo.setUint32(0,0x06054b50,true); eo.setUint16(8,entries.length,true);
+  eo.setUint16(10,entries.length,true); eo.setUint32(12,csize,true); eo.setUint32(16,off,true);
+  return new Blob([...parts,...central,new Uint8Array(eo.buffer)],{type:"application/zip"});
+}
+
+/* ------------------------------------------------------------- IndexedDB */
+const DB_NAME="eit-studio", STORE="handoff";
+function idb(){
+  return new Promise((res,rej)=>{
+    const r=indexedDB.open(DB_NAME,1);
+    r.onupgradeneeded=()=>{ if(!r.result.objectStoreNames.contains(STORE))
+      r.result.createObjectStore(STORE,{keyPath:"id"}); };
+    r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error);
+  });
+}
+async function idbPut(rec){
+  const db=await idb();
+  return new Promise((res,rej)=>{
+    const tx=db.transaction(STORE,"readwrite");
+    tx.objectStore(STORE).put(rec); tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error);
+  });
+}
+async function idbDel(key){
+  const db=await idb();
+  return new Promise(res=>{ const tx=db.transaction(STORE,"readwrite");
+    tx.objectStore(STORE).delete(key); tx.oncomplete=()=>res(); tx.onerror=()=>res(); });
+}
+async function idbClear(){
+  const db=await idb();
+  return new Promise(res=>{ const tx=db.transaction(STORE,"readwrite");
+    tx.objectStore(STORE).clear(); tx.oncomplete=()=>res(); tx.onerror=()=>res(); });
+}
+$("btnStore").onclick=async()=>{
+  try{
+    await idbPut({id:"__test",blob:new Blob(["x"])});
+    await idbDel("__test");
+    let persisted=false;
+    try{ persisted=navigator.storage&&navigator.storage.persist?await navigator.storage.persist():false; }catch(e){}
+    STORE_OK=true;
+    $("storeInfo").textContent=persisted?T("storeOk"):T("storeOkNP");
+  }catch(e){
+    STORE_OK=false;
+    $("storeInfo").innerHTML='<span class="err">'+T("storeBad")+"</span>";
+  }
+  $("st5").textContent=(MIC_OK&&STORE_OK)?T("stOk"):(STORE_OK?T("stNotChecked"):T("stFail"));
+  $("st5").className="st"+((MIC_OK&&STORE_OK)?"":(STORE_OK?" wait":" bad"));
+  paintStart();
+};
+
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function paintStart(){
+  const ok=$("pid").value.trim() && STIM.length && TGT.length===STIM.length &&
+           STIM.every(s=>s.dur) && MIC_OK && STORE_OK;
+  $("btnStart").disabled=!ok;
+  $("startNote").textContent=STIM.length?T("fmtStart")(STIM.length,hhmm(totalSeconds())):"";
+}
+
+/* ------------------------------------------------------------ the session */
+let ABORT=false, RESULTS=[], SESSION=null, ENDED_AT=null;
+
+function showScreen(which){
+  $("setup").classList.toggle("hidden",which!=="setup");
+  $("run").classList.toggle("hidden",which!=="run");
+  $("done").classList.toggle("hidden",which!=="done");
+  document.body.classList.toggle("running",which==="run");
+  window.scrollTo(0,0);
+}
+function dots(n,cur){
+  $("rDots").innerHTML=Array.from({length:n},(_,i)=>
+    "<s class='"+(i<cur?"done":i===cur?"now":"")+"'></s>").join("");
+}
+function phase(kind,label,head,sub,extra,foot){
+  $("rBody").className="pbody "+(kind==="rec"?"tint":"tint2");
+  $("rLabel").textContent=label; $("rHead").innerHTML=head; $("rSub").textContent=sub;
+  $("rExtra").innerHTML=extra||""; $("rFoot").textContent=foot||"";
+}
+const WAVE="<div class='pwave'>"+[30,62,88,46,72,100,54,80,38,66,92,44,70,34,58]
+  .map(h=>"<s style='height:"+h+"%'></s>").join("")+"</div>";
+const BAR="<div class='pbar2'><i id='rFill'></i></div><p class='psecs' id='rSecs'></p>";
+
+function gate(labelKey,headHtml,subKey,btnKey,footKey){
+  return new Promise(res=>{
+    phase("info",T(labelKey),headHtml,T(subKey),
+      "<div style='margin-top:32px'><button class='btn-p' id='gateBtn'>"+T(btnKey)+"</button></div>",
+      footKey?T(footKey):"");
+    $("gateBtn").onclick=res;
+  });
+}
+
+/* One item: stimulus → pause → ring tone → response window.
+   Every boundary is placed on the audio clock, so the schedule does not drift
+   with the page's timers. */
+async function runItem(item,idx,total,isPractice){
+  const c=consts();
+  const win=windowFor(item.dur,item.syl);
+  const t0=CTX.currentTime+0.25;
+  const tTone=t0+item.dur+c.pause;
+  const tOpen=tTone+c.tone;
+  const tEnd=tOpen+win;
+
+  const src=CTX.createBufferSource(); src.buffer=item.buf;
+  src.connect(CTX.destination); src.start(t0);
+
+  const osc=CTX.createOscillator(), g=CTX.createGain();
+  osc.frequency.value=c.hz; osc.connect(g); g.connect(CTX.destination);
+  g.gain.setValueAtTime(0,tTone); g.gain.linearRampToValueAtTime(0.22,tTone+0.01);
+  g.gain.setValueAtTime(0.22,tOpen-0.01); g.gain.linearRampToValueAtTime(0,tOpen);
+  osc.start(tTone); osc.stop(tOpen+0.02);
+
+  CHUNKS=[]; ARM={start:tOpen,end:tEnd};
+  const cnt=isPractice?T("cPractice")([idx+1,total]):T("cItem")([idx+1,total]);
+  $("rCnt").textContent=cnt; dots(total,idx);
+
+  let mode="";
+  await new Promise(res=>{
+    (function tick(){
+      if(ABORT){ try{src.stop();osc.stop();}catch(e){} return res(); }
+      const now=CTX.currentTime;
+      if(now<tOpen){
+        if(mode!=="listen"){ mode="listen";
+          phase("listen",T("phListen"),T("hListen"),T("sListen"),WAVE,
+                isPractice?T("fPractice"):T("fTest")); }
+      }else{
+        if(mode!=="rec"){ mode="rec";
+          phase("rec",T("phRepeat"),T("hRepeat"),T("sRepeat"),BAR,
+                isPractice?T("fPractice"):T("fTest")); }
+        const left=Math.max(0,tEnd-now);
+        const fill=$("rFill"); if(fill) fill.style.width=(100*(1-left/win))+"%";
+        const secs=$("rSecs"); if(secs) secs.textContent=T("secs")(left);
+      }
+      if(now>=tEnd) return res();
+      requestAnimationFrame(tick);
+    })();
+  });
+  ARM=null;
+  const samples=flatten(CHUNKS); CHUNKS=[];
+  /* A window cut short by the researcher would look like an omission once it is
+     scored, so an interrupted item is discarded rather than kept as a fragment. */
+  if(ABORT) return {aborted:true};
+  return {blob:wavBlob(samples,SR),win,dur:item.dur};
+}
+
+$("btnEnd").onclick=()=>{ if(confirm(T("confirmEnd"))) ABORT=true; };
+
+$("btnStart").onclick=async()=>{
+  ABORT=false; RESULTS=[]; ENDED_AT=null;
+  const pid=$("pid").value.trim().replace(/[^\w.-]+/g,"_");
+  SESSION={pid,group:$("grp").value.trim(),started:new Date().toISOString(),
+           schedule:consts(),practice:$("pracLang").value,items:[]};
+  await idbClear();
+  showScreen("run");
+  try{ if(CTX.state==="suspended") await CTX.resume(); }catch(e){}
+
+  if(PRAC.length){
+    $("rCnt").textContent=""; $("rDots").innerHTML="";
+    await gate("iLabel","<span>"+T("iHead")+"</span>","iSub","iBtn","fPractice");
+    for(let i=0;i<PRAC.length && !ABORT;i++)
+      await runItem({buf:PRAC[i].buf,dur:PRAC[i].dur,syl:PRAC[i].syl},i,PRAC.length,true);
+  }
+  if(!ABORT){
+    $("rCnt").textContent=""; $("rDots").innerHTML="";
+    await gate("tLabel",T("tHeadA")+"<br>"+STIM.length+" "+T("tHeadB"),"tSub","tBtn");
+  }
+  for(let i=0;i<STIM.length && !ABORT;i++){
+    const syl=TGT[i]?TGT[i][2]:consts().thr;
+    const r=await runItem({buf:STIM[i].buf,dur:STIM[i].dur,syl},i,STIM.length,false);
+    if(r.aborted){ ENDED_AT=i+1; break; }
+    const name=pid+"_item"+String(i+1).padStart(2,"0")+".wav";
+    const rec={n:i+1,name,target:TGT[i]?TGT[i][1]:"",syl,
+               stimulus:STIM[i].name,stimulus_s:+STIM[i].dur.toFixed(3),
+               window_s:+r.win.toFixed(3)};
+    RESULTS.push({...rec,blob:r.blob});
+    SESSION.items.push(rec);
+    try{ await idbPut({id:"item-"+String(i+1).padStart(2,"0"),...rec,blob:r.blob}); }catch(e){}
+  }
+  ARM=null;
+  SESSION.ended=new Date().toISOString();
+  SESSION.ended_early=!!ABORT; SESSION.ended_at_item=ENDED_AT;
+  SESSION.total_items=STIM.length; SESSION.recorded=RESULTS.length;
+  SESSION.sample_rate=SR;
+  try{ await idbPut({id:"meta",...SESSION,targets:TGT}); }catch(e){}
+  finish();
+};
+
+function finish(){
+  showScreen("done");
+  $("dSum").textContent=SESSION.ended_early
+    ? T("fmtEnded")(RESULTS.length,SESSION.pid,ENDED_AT||RESULTS.length,SESSION.total_items)
+    : T("fmtDone")(RESULTS.length,SESSION.pid);
+  $("dNote").textContent=T("dNote");
+  $("dRows").innerHTML=RESULTS.map(r=>
+      "<tr><td>"+r.name+"</td><td>“"+r.target+"”</td><td>"+r.window_s.toFixed(1)+" s</td></tr>")
+      .join("")+"<tr><td>"+SESSION.pid+"_session.json</td><td>"+
+      (LANG==="ko"?"일정, 문항 순서, 시각":"schedule, item order, timestamps")+"</td><td>—</td></tr>";
+}
+
+$("btnZip").onclick=async()=>{
+  const entries=RESULTS.map(r=>({name:r.name,blob:r.blob}));
+  const log={...SESSION};
+  entries.push({name:SESSION.pid+"_session.json",
+                blob:new Blob([JSON.stringify(log,null,2)],{type:"application/json"})});
+  entries.push({name:SESSION.pid+"_targets.txt",
+                blob:new Blob([TGT.map(r=>r.join("\t")).join("\n")],{type:"text/plain"})});
+  const zip=await makeZip(entries);
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(zip); a.download=SESSION.pid+"_eit.zip"; a.click();
+};
+$("btnScore").onclick=()=>{ location.href="app.html?from=administer"; };
+
+/* -------------------------------------------------------------- start-up */
+(async()=>{
+  applyLang();
+  await loadPractice();
+  await listMics();
+  paintSchedule(); paintTally(); paintStart();
+})();
+window.addEventListener("beforeunload",e=>{
+  if(!$("run").classList.contains("hidden")||(RESULTS.length&&!$("done").classList.contains("hidden"))){
+    e.preventDefault(); e.returnValue="";
+  }
+});
+</script>
+</body>
+</html>
