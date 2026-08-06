@@ -120,7 +120,19 @@
   .acc .body p{margin:0 0 15px; color:var(--muted); font-size:15px; line-height:1.72}
   .acc .body p b, .acc .body p strong{color:var(--ink)}
   .acc h4{margin:22px 0 8px; font-size:15.5px; letter-spacing:-.2px}
-  .sw-sub{background:#cffafe}
+  /* these came across with the accordion and were left behind in the landing
+     page's stylesheet, so the tables here had been rendering unstyled */
+  table.def{width:100%; border-collapse:collapse; margin:6px 0 18px; font-size:14.5px}
+  table.def td{padding:11px 12px; border-bottom:1px solid var(--line); vertical-align:top;
+    line-height:1.65; color:var(--muted)}
+  table.def td:first-child{white-space:nowrap; font-weight:650; color:var(--ink); width:150px;
+    vertical-align:top}
+  table.def tr:last-child td{border-bottom:0}
+  table.def.modes td:first-child{white-space:normal; width:178px}
+  .sw{display:inline-block; border-radius:3px; padding:1px 7px; font-family:var(--mono);
+    font-size:13px}
+  .mono2{font-family:var(--mono); font-size:12.5px}
+  .sw-sub{background:#cffafe} .sw-ins{background:#fbcfe8}
   .sw-om{color:#db2777; font-weight:700}
   .sw-rep{color:#9c9cae; text-decoration:line-through; text-decoration-thickness:1px}
   .exbox{border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin:6px 0 18px;
@@ -131,7 +143,9 @@
   .exbox .calc{margin:10px 0 0; font-size:13.5px; color:var(--muted)}
   .acc figure{margin:4px 0 18px}
   .acc figure img{width:100%; display:block; border:1px solid var(--line); border-radius:10px}
-  .acc figcaption{margin-top:9px; font-size:13.5px; color:var(--muted); line-height:1.6}
+  .acc figcaption{margin-top:9px; font-size:13.5px; color:var(--muted); line-height:1.6;
+    font-style:italic}
+  .acc figcaption b{font-style:normal}
   .soon{display:inline-block; font-family:var(--mono); font-size:10px; letter-spacing:.12em;
     text-transform:uppercase; background:var(--accent); color:#fff; border-radius:999px;
     padding:4px 10px; margin-right:8px}
@@ -221,9 +235,7 @@
         <p>Each item then runs the same way: the sentence plays, a short pause follows, a ring tone
           marks the end of the pause, and a bar counts down the time available to answer. Longer
           sentences are given proportionally longer to answer, following the original design
-          (Ortega et al., 2002; Wu et al., 2022). Nothing else appears on screen — no waveform of
-          the participant's own voice and no transcription — so nothing invites them to monitor or
-          correct themselves.</p>
+          (Ortega et al., 2002; Wu et al., 2022).</p>
         <figure><img src="adm-run.png" alt="The response window, with the countdown bar running">
           <figcaption>The one control on this screen is <b>End session</b>, in the corner: it
             belongs to the researcher, for a participant who has to stop.</figcaption></figure>
@@ -237,9 +249,8 @@
           <figcaption>A participant's session cannot be repeated, so saving to disk comes before
             anything else.</figcaption></figure>
 
-        <div class="note"><p>Ending a session early changes what was collected, not what can be
-          done with it: the answers already recorded are complete files, and the log records where
-          the session stopped.</p></div>
+        <div class="note"><p>If a session is ended early, the answers recorded up to that point
+          can still be downloaded and scored — but the session cannot be resumed.</p></div>
       </div>
       </details>
     <details>
@@ -250,23 +261,30 @@
           one audio file per item, each holding a single answer to a single target sentence.</p>
 
         <h4>1 · Load the target sentences</h4>
-        <p>Paste them in, upload a file, or load the Ortega et al. (2002) set with the button. Item
-          numbers and syllable counts are read automatically when they are present and assigned when
-          they are not.</p>
+        <p>Paste them in, upload a file, or load the Ortega et al. (2002) set with the button.
+          An item number at the start of a line is used if it is there, and the items are numbered
+          in the order they appear if it is not. The syllable count is the one thing that cannot be
+          left out: it is the last value on each line, and it is what sets the response window.</p>
         <figure><img src="score-targets.png" alt="The target sentences panel of the scoring tool, with a set loaded">
           <figcaption>The same list the administration and segmentation tools take.</figcaption></figure>
 
-        <h4>2 · Drop in the recordings</h4>
+        <h4>2 · Set the scoring rules</h4>
+        <p>These decide how the target sentence and the transcription are normalized before they
+          are compared. Both are always lowercased and stripped of punctuation; what is optional is
+          spelling out numbers, expanding contractions, and whether a self-correction is scored on
+          its final attempt. Whatever is chosen here is written into both exports, so the exact
+          configuration can be deposited with the study materials.</p>
+        <figure><img src="score-rules.png" alt="The scoring-rules panel, with checkboxes for spelling out numbers, expanding contractions, and scoring a self-correction as the final attempt">
+          <figcaption>The rules apply identically to both strings, so a difference in the score is
+            never a difference in how the two were treated.</figcaption></figure>
+
+        <h4>3 · Drop in the recordings</h4>
         <p>Files named <span class="mono2">participantID_itemNN</span> are matched to items
           automatically; anything named otherwise can be assigned by hand in the table underneath.
           The audio is read in the browser and never uploaded.</p>
         <figure><img src="score-files.png" alt="The recordings panel of the scoring tool, with six files matched and the run button enabled">
           <figcaption>Once the targets and the files are both in, the run button becomes
             available.</figcaption></figure>
-
-        <p>Between the two sits the scoring-rule panel, where normalization is decided before
-          comparison. Those settings are exported with the results, so the exact configuration can
-          be deposited with the study materials.</p>
       </div>
       </details>
 
@@ -276,24 +294,35 @@
         <p>If a whole session sits in a single file, the
           <a href="segment.html" style="color:var(--accent); font-weight:650">segmentation
           tool</a> writes it out as one file per item, ready to drop straight into scoring.
-          Boundaries can be placed in three ways, and which one to use depends on what the
-          recording contains.</p>
+          Boundaries can be placed in three ways, and they are not equally accurate.</p>
+        <table class="def modes"><tbody>
+          <tr><td>1 · Timing grid + stimulus audio</td>
+            <td><b>The most accurate.</b> Each stimulus is measured from the audio itself, so the
+              window for every item is placed from the schedule rather than estimated. Items the
+              participant left silent still receive a window, and are marked as such.</td></tr>
+          <tr><td>2 · Timing grid, sentence set only</td>
+            <td>The same placement, except that stimulus length is estimated from syllable counts
+              rather than measured. Use it when the stimulus files are not to hand.</td></tr>
+          <tr><td>3 · Silence detection</td>
+            <td><b>The least accurate, and a fallback.</b> Boundaries are placed wherever the
+              recording falls silent, which cannot distinguish a skipped item from a pause: one
+              silent item shifts every item number after it. Use it only when the schedule is
+              unknown.</td></tr>
+        </tbody></table>
         <figure>
-          <img src="segment-modes.png" alt="The boundary-source selector, offering silence in the
-            recording, a timing grid from the sentence set plus stimulus audio, and a timing grid
-            from the sentence set only.">
-          <figcaption>If the beep that opens each response window is audible, use a timing grid:
-            every window is placed from the beep directly, and the sentence-set-only mode is the
-            simpler of the two because it needs no stimulus files. Without a beep, supplying the
-            stimulus audio is more accurate than estimating stimulus length from syllable counts.
-            Silence detection is the right choice when the recording contains the responses only
-            and they are evenly spaced.</figcaption>
+          <img src="segment-modes.png" alt="The boundary-source selector, offering a timing grid
+            from the sentence set plus stimulus audio, a timing grid from the sentence set only,
+            and silence in the recording.">
+          <figcaption>The two grid modes need the sentence set; only the first also needs the
+            stimulus files.</figcaption>
         </figure>
-        <p>Recordings usually open with the researcher's spoken instructions.
-          <b>Find task start</b> locates the point where the regularly spaced run of responses
-          begins, and everything before it is ignored; <b>Fit to expected count</b> adjusts the
-          silence threshold until the number of segments matches the number of items you
-          declared.</p>
+        <p>The remaining controls belong to silence detection. A recording may open with the
+          researcher's spoken instructions: <b>Find task start</b> locates the point where the
+          regularly spaced run of responses begins, and everything before it is ignored.
+          <b>Max. response</b> sets how long a single answer can plausibly be — a stretch of speech
+          longer than this is not treated as a response at all, which is what removes most
+          instruction speech. <b>Fit to expected count</b> then adjusts the silence threshold until
+          the number of segments matches the number of items you declared.</p>
         <figure>
           <img src="segment-detect.png" alt="The detection controls: boundary source, ignore-before
             time with a find-task-start button, maximum response length, minimum silence, minimum
@@ -302,18 +331,15 @@
           <figcaption>The confirmation line reports how many segments were found against how many
             were expected.</figcaption>
         </figure>
-        <p>Nothing is exported until you have seen it. The waveform shows every boundary in place,
-          each segment can be played by clicking its row, boundaries can be dragged, added, or
-          deleted, and each row carries a confidence level with a note when something looks
-          wrong — a segment that is very short, one that appears clipped, or spacing that departs
-          from the rest of the run.</p>
+        <p>The waveform then shows every boundary in place. Each segment can be played by clicking
+          its row, boundaries can be dragged, added, or deleted, and each row carries a confidence
+          level with a note when something looks wrong — a segment that is very short, one that
+          appears clipped, or spacing that departs from the rest of the run.</p>
         <figure>
           <img src="segment-adjust.png" alt="The adjust step: a waveform with numbered boundaries,
             an ignored region shaded at the start, and a table of items with output file names,
             start and end times, length, and a confidence label.">
-          <figcaption>Output files are named participantID_itemNN and exported as 16-bit 16 kHz
-            mono WAV in a ZIP, together with a CSV of the boundary times and confidence levels.
-            The note above the table states plainly what the marks do and do not establish.</figcaption>
+          <figcaption>Nothing is written out until this table has been seen.</figcaption>
         </figure>
       </div>
     </details>
@@ -331,6 +357,7 @@
             an accuracy of 30.0 %, and a confidence figure well below the others — the combination
             that usually means the audio is worth listening to.</figcaption>
         </figure>
+        <h4>What each column holds</h4>
         <table class="def"><tbody>
           <tr><td>Participant</td><td>Read from the file name when it follows
             <span class="mono2">participantID_itemNN</span>; otherwise whatever you assigned by
@@ -352,15 +379,6 @@
           <tr><td>Audio</td><td>Plays that recording, so a questionable item can be checked
             without leaving the table.</td></tr>
         </tbody></table>
-        <figure>
-          <img src="summary-table.png" alt="The per-participant summary row, showing items scored,
-            mean accuracy, mean word error rate, and mean confidence.">
-          <figcaption>Above the output table, one row per participant reports the number of items
-            scored, and the mean accuracy, word error rate, and confidence across them. The means
-            cover only the items that were actually scored, so check the count before comparing
-            participants.</figcaption>
-        </figure>
-
         <h4>How the alignment is marked</h4>
         <p>The three edit types that enter the word error rate are marked in the transcription
           itself, so a score can be traced to the words that produced it.</p>

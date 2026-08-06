@@ -188,6 +188,7 @@
   table.f td:last-child{text-align:right}
   .hidden{display:none !important}
   .err{color:#b91c1c; font-size:12.8px; line-height:1.6; display:block; max-width:52ch}
+  .ok{color:var(--muted); font-size:12.8px; line-height:1.6; display:block; max-width:52ch}
   @media(max-width:720px){
     .two{grid-template-columns:1fr}
     .pbody h3{font-size:26px}
@@ -365,7 +366,7 @@
         <p class="d" data-i18n="s5bd"></p>
         <p class="d" style="margin:0 0 11px" data-i18n="s5bd2"></p>
         <div class="ln"><button class="btn-g" id="btnStore" data-i18n="btnStore"></button></div>
-        <div class="ln"><span class="mono" id="storeInfo"></span></div>
+        <div class="ln"><span id="storeInfo"></span></div>
       </div>
     </div>
   </div></div>
@@ -533,8 +534,8 @@ const STR={
   fmtPrac:n=>n+" practice items loaded",
   pracMissing:"practice recordings for this language could not be loaded — the session will start without practice",
   fmtMic:(s,r)=>"test.wav · "+s.toFixed(1)+" s · "+Math.round(r/1000)+" kHz",
-  storeOk:"written and deleted · persistent storage granted",
-  storeOkNP:"written and deleted · persistent storage not granted (still usable)",
+  storeOk:"Storage works. Responses will be held safely until you save them.",
+  storeOkNP:"Storage works. The browser did not mark it as protected, which is normal — responses are still held safely until you save them, so long as this window stays open.",
   storeBad:"unavailable — a private window, or storage blocked by the browser",
   micBad:"No microphone. Either this page was refused permission, or no input device is connected. Permission is set from the icon at the left of the address bar; the page must then be reloaded.",
   fmtDone:(n,p)=>n+" responses recorded for "+p+". Nothing has left this computer. Save the recordings to disk before anything else — a participant's session cannot be repeated.",
@@ -610,8 +611,8 @@ const STR={
   fmtPrac:n=>"연습 문항 "+n+"개 불러옴",
   pracMissing:"이 언어의 연습 녹음을 불러오지 못했습니다 — 연습 없이 세션이 시작됩니다",
   fmtMic:(s,r)=>"test.wav · "+s.toFixed(1)+"초 · "+Math.round(r/1000)+" kHz",
-  storeOk:"기록 후 삭제 완료 · 지속 저장 허용됨",
-  storeOkNP:"기록 후 삭제 완료 · 지속 저장은 허용되지 않음(사용에는 지장 없음)",
+  storeOk:"저장소가 정상입니다. 저장하실 때까지 응답이 안전하게 보관됩니다.",
+  storeOkNP:"저장소가 정상입니다. 브라우저가 보호 대상으로 표시하지는 않았으나 이는 일반적인 상태이며, 이 창을 열어 두는 한 저장하실 때까지 응답은 안전하게 보관됩니다.",
   storeBad:"사용할 수 없습니다 — 프라이빗 창이거나 브라우저가 저장소를 차단했습니다",
   micBad:"마이크를 사용할 수 없습니다. 이 페이지의 마이크 권한이 거부되었거나 입력 장치가 연결되어 있지 않습니다. 권한은 주소창 왼쪽 아이콘에서 설정한 뒤 페이지를 새로고침해야 적용됩니다.",
   fmtDone:(n,p)=>p+"의 응답 "+n+"개가 녹음되었습니다. 이 컴퓨터를 벗어난 자료는 없습니다. 무엇보다 먼저 디스크에 저장하십시오 — 참가자 세션은 다시 찍을 수 없습니다.",
@@ -966,10 +967,12 @@ $("btnStore").onclick=async()=>{
     let persisted=false;
     try{ persisted=navigator.storage&&navigator.storage.persist?await navigator.storage.persist():false; }catch(e){}
     STORE_OK=true;
+    $("storeInfo").className="ok";
     $("storeInfo").textContent=persisted?T("storeOk"):T("storeOkNP");
   }catch(e){
     STORE_OK=false;
-    $("storeInfo").innerHTML='<span class="err">'+T("storeBad")+"</span>";
+    $("storeInfo").className="err";
+    $("storeInfo").textContent=T("storeBad");
   }
   $("st5").textContent=(MIC_OK&&STORE_OK)?T("stOk"):(STORE_OK?T("stNotChecked"):T("stFail"));
   $("st5").className="st"+((MIC_OK&&STORE_OK)?"":(STORE_OK?" wait":" bad"));
