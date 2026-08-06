@@ -242,7 +242,35 @@
       </div>
       </details>
     <details>
-      <summary><span class="chev">›</span>Splitting one long recording into items</summary>
+      <summary><span class="chev">›</span>You already have the recordings — one file per item</summary>
+      <div class="body">
+        <p>Recordings collected any other way are scored the same as recordings made here. What the
+          <a href="app.html" style="color:var(--accent); font-weight:650">scoring tool</a> expects is
+          one audio file per item, each holding a single answer to a single target sentence.</p>
+
+        <h4>1 · Load the target sentences</h4>
+        <p>Paste them in, upload a file, or load the Ortega et al. (2002) set with the button. Item
+          numbers and syllable counts are read automatically when they are present and assigned when
+          they are not.</p>
+        <figure><img src="score-targets.png" alt="The target sentences panel of the scoring tool, with a set loaded">
+          <figcaption>The same list the administration and segmentation tools take.</figcaption></figure>
+
+        <h4>2 · Drop in the recordings</h4>
+        <p>Files named <span class="mono2">participantID_itemNN</span> are matched to items
+          automatically; anything named otherwise can be assigned by hand in the table underneath.
+          The audio is read in the browser and never uploaded.</p>
+        <figure><img src="score-files.png" alt="The recordings panel of the scoring tool, with six files matched and the run button enabled">
+          <figcaption>Once the targets and the files are both in, the run button becomes
+            available.</figcaption></figure>
+
+        <p>Between the two sits the scoring-rule panel, where normalization is decided before
+          comparison. Those settings are exported with the results, so the exact configuration can
+          be deposited with the study materials.</p>
+      </div>
+      </details>
+
+    <details>
+      <summary><span class="chev">›</span>You already have the recordings — one long file per participant</summary>
       <div class="body">
         <p>If a whole session sits in a single file, the
           <a href="segment.html" style="color:var(--accent); font-weight:650">segmentation
@@ -288,7 +316,6 @@
         </figure>
       </div>
     </details>
-
     <details>
       <summary><span class="chev">›</span>Reading the output table — column by column</summary>
       <div class="body">
