@@ -173,7 +173,7 @@
 
   @media(max-width:860px){
     h1{font-size:38px; letter-spacing:-1.3px}
-    .cards,.steps{grid-template-columns:1fr}
+    .cards{grid-template-columns:1fr}
     .navlinks{display:none}
     section{padding:60px 0}
   }
@@ -237,19 +237,20 @@
   </div>
 </div></section>
 
-<section id="features"><div class="wrap">
+
+
+<section id="how"><div class="wrap">
   <div class="shead">
-    <p class="kicker">Built around your instrument</p>
-    <h2>Not another fixed test.<br>Your sentence set, scored for you.</h2>
-    <p>Elicited imitation tasks differ across studies in length, syllable range, and
-      target structures. EIT Studio scores whichever instrument you actually use.</p>
+    <p class="kicker">How it works</p>
+    <h2>From your sentence set<br>to scored data.</h2>
   </div>
   <div class="cards">
     <div class="card"><div class="bar"></div><div class="in">
       <div class="num">01</div>
-      <h3>Bring your own sentence set</h3>
-      <p>Paste or upload your targets as TSV, CSV, or one sentence per line. Any number of items.
-        The 30-item English EIT of Ortega et al. (2002) is included as a preset.</p>
+      <h3>Administer or upload your EIT</h3>
+      <p>Load your sentence set and run the task here on the schedule of the original design, or
+        upload recordings you have already collected. Any number of items; the 30-item English EIT
+        of Ortega et al. (2002) is included as a preset.</p>
     </div></div>
     <div class="card"><div class="bar"></div><div class="in">
       <div class="num">02</div>
@@ -261,55 +262,15 @@
     <div class="card"><div class="bar"></div><div class="in">
       <div class="num">03</div>
       <h3>Every item scored automatically</h3>
-      <p>Each transcription is aligned against your target word by word, and word error rate
-        (WER) and accuracy are calculated for you. The normalization rules behind them stay
-        visible, editable, and exported with the results.</p>
+      <p>Each transcription is aligned against your target word by word, and word error rate (WER)
+        and accuracy are calculated for you. The normalization rules behind them stay visible,
+        editable, and exported with the results.</p>
     </div></div>
   </div>
-</div></section>
-
-<section id="how"><div class="wrap">
-  <div class="shead">
-    <p class="kicker">How it works</p>
-    <h2>Three steps from recordings<br>to scored data.</h2>
-  </div>
-  <div class="steps">
-    <div class="stp">
-      <div class="hd"><span class="n">1</span><h3>Load your target sentences</h3></div>
-      <p>Paste them in or upload a file. Item numbers and syllable counts are read automatically
-        when present, and assigned when they are not.</p>
-      <div class="mini">
-        1,I have to get a haircut.,<span class="hi">7</span><br>
-        2,The red book is on the table.,<span class="hi">8</span><br>
-        3,The streets in this city are wide.,<span class="hi">8</span>
-      </div>
-    </div>
-    <div class="stp">
-      <div class="hd"><span class="n">2</span><h3>Set the scoring rules</h3></div>
-      <p>Decide how the target and the transcription are normalized before comparison. A live
-        preview shows exactly what each rule does.</p>
-      <div class="mini">
-        <div class="ck"><span class="bx"></span> Spell out numbers</div>
-        <div class="ck"><span class="bx"></span> Expand contractions</div>
-        3 → <span class="hi">three</span> · can't → <span class="hi">cannot</span>
-      </div>
-    </div>
-    <div class="stp">
-      <div class="hd"><span class="n">3</span><h3>Drop in the recordings</h3></div>
-      <p>One file per item, each holding a single response. Files named
-        <span class="mono">participantID_itemNN</span> are matched automatically; anything else
-        can be assigned by hand.</p>
-      <div class="mini">
-        <div class="fl"><span>P01_item01.wav</span><span class="hi">item 1</span></div>
-        <div class="fl"><span>P01_item02.wav</span><span class="hi">item 2</span></div>
-        <div class="fl"><span>P01_item03.wav</span><span class="hi">item 3</span></div>
-      </div>
-    </div>
-  </div>
-  <p style="margin:24px 0 0; color:var(--muted); font-size:14.5px">
+  <p style="margin:26px 0 0; color:var(--muted); font-size:15px">
     Have one long recording per participant instead?
     <a href="segment.html" style="color:var(--accent); font-weight:650">Split it into items
-    first →</a> &nbsp;·&nbsp; Not sure which of those you are ready for?
+    first →</a> &nbsp;·&nbsp; Not sure where you are starting?
     <a href="start.html" style="color:var(--accent); font-weight:650">Start here →</a></p>
 
   <div class="acc" id="reading">
