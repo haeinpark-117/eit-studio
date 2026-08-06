@@ -10,6 +10,7 @@
     --bg:#f2f2f4; --panel:#fff; --ink:#08080f; --muted:#6a6a7d; --line:#e8e8ef;
     --accent:#3840f3; --accent-dark:#2a31d4; --accent-soft:#eef0ff; --accent-line:#d9dcff;
     --pink:#ff1493; --pink-dark:#d1097a; --pink-soft:#fff0f8; --pink-line:#ffcfe8;
+    --cy:#0891b2; --cy-dark:#0e7490; --cy-soft:#ecfeff; --cy-line:#a5f3fc;
     --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   }
   *{box-sizing:border-box}
@@ -48,10 +49,10 @@
 
   /* ---------- choice cards ---------- */
   .two{display:grid; grid-template-columns:repeat(3,1fr); gap:15px}
-  .card.plain .ic{background:var(--soft); color:var(--muted)}
-  .card.plain:hover{border-color:#d4d4dc; box-shadow:0 6px 18px rgba(8,8,15,.06)}
-  .btn-n{background:#fff; color:var(--ink); border:1px solid var(--line)}
-  .btn-n:hover{border-color:#c9c9d4}
+  .card.cy .ic{background:var(--cy-soft); color:var(--cy)}
+  .card.cy:hover{border-color:var(--cy-line); box-shadow:0 6px 18px rgba(8,145,178,.10)}
+  .btn-c{background:var(--cy); color:#fff}
+  .btn-c:hover{background:var(--cy-dark)}
   .card{border:1px solid var(--line); border-radius:14px; padding:22px 22px 20px; background:#fff;
     display:flex; flex-direction:column; gap:10px; transition:.15s}
   .card:hover{border-color:var(--accent-line); box-shadow:0 6px 18px rgba(56,64,243,.08)}
@@ -131,12 +132,12 @@
         <div class="files">P01_item01.wav<br>P01_item02.wav<br>P01_item03.wav …</div>
         <a class="btn btn-k" href="app.html" data-i18n="cAb"></a>
       </div>
-      <div class="card plain">
+      <div class="card cy">
         <div class="ic">✂</div>
         <h3 data-i18n="cBt"></h3>
         <p data-i18n="cBs"></p>
         <div class="files">P01_session.mp3 <span style="opacity:.6" data-i18n="cBx"></span></div>
-        <a class="btn btn-n" href="segment.html" data-i18n="cBb"></a>
+        <a class="btn btn-c" href="segment.html" data-i18n="cBb"></a>
       </div>
     </div>
     <p class="foot-note" data-i18n="cNote"></p>
