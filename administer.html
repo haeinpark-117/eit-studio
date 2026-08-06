@@ -40,6 +40,24 @@
   .lang button.on{background:var(--accent); color:#fff; border-color:var(--accent)}
   .stage{width:100%; max-width:1120px}
 
+  /* ---- one step at a time ------------------------------------------------
+     Five panels open at once is more than a researcher needs to see. Only one
+     is open; every step stays on the page as a title row and can be opened at
+     any time, so nothing is hidden and nothing is locked. */
+  .panel.fold .pad > *:not(.ph){display:none}
+  .panel.fold .pad{padding:15px 24px}
+  .panel.fold .ph{margin-bottom:0}
+  .panel.fold:hover{border-color:#d4d4dc}
+  .ph{cursor:default}
+  .panel.fold .ph{cursor:pointer}
+  .ph .sum{margin-left:auto; font-family:var(--mono); font-size:13.2px; color:var(--muted);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:46ch}
+  .panel.fold .ph .sum ~ .st{margin-left:15px}
+  .panel:not(.fold) .ph .sum{display:none}
+  .chevp{flex:none; color:#b9b9c6; font-size:18px; line-height:1; margin-left:14px;
+    transition:transform .15s}
+  .panel:not(.fold) .chevp{transform:rotate(90deg); color:var(--accent)}
+
   .panel{background:var(--panel); border:1px solid var(--line); border-radius:14px;
     margin-bottom:14px; overflow:hidden}
   .pad{padding:22px 24px 24px}
@@ -268,7 +286,7 @@
 
   <div class="panel"><div class="pad">
     <div class="ph"><span class="n">1</span><h3 data-i18n="p1t"></h3>
-      <span class="st wait" id="st1" data-i18n="stNeed"></span></div>
+      <span class="sum" id="sum1"></span><span class="st wait" id="st1" data-i18n="stNeed"></span><span class="chevp">›</span></div>
     <p class="hint" data-i18n="p1h"></p>
     <div class="row">
       <span class="fl" data-i18n="lblPid"></span>
@@ -280,7 +298,7 @@
 
   <div class="panel"><div class="pad">
     <div class="ph"><span class="n">2</span><h3 data-i18n="p2t"></h3>
-      <span class="st wait" id="st2" data-i18n="stNeed"></span></div>
+      <span class="sum" id="sum2"></span><span class="st wait" id="st2" data-i18n="stNeed"></span><span class="chevp">›</span></div>
     <p class="hint" data-i18n="p2h"></p>
     <div class="row" style="margin-bottom:14px">
       <button class="btn-g" id="loadEitA" data-i18n="btnEitA"></button>
@@ -308,7 +326,7 @@
 
   <div class="panel"><div class="pad">
     <div class="ph"><span class="n">3</span><h3 data-i18n="p3t"></h3>
-      <span class="st" id="st3"></span></div>
+      <span class="sum" id="sum3"></span><span class="st" id="st3"></span><span class="chevp">›</span></div>
     <p class="hint" data-i18n="p3h"></p>
     <div class="row">
       <span class="fl" data-i18n="lblPrac"></span>
@@ -323,7 +341,7 @@
 
   <div class="panel"><div class="pad">
     <div class="ph"><span class="n">4</span><h3 data-i18n="p4t"></h3>
-      <span class="st" data-i18n="stSet"></span></div>
+      <span class="sum" id="sum4"></span><span class="st" data-i18n="stSet"></span><span class="chevp">›</span></div>
     <p class="hint" data-i18n="p4h"></p>
     <div class="row">
       <span class="fl" data-i18n="lblPause"></span><input class="inp sm" type="number" id="cPause" step="0.001" value="2.5">
@@ -345,7 +363,7 @@
 
   <div class="panel"><div class="pad">
     <div class="ph"><span class="n">5</span><h3 data-i18n="p5t"></h3>
-      <span class="st wait" id="st5" data-i18n="stNotChecked"></span></div>
+      <span class="sum" id="sum5"></span><span class="st wait" id="st5" data-i18n="stNotChecked"></span><span class="chevp">›</span></div>
     <p class="hint" data-i18n="p5h"></p>
     <div class="two">
       <div class="sub">
@@ -671,7 +689,7 @@ async function takeStim(list){
 $("loadEitA").onclick=async()=>{
   STIM=EITA_FILES.map(u=>({name:u.split("/").pop(),src:u,buf:null,dur:null}));
   $("tgtBox").value=PRESET_EITA.map(r=>r[0]+"\t"+r[1]+"\t"+r[2]).join("\n");
-  readTargets(); await measure();
+  readTargets(); await measure(); foldAdvance();
 };
 $("clearAll").onclick=()=>{ STIM=[]; $("tgtBox").value=""; readTargets(); paintStimList(); paintTally(); paintStart(); };
 
@@ -969,6 +987,7 @@ $("btnStore").onclick=async()=>{
     STORE_OK=true;
     $("storeInfo").className="ok";
     $("storeInfo").textContent=persisted?T("storeOk"):T("storeOkNP");
+    setTimeout(foldAdvance,400);
   }catch(e){
     STORE_OK=false;
     $("storeInfo").className="err";
@@ -985,6 +1004,48 @@ function paintStart(){
            STIM.every(s=>s.dur) && MIC_OK && STORE_OK;
   $("btnStart").disabled=!ok;
   $("startNote").textContent=STIM.length?T("fmtStart")(STIM.length,hhmm(totalSeconds())):"";
+  paintSums();
+}
+
+/* A folded panel still has to say what it holds, or folding only hides the
+   settings a reader came to check. */
+function paintSums(){
+  const c=consts(), pl=$("pracLang");
+  const set=(id,v)=>{ const e=$(id); if(e) e.textContent=v||""; };
+  set("sum1",$("pid").value.trim()+($("grp").value.trim()?" · "+$("grp").value.trim():""));
+  set("sum2",STIM.length?STIM.length+" items · "+TGT.length+" targets":"");
+  set("sum3",pl.value==="off"?T("optNone"):pl.options[pl.selectedIndex].text+" · "+PRAC.length);
+  set("sum4",c.pause+" s · "+c.tone+" s · +"+c.per+" s/syl");
+  set("sum5",(MIC_OK?"mic ok":"mic —")+" · "+(STORE_OK?"storage ok":"storage —"));
+}
+
+/* ---- one step at a time --------------------------------------------------
+   Only one panel is open. Every step remains on the page as a title row and
+   can be opened at any moment: this is a display choice, not a sequence lock,
+   so the schedule can still be checked before anything else is done. */
+const FOLDP=[...document.querySelectorAll("#setup > .panel")].filter(p=>p.querySelector(".ph"));
+function foldOpen(p){
+  FOLDP.forEach(x=>x.classList.toggle("fold",x!==p));
+  if(p) p.scrollIntoView({block:"nearest",behavior:"smooth"});
+}
+FOLDP.forEach((p,i)=>{
+  if(i>0) p.classList.add("fold");
+  p.querySelector(".ph").addEventListener("click",e=>{
+    if(e.target.closest("input,select,button,textarea,a")) return;
+    if(p.classList.contains("fold")) foldOpen(p);
+  });
+});
+/* After a step is satisfied, move to the first one that is not. */
+function foldAdvance(){
+  const done=[
+    ()=>!!$("pid").value.trim(),
+    ()=>STIM.length>0 && TGT.length===STIM.length && STIM.every(s=>s.dur),
+    ()=>true,
+    ()=>true,
+    ()=>MIC_OK && STORE_OK
+  ];
+  const i=done.findIndex(f=>!f());
+  foldOpen(i<0 ? null : FOLDP[i]);
 }
 
 /* ------------------------------------------------------------ the session */

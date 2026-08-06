@@ -53,6 +53,22 @@
     justify-content:center; flex:none}
   .step h2{font-size:19.4px; margin:0; letter-spacing:-.01em}
   .step .ok{margin-left:auto; font-size:14.5px; color:var(--accent); font-weight:600}
+
+  /* ---- one step at a time ------------------------------------------------
+     Only one panel is open. Every step stays on the page as a title row and can
+     be opened at any time: a display choice, not a sequence lock. */
+  .panel.fold .pad > *:not(.step){display:none}
+  .panel.fold .pad{padding:15px 22px}
+  .panel.fold .step{margin-bottom:0; cursor:pointer}
+  .panel.fold:hover{border-color:#d4d4dc}
+  .step .sum{margin-left:auto; font-family:var(--mono); font-size:14px; color:var(--muted);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:46ch}
+  .panel.fold .step .sum ~ .ok{margin-left:15px}
+  .panel:not(.fold) .step .sum{display:none}
+  .panel.fold .step a{display:none}
+  .chevp{flex:none; color:#b9b9c6; font-size:20px; line-height:1; margin-left:14px;
+    transition:transform .15s}
+  .panel:not(.fold) .chevp{transform:rotate(90deg); color:var(--accent)}
   .meta{font-size:16px; color:var(--muted); margin:0 0 12px}
   button{font:inherit; font-weight:600; cursor:pointer; border-radius:8px;
     padding:9px 18px; border:1px solid transparent}
@@ -188,7 +204,8 @@
   <!-- ============ STEP 1 : target set ============ -->
   <div class="panel"><div class="pad">
     <div class="step"><span class="n">1</span><h2 data-i18n="s1Title"></h2>
-      <span class="ok" id="s1Ok"></span></div>
+      <span class="sum" id="sum1"></span><span class="ok" id="s1Ok"></span>
+      <span class="chevp">›</span></div>
     <p class="meta" data-i18n="s1Help"></p>
     <div class="row">
       <button class="btn-g btn-s" id="loadPreset" data-i18n="btnPreset"></button>
@@ -206,7 +223,8 @@
 
   <!-- ============ STEP 2 : normalizer ============ -->
   <div class="panel"><div class="pad">
-    <div class="step"><span class="n">2</span><h2 data-i18n="s2Title"></h2></div>
+    <div class="step"><span class="n">2</span><h2 data-i18n="s2Title"></h2>
+      <span class="sum" id="sum2"></span><span class="chevp">›</span></div>
     <p class="meta" data-i18n="s2Help"></p>
     <div class="row">
       <label class="chk"><input type="checkbox" id="optNum" checked><span data-i18n="optNum"></span></label>
@@ -233,8 +251,9 @@
   <!-- ============ STEP 3 : audio ============ -->
   <div class="panel"><div class="pad">
     <div class="step"><span class="n">3</span><h2 data-i18n="s3Title"></h2>
-      <a href="segment.html" style="margin-left:auto; font-size:15.2px; font-weight:600;
-         color:var(--accent); text-decoration:none" data-i18n="segLink"></a></div>
+      <a href="segment.html" style="font-size:15.2px; font-weight:600; margin-left:14px;
+         color:var(--accent); text-decoration:none" data-i18n="segLink"></a>
+      <span class="sum" id="sum3"></span><span class="chevp">›</span></div>
     <p class="meta" data-i18n="s3Help"></p>
     <div class="row">
       <label class="meta" style="margin:0" data-i18n="modelLbl"></label>
@@ -740,17 +759,18 @@ function applyTargets(text,quiet){
 function paintTargetInfo(){
   $("tgtInfo").textContent = TGT_N ? T("fmtTgtInfo")(TGT_N) : T("tgtNone");
   $("s1Ok").textContent = TGT_N ? "✓ "+T("s1Ok") : "";
+  paintSums();
 }
 $("loadPreset").onclick=()=>{
   $("tgtBox").value=PRESET_EITA.map(r=>r[0]+"\t"+r[1]+"\t"+r[2]).join("\n");
   applyTargets($("tgtBox").value);
 };
-$("applyTgt").onclick=()=>applyTargets($("tgtBox").value);
+$("applyTgt").onclick=()=>{ applyTargets($("tgtBox").value); foldAdvance(); };
 $("clearTgt").onclick=()=>{ $("tgtBox").value=""; applyTargets(""); };
 $("tgtFileBtn").onclick=()=>$("tgtFile").click();
 $("tgtFile").onchange=async e=>{
   const f=e.target.files[0]; if(!f) return;
-  $("tgtBox").value=await f.text(); applyTargets($("tgtBox").value);
+  $("tgtBox").value=await f.text(); applyTargets($("tgtBox").value); foldAdvance();
   e.target.value="";
 };
 
@@ -782,6 +802,9 @@ function rescore(){
   RESULTS.forEach(r=>{ r.sc = r.target ? scorePair(r.target,r.text) : null; });
   render();
 }
+["optNum","optContr","optRep"].forEach(id=>{
+  const e=$(id); if(e) e.addEventListener("change",paintSums);
+});
 $("applyRules").onclick=readCfgFromUI;
 $("optNum").onchange=readCfgFromUI;
 $("optContr").onchange=readCfgFromUI;
@@ -965,6 +988,43 @@ function updateRunState(){
   if(!TGT_N) setStatus("stNoTarget");
   else if(!FILES.length) setStatus("stNoAudio");
   else setStatus("stReady");
+  paintSums();
+}
+
+/* A folded panel still has to say what it holds. */
+function paintSums(){
+  const set=(id,v)=>{ const e=$(id); if(e) e.textContent=v||""; };
+  set("sum1", TGT_N ? TGT_N+" items" : "");
+  const on=[]; 
+  if($("optNum")&&$("optNum").checked) on.push("numbers");
+  if($("optContr")&&$("optContr").checked) on.push("contractions");
+  if($("optRep")&&$("optRep").checked) on.push("self-correction");
+  set("sum2", on.length?on.join(" · "):"lowercase · no punctuation");
+  set("sum3", FILES.length ? FILES.length+" files · "+
+      ($("modelSel")?$("modelSel").options[$("modelSel").selectedIndex].text:"") : "");
+}
+
+/* ---- one step at a time --------------------------------------------------
+   Only one panel is open at a time. Every step remains on the page as a title
+   row and can be reopened at any moment, so a scoring rule can be checked
+   without undoing anything. */
+const FOLDP=[...document.querySelectorAll(".stage > .panel")]
+  .filter(p=>p.querySelector(".step") && !p.id);
+function foldOpen(p){
+  FOLDP.forEach(x=>x.classList.toggle("fold",x!==p));
+  if(p) p.scrollIntoView({block:"nearest",behavior:"smooth"});
+}
+FOLDP.forEach((p,i)=>{
+  if(i>0) p.classList.add("fold");
+  p.querySelector(".step").addEventListener("click",e=>{
+    if(e.target.closest("input,select,button,textarea,a,summary,details")) return;
+    if(p.classList.contains("fold")) foldOpen(p);
+  });
+});
+function foldAdvance(){
+  const done=[()=>TGT_N>0, ()=>true, ()=>FILES.length>0];
+  const i=done.findIndex(f=>!f());
+  foldOpen(i<0 ? null : FOLDP[i]);
 }
 
 $("runBtn").onclick=async()=>{
