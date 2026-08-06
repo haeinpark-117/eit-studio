@@ -147,6 +147,24 @@
   .bar{flex:1; height:6px; background:#e9e9f0; border-radius:4px; overflow:hidden; min-width:120px}
   .bar i{display:block; height:100%; width:0; background:var(--accent); transition:width .2s}
   @media(max-width:700px){ table.segs th:nth-child(4),table.segs td:nth-child(4){display:none} }
+
+  /* ---- narrow screens: the tool header becomes two rows -------------------
+     Four tabs plus the language switch do not fit one 50 px row on a phone,
+     and the overflow put the Segment tab and the switch out of reach. */
+  @media(max-width:760px){
+    body{padding-top:94px}
+    body.running{padding-top:94px}
+    .hd{height:auto; flex-wrap:wrap; padding:9px 14px 0; align-items:center}
+    .hd .t{font-size:14px}
+    .hd .t span{display:none}
+    .hd .rt{margin-left:auto; gap:8px}
+    .lang button{font-size:11.5px; padding:4px 9px}
+    .tabs2{order:3; width:100%; margin:9px -14px 0; padding:0 14px 9px;
+      gap:5px; overflow-x:auto; -webkit-overflow-scrolling:touch;
+      scrollbar-width:none; -ms-overflow-style:none}
+    .tabs2::-webkit-scrollbar{display:none}
+    .tabs2 a{font-size:12px; padding:5px 10px; flex:0 0 auto}
+  }
 </style>
 </head>
 <body>

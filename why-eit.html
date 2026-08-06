@@ -94,6 +94,11 @@
     .stats{grid-template-columns:1fr}
     table.ev td:first-child{white-space:normal}
   }
+  @media(max-width:560px){
+    table.ev{table-layout:fixed; font-size:13.5px}
+    table.ev th, table.ev td{padding:11px 8px}
+    table.ev td:first-child, table.ev th:first-child{width:40%}
+  }
 
   .navtoggle{display:none; background:none; border:1px solid var(--line); border-radius:9px;
     padding:7px 11px; cursor:pointer; font:inherit; font-size:17px; line-height:1; color:var(--ink)}
