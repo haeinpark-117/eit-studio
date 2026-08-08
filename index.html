@@ -199,6 +199,21 @@
   .route.pk p{color:#6b2049}
   .btn-k{background:var(--pink); color:#fff}
   .btn-k:hover{background:var(--pink-dk)}
+  /* The routes out of each card are a short list rather than a button: the
+     scoring side has two, and the two cards have to stay the same shape. */
+  .route p{margin-bottom:10px}
+  .menu{margin-top:2px}
+  .menu a{display:flex; align-items:baseline; gap:9px; text-decoration:none;
+    border-top:1px solid var(--accent-line,#d9dcff); padding:7px 2px; transition:.15s}
+  .menu a:last-child{border-bottom:1px solid var(--accent-line,#d9dcff)}
+  .menu a:hover{background:#f4f5ff}
+  .menu b{font-size:15.7px; font-weight:700; color:var(--ink); letter-spacing:-.2px}
+  .menu i{font-style:normal; font-size:14.1px; color:#4a4c86; flex:1 1 auto}
+  .menu .ar{color:var(--accent); font-weight:700}
+  .route.pk .menu a{border-color:var(--pink-line)}
+  .route.pk .menu a:hover{background:#fff7fb}
+  .route.pk .menu i{color:#8a4a6d}
+  .route.pk .menu .ar{color:var(--pink)}
   @media(max-width:820px){ .two-routes{grid-template-columns:1fr} }
 
   .navtoggle{display:none; background:none; border:1px solid var(--line); border-radius:9px;
@@ -243,18 +258,21 @@
     <div class="route">
       <span class="rstep">Administer</span>
       <h3>Administer your EIT</h3>
-      <p>Load your own sentence set and run it as an automated test. Stimuli are played on a fixed
-        schedule, responses are recorded as the session runs, and each response is written out as
-        its own audio file.</p>
-      <a class="btn btn-p" href="administer.html">Set up a session →</a>
+      <p>Bring your sentence set and the stimulus recordings: the task runs in the browser on a
+        fixed schedule and each response is written out as its own audio file.</p>
+      <div class="menu">
+        <a href="administer.html"><b>Set up a session</b><i></i><span class="ar">→</span></a>
+      </div>
     </div>
     <div class="route pk">
       <span class="rstep">Score</span>
       <h3>Score what you collected</h3>
-      <p>Transcription with Whisper large-v3-turbo and word error rate scoring against your
-        targets. Normalization rules are visible, editable, and exportable, so the exact
-        configuration can be deposited with your materials.</p>
-      <a class="btn btn-k" href="app.html">Score a set →</a>
+      <p>Bring the response audio you have already collected: Whisper large-v3-turbo transcribes
+        it in the browser and word error rate is computed against your targets.</p>
+      <div class="menu">
+        <a href="app.html"><b>One file per item</b><i>score now</i><span class="ar">→</span></a>
+        <a href="segment.html"><b>One long recording per participant</b><i>split first</i><span class="ar">→</span></a>
+      </div>
     </div>
   </div>
 </div></section>
