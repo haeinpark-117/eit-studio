@@ -83,7 +83,7 @@
   .num{font-family:var(--mono); color:var(--accent); font-weight:700; white-space:nowrap}
 
   /* Figures. The three on this page carry the evidence for the choice of
-     recognizer, so they are given the full section width rather than the
+     system, so they are given the full section width rather than the
      prose measure. */
   figure.fig{border:1px solid var(--accent-line); border-radius:16px; margin:24px 0 20px;
     background:linear-gradient(180deg,#fbfbff 0%,var(--accent-soft) 100%);
@@ -199,10 +199,10 @@
   <p>Whisper is an open speech recognition model released by OpenAI (Radford et al., 2023): it
     takes an audio recording and returns a transcription of what it hears. EIT Studio runs it on
     every response and scores that transcription against the target sentence.</p>
-  <p>Choosing a recognizer for this task is not the same as choosing one for dictation. In an
+  <p>Choosing a speech recognition system for this task is not the same as choosing one for dictation. In an
     elicited imitation task the participant hears a sentence and repeats it as closely as possible,
     and the score is the distance between the sentence presented and the words actually produced.
-    The deviations are the measurement, so a recognizer that tidies them away removes the very
+    The deviations are the measurement, so a system that tidies them away removes the very
     thing being measured. That rules out the usual method of raising accuracy on learner speech:
     earlier systems reached usable accuracy on learner responses only through tuning that often
     included <em>forced alignment</em>, a procedure that constrains the output to the words of the
@@ -217,18 +217,18 @@
         prize.</span></div>
     <hr>
     <div class="out">
-      <div class="hd"><span>Recognizer constrained to the prompt</span>
+      <div class="hd"><span>System constrained to the prompt</span>
         <span class="verdict bad">no error recorded</span></div>
       <div class="v">the scientist who <span class="mk-bad">discovered</span> the vaccine won a prize</div>
     </div>
     <div class="out">
-      <div class="hd"><span>Recognizer told nothing — how EIT Studio runs it</span>
+      <div class="hd"><span>System told nothing — how EIT Studio runs it</span>
         <span class="verdict good">one substitution recorded</span></div>
       <div class="v">the scientist who <span class="mk">discover</span> the vaccine won a prize</div>
     </div>
   </div>
 
-  <p>A recognizer that can only return the target sentence will return the target sentence, and
+  <p>A system that can only return the target sentence will return the target sentence, and
     every deviation disappears with it. Whisper is accurate enough on accented, disfluent speech to
     be used without being told what to expect, which is what this task requires. Four properties
     Radford et al. (2023) report are what make that possible.</p>
@@ -401,7 +401,7 @@
       first-language background (McGuire, 2026). Whisper returned the lowest overall error rate of
       the five systems compared, and the same broad pattern — Hindi lowest, Chinese and Vietnamese
       highest — held across all five, which suggests that the spread reflects the speech rather
-      than the recognizer. The dashed line marks the overall value of .054; the Vietnamese group
+      than the choice of system. The dashed line marks the overall value of .054; the Vietnamese group
       is the one that sits clearly above it, and is where a human-verified
       subsample earns its place.</figcaption>
   </figure>
@@ -457,7 +457,7 @@
         globally more fluent hypothesis override a locally accurate one.</td></tr>
       <tr><td style="padding:11px 0; border-bottom:1px solid var(--line); font-weight:650;
         vertical-align:top">No prompt, no bias</td>
-        <td style="padding:11px 0; border-bottom:1px solid var(--line)">The recognizer is never
+        <td style="padding:11px 0; border-bottom:1px solid var(--line)">The model is never
         given the target sentence, and no vocabulary or initial prompt is supplied. This is the
         single most important setting: constraining recognition toward the expected words would
         make the transcription converge on the target and erase the deviations that constitute
