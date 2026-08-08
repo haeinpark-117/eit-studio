@@ -221,6 +221,10 @@
   .cta .lbl b{display:block; font-size:16.9px; font-weight:700; letter-spacing:-.2px}
   .cta .lbl i{font-style:normal; font-size:14px; color:var(--muted)}
   .cta .st2:first-child .lbl i{color:var(--accent-dark); font-weight:650}
+  /* Another participant on the same material. Kept apart from the numbered
+     pair above, which is the sequence for the participant just finished. */
+  .again{margin-top:22px; padding-top:18px; border-top:1px solid var(--line)}
+  .again .agn{margin:9px auto 0; font-size:14.6px; color:var(--muted); max-width:58ch}
   table.f{width:100%; border-collapse:collapse; font-family:var(--mono); font-size:14px}
   table.f td{border-bottom:1px solid var(--line); padding:7px 4px; color:var(--muted)}
   table.f tr:last-child td{border-bottom:0}
@@ -454,6 +458,10 @@
           <span class="lbl"><b data-i18n="dScore"></b><i data-i18n="dScoreS"></i></span></button>
       </div>
       <p class="mono" id="dNote" style="margin-top:16px"></p>
+      <div class="again">
+        <button class="btn-g" id="btnNext" disabled data-i18n="dNext"></button>
+        <p class="agn" id="dNextNote"></p>
+      </div>
     </div>
   </div></div>
   <div class="panel"><div class="pad"><table class="f"><tbody id="dRows"></tbody></table></div></div>
@@ -588,7 +596,10 @@ const STR={
   micBad:"No microphone. Either this page was refused permission, or no input device is connected. Permission is set from the icon at the left of the address bar; the page must then be reloaded.",
   fmtDone:(n,p)=>n+" responses recorded for "+p+". Nothing has left this computer. Save the recordings to disk before anything else — a participant's session cannot be repeated.",
   fmtEnded:(n,p,at,tot)=>"Ended at item "+at+" of "+tot+". "+n+" responses recorded for "+p+". Nothing has left this computer. Save the recordings to disk before anything else.",
-  dNote:"A session log is written alongside the audio so that the exact schedule used can be reported in the methods section."
+  dNote:"A session log is written alongside the audio so that the exact schedule used can be reported in the methods section.",
+  dNext:"Run another participant",
+  dNextLocked:"Available once the responses have been downloaded. Starting the next participant clears them from this browser.",
+  dNextReady:"The sentence set, the stimulus audio and the practice items stay loaded. Only the participant ID has to be entered again."
  },
  ko:{
   heroT:"시행",
@@ -668,7 +679,10 @@ const STR={
   micBad:"마이크를 사용할 수 없습니다. 이 페이지의 마이크 권한이 거부되었거나 입력 장치가 연결되어 있지 않습니다. 권한은 주소창 왼쪽 아이콘에서 설정한 뒤 페이지를 새로고침해야 적용됩니다.",
   fmtDone:(n,p)=>p+"의 응답 "+n+"개가 녹음되었습니다. 이 컴퓨터를 벗어난 자료는 없습니다. 무엇보다 먼저 디스크에 저장하십시오 — 참가자 세션은 다시 찍을 수 없습니다.",
   fmtEnded:(n,p,at,tot)=>tot+"문항 중 "+at+"번에서 종료했습니다. "+p+"의 응답 "+n+"개가 녹음되었습니다. 무엇보다 먼저 디스크에 저장하십시오.",
-  dNote:"정확한 시행 일정을 방법 절에 그대로 보고할 수 있도록 세션 로그가 음성과 함께 저장됩니다."
+  dNote:"정확한 시행 일정을 방법 절에 그대로 보고할 수 있도록 세션 로그가 음성과 함께 저장됩니다.",
+  dNext:"다음 참가자 진행",
+  dNextLocked:"응답을 내려받으면 활성화됩니다. 다음 참가자를 시작하면 이 브라우저에서 응답이 지워집니다.",
+  dNextReady:"문장 세트, 자극 음성, 연습 문항은 그대로 유지됩니다. 참가자 ID만 다시 입력하시면 됩니다."
  }
 };
 let LANG=localStorage.getItem("eitLang")==="ko"?"ko":"en";
@@ -681,7 +695,7 @@ function applyLang(){
   });
   $("langEn").classList.toggle("on",LANG==="en");
   $("langKo").classList.toggle("on",LANG==="ko");
-  paintTally(); paintPractice(); paintSchedule(); paintStart();
+  paintTally(); paintPractice(); paintSchedule(); paintStart(); paintNext();
 }
 $("langEn").onclick=()=>{LANG="en"; localStorage.setItem("eitLang","en"); applyLang();};
 $("langKo").onclick=()=>{LANG="ko"; localStorage.setItem("eitLang","ko"); applyLang();};
@@ -1083,6 +1097,10 @@ function foldAdvance(){
 
 /* ------------------------------------------------------------ the session */
 let ABORT=false, RESULTS=[], SESSION=null, ENDED_AT=null;
+/* Whether the responses for the participant just finished have been saved.
+   Starting the next participant clears RESULTS and the stored responses,
+   so the button that does so stays disabled until this is true. */
+let ZIPPED=false;
 
 function showScreen(which){
   $("setup").classList.toggle("hidden",which!=="setup");
@@ -1228,6 +1246,7 @@ function finish(){
     ? T("fmtEnded")(RESULTS.length,SESSION.pid,ENDED_AT||RESULTS.length,SESSION.total_items)
     : T("fmtDone")(RESULTS.length,SESSION.pid);
   $("dNote").textContent=T("dNote");
+  ZIPPED=false; paintNext();
   $("dRows").innerHTML=RESULTS.map(r=>
       "<tr><td>"+r.name+"</td><td>“"+r.target+"”</td><td>"+r.window_s.toFixed(1)+" s</td></tr>")
       .join("")+"<tr><td>"+SESSION.pid+"_session.json</td><td>"+
@@ -1244,8 +1263,33 @@ $("btnZip").onclick=async()=>{
   const zip=await makeZip(entries);
   const a=document.createElement("a");
   a.href=URL.createObjectURL(zip); a.download=SESSION.pid+"_eit.zip"; a.click();
+  ZIPPED=true; paintNext();
 };
 $("btnScore").onclick=()=>{ location.href="app.html?from=administer"; };
+
+/* ------------------------------------------------- another participant ---
+   The sentence set, the stimulus audio and the practice items are already in
+   memory and are not touched here, so a second participant can be started
+   without loading anything again. Only the per-participant state is cleared. */
+function paintNext(){
+  const b=$("btnNext"); if(!b) return;
+  b.disabled=!ZIPPED;
+  $("dNextNote").textContent=ZIPPED?T("dNextReady"):T("dNextLocked");
+}
+async function nextParticipant(){
+  RESULTS=[]; SESSION=null; ENDED_AT=null; ABORT=false; ZIPPED=false;
+  $("dSum").textContent=""; $("dRows").innerHTML="";
+  /* The store held the responses just downloaded; clearing it now keeps the
+     unfinished-session banner from offering them back as a recovery. */
+  try{ await idbClear(); }catch(e){}
+  LEFTOVER=0; $("recover").classList.add("hidden");
+  $("pid").value="";
+  showScreen("setup");
+  paintStart();
+  foldAdvance();
+  $("pid").focus();
+}
+$("btnNext").onclick=nextParticipant;
 
 /* ------------------------------------------------- unfinished session ----
    Responses are written item by item, so a session cut short by a reload,
