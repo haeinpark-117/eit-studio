@@ -7,7 +7,7 @@
 <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Start here — EIT Studio</title>
-<meta name="description" content="What you need to start transcribing and scoring an elicited imitation task in EIT Studio.">
+<meta name="description" content="Prepare your target sentences, then administer an elicited imitation task or score the recordings you already have.">
 <style>
   :root{
     --bg:#f2f2f4; --panel:#fff; --ink:#08080f; --muted:#6a6a7d; --line:#e8e8ef;
@@ -18,7 +18,8 @@
   }
   *{box-sizing:border-box}
   body{margin:0; background:var(--bg); color:var(--ink); padding:66px 18px 60px;
-    font:17.6px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+    font:17.6px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,
+      "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
     display:flex; justify-content:center; -webkit-font-smoothing:antialiased}
   .hd{position:fixed; top:0; left:0; right:0; z-index:20; height:50px;
     background:rgba(255,255,255,.92); backdrop-filter:blur(10px);
@@ -39,60 +40,81 @@
   .lang button:first-child{border-radius:7px 0 0 7px}
   .lang button:last-child{border-radius:0 7px 7px 0; border-left:0}
   .lang button.on{background:var(--accent); color:#fff; border-color:var(--accent)}
-  .stage{width:100%; max-width:1320px}
+  .stage{width:100%; max-width:1100px}
 
   .panel{background:var(--panel); border:1px solid var(--line); border-radius:14px;
     margin-bottom:18px; overflow:hidden}
-  .pad{padding:34px 30px 38px}
+  .pad{padding:32px 32px 34px}
 
-  h1.q{margin:0 0 8px; font-size:33px; line-height:1.2; letter-spacing:-.9px; font-weight:800;
-    text-align:center}
-  p.qs{margin:0 auto 30px; color:var(--muted); font-size:16.9px; line-height:1.65;
-    text-align:center; max-width:60ch}
+  .sr{position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden;
+    clip:rect(0 0 0 0); white-space:nowrap; border:0}
 
-  /* ---------- choice cards ---------- */
-  .two{display:grid; grid-template-columns:repeat(3,1fr); gap:15px}
-  .card.cy .ic{background:var(--cy-soft); color:var(--cy)}
-  .card.cy:hover{border-color:var(--cy-line); box-shadow:0 6px 18px rgba(6,182,212,.14)}
-  .btn-c{background:var(--cy); color:#fff}
-  .btn-c:hover{background:var(--cy-dark)}
-  .card{border:1px solid var(--line); border-radius:14px; padding:22px 22px 20px; background:#fff;
-    display:flex; flex-direction:column; gap:10px; transition:.15s}
-  .card:hover{border-color:var(--accent-line); box-shadow:0 6px 18px rgba(56,64,243,.08)}
-  .card.alt:hover{border-color:var(--pink-line); box-shadow:0 6px 18px rgba(255,20,147,.08)}
-  .card .ic{width:34px; height:34px; border-radius:10px; display:grid; place-items:center;
-    font-size:20.6px; background:var(--accent-soft); color:var(--accent)}
-  .card.alt .ic{background:var(--pink-soft); color:var(--pink)}
-  .card h3{margin:0; font-size:20px; font-weight:700; letter-spacing:-.3px}
-  .card p{margin:0; color:var(--muted); font-size:16.9px; line-height:1.6; flex:1 1 auto}
-  .foot-note{margin:18px 0 0; font-size:16px; color:var(--muted); line-height:1.65}
+  /* ---------- step furniture ---------- */
+  .sh{display:flex; align-items:baseline; gap:11px; margin:0 0 5px}
+  .sh .num{width:25px; height:25px; border-radius:50%; background:var(--accent); color:#fff;
+    font-size:14px; font-weight:800; display:inline-flex; align-items:center;
+    justify-content:center; flex:none; transform:translateY(3px)}
+  .sh h2{margin:0; font-size:21px; letter-spacing:-.45px; font-weight:750}
+  .stepbody{padding-left:36px}
+  .stepbody > p.d1{margin:0 0 14px; color:var(--muted); font-size:16.4px; line-height:1.66;
+    max-width:70ch}
+  .sep{height:1px; background:var(--line); margin:30px 0 24px}
 
-  /* ---------- CTA ---------- */
-  .btn{display:inline-block; align-self:flex-start; text-decoration:none; font-size:16.4px;
-    font-weight:650; padding:10px 18px; border-radius:10px; border:1px solid transparent;
-    margin-top:2px}
-  .btn-p{background:var(--accent); color:#fff}
-  .btn-p:hover{background:var(--accent-dark)}
-  .btn-k{background:var(--pink); color:#fff}
-  .btn-k:hover{background:var(--pink-dark)}
+  /* ---------- the sheet ---------- */
+  .xl{border:1px solid #cfcfda; border-radius:10px; overflow:hidden; max-width:640px;
+    box-shadow:0 2px 10px rgba(8,8,15,.05); background:#fff}
+  .xl table{border-collapse:collapse; width:100%; font-size:16px}
+  .xl th,.xl td{border-right:1px solid #e4e4ec; border-bottom:1px solid #e4e4ec;
+    padding:8px 12px; text-align:left}
+  .xl tr:last-child td,.xl tr:last-child th{border-bottom:0}
+  .xl thead th{background:#f0f0f5; color:#8a8a9c; font-family:var(--mono); font-size:12.8px;
+    font-weight:600; text-align:center; letter-spacing:.06em}
+  .xl tbody th{background:#f0f0f5; color:#8a8a9c; font-family:var(--mono); font-size:12.8px;
+    font-weight:600; text-align:center; width:34px}
+  .xl td.a{font-family:var(--mono); width:54px; color:var(--muted)}
+  .xl td.c{font-family:var(--mono); color:var(--muted); width:68px}
 
-  /* ---------- checklist ---------- */
-  .need{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:6px}
-  .need .it{border:1px solid var(--line); border-radius:12px; padding:16px 18px; background:#fff}
-  .need .it h3{margin:0 0 5px; font-size:17.6px; letter-spacing:-.2px}
-  .need .it p{margin:0; color:var(--muted); font-size:16px; line-height:1.6}
-  .need .it pre{margin:9px 0 0; font-family:var(--mono); font-size:14px; color:var(--muted);
-    background:#f7f7fa; border:1px solid var(--line); border-radius:8px; padding:8px 10px;
-    line-height:1.7; overflow-x:auto}
-  h2.sec{margin:0 0 4px; font-size:20.6px; letter-spacing:-.35px}
-  p.secs{margin:0 0 16px; color:var(--muted); font-size:15.7px; line-height:1.65}
+  .pick{display:inline-block; margin:26px 0 0; max-width:680px; font-size:16px;
+    line-height:1.62; color:#3b3e73; background:var(--accent-soft);
+    border:1px solid var(--accent-line); border-left:3px solid var(--accent);
+    border-radius:4px 11px 11px 4px; padding:11px 17px}
+  .pick b{color:var(--accent-dark); font-weight:750}
+
+  /* ---------- branch ---------- */
+  .br{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+  .b{border:1px solid var(--accent-line); background:#fbfbff; border-radius:14px;
+    padding:21px 21px 19px; display:flex; flex-direction:column}
+  .b.pk{border-color:var(--pink-line); background:#fffafd}
+  .b .cap{font-family:var(--mono); font-size:11.6px; letter-spacing:.12em;
+    text-transform:uppercase; color:var(--accent); margin-bottom:7px}
+  .b.pk .cap{color:var(--pink)}
+  .b h3{margin:0 0 5px; font-size:19.6px; letter-spacing:-.4px; font-weight:750}
+  .b .d{margin:0 0 12px; color:var(--muted); font-size:16px; line-height:1.6; flex:1 1 auto}
+  .b .fn{margin:0 0 13px; font-size:14.6px; color:#8a4a6d; line-height:1.55}
+  .b .fn code{font-family:var(--mono); font-size:13.6px; background:#fff;
+    border:1px solid var(--pink-line); border-radius:6px; padding:1px 6px; color:var(--pink-dark)}
+  .go{display:flex; align-items:baseline; gap:9px; text-decoration:none; padding:10px 2px;
+    border-top:1px solid var(--accent-line); color:inherit; transition:.15s}
+  .go:last-child{border-bottom:1px solid var(--accent-line)}
+  .go:hover{background:#f3f4ff}
+  .b.pk .go{border-color:var(--pink-line)} .b.pk .go:hover{background:#fff5fa}
+  .go b{font-size:16px; letter-spacing:-.2px}
+  .go i{font-style:normal; font-size:14.4px; color:#4a4c86; flex:1 1 auto}
+  .b.pk .go i{color:#8a4a6d}
+  .go .ar{color:var(--accent); font-weight:700}
+  .b.pk .go .ar{color:var(--pink)}
+  .qq{font-size:13.8px; color:var(--muted); margin:0 0 3px; font-weight:650}
+
   .foot{font-size:14px; color:var(--muted); padding:11px 22px; border-top:1px solid var(--line);
     background:#fafafb; font-family:var(--mono)}
+
+  @media(max-width:820px){ .br{grid-template-columns:1fr} }
   @media(max-width:720px){
-    h1.q{font-size:26px}
-    .pad{padding:26px 20px 30px}
-    .need{grid-template-columns:1fr}
-    .two{grid-template-columns:1fr}
+    .pad{padding:24px 20px 28px}
+    .stepbody{padding-left:0}
+    .sh h2{font-size:19px}
+    .xl table{font-size:15px}
+    .xl th,.xl td{padding:7px 9px}
   }
 
   /* ---- narrow screens: the tool header becomes two rows -------------------
@@ -100,7 +122,6 @@
      and the overflow put the Segment tab and the switch out of reach. */
   @media(max-width:760px){
     body{padding-top:94px}
-    body.running{padding-top:94px}
     .hd{height:auto; flex-wrap:wrap; padding:9px 14px 0; align-items:center}
     .hd .t{font-size:16.9px}
     .hd .t span{display:none}
@@ -130,50 +151,49 @@
 </div>
 
 <div class="stage">
+  <h1 class="sr" data-i18n="srH1"></h1>
 
   <div class="panel"><div class="pad">
-    <h1 class="q" data-i18n="q"></h1>
-    <p class="qs" data-i18n="qs"></p>
 
-    <div class="two">
-      <div class="card">
-        <div class="ic">🎙</div>
-        <h3 data-i18n="cCt"></h3>
-        <p data-i18n="cCs"></p>
-        <a class="btn btn-p" href="administer.html" data-i18n="cCb"></a>
+    <div class="sh"><span class="num">1</span><h2 data-i18n="s1t"></h2></div>
+    <div class="stepbody">
+      <p class="d1" data-i18n="s1d"></p>
+      <div class="xl">
+        <table>
+          <thead><tr><th></th><th>A</th><th>B</th><th>C</th></tr></thead>
+          <tbody>
+            <tr><th>1</th><td class="a">1</td><td>I have to get a haircut.</td><td class="c">7</td></tr>
+            <tr><th>2</th><td class="a">2</td><td>The red book is on the table.</td><td class="c">8</td></tr>
+            <tr><th>3</th><td class="a">3</td><td>The streets in this city are wide.</td><td class="c">8</td></tr>
+          </tbody>
+        </table>
       </div>
-      <div class="card alt">
-        <div class="ic">✓</div>
-        <h3 data-i18n="cAt"></h3>
-        <p data-i18n="cAs"></p>
-        <a class="btn btn-k" href="app.html" data-i18n="cAb"></a>
-      </div>
-      <div class="card cy">
-        <div class="ic">✂</div>
-        <h3 data-i18n="cBt"></h3>
-        <p data-i18n="cBs"></p>
-        <a class="btn btn-c" href="segment.html" data-i18n="cBb"></a>
+      <p class="pick"><b data-i18n="pickB"></b> <span data-i18n="pickS"></span></p>
+    </div>
+
+    <div class="sep"></div>
+
+    <div class="sh"><span class="num">2</span><h2 data-i18n="s2t"></h2></div>
+    <div class="stepbody">
+      <div class="br">
+        <div class="b">
+          <span class="cap" data-i18n="capAdm"></span>
+          <h3 data-i18n="admT"></h3>
+          <p class="d" data-i18n="admD"></p>
+          <a class="go" href="administer.html"><b data-i18n="admGo"></b><i></i><span class="ar">→</span></a>
+        </div>
+        <div class="b pk">
+          <span class="cap" data-i18n="capSc"></span>
+          <h3 data-i18n="scT"></h3>
+          <p class="d" data-i18n="scD"></p>
+          <p class="fn"><code>P01_item01.wav</code> <span data-i18n="scFn"></span></p>
+          <p class="qq" data-i18n="scQ"></p>
+          <a class="go" href="app.html"><b data-i18n="sc1"></b><i data-i18n="sc1s"></i><span class="ar">→</span></a>
+          <a class="go" href="segment.html"><b data-i18n="sc2"></b><i data-i18n="sc2s"></i><span class="ar">→</span></a>
+        </div>
       </div>
     </div>
-    <p class="foot-note" data-i18n="cNote"></p>
-  </div></div>
 
-  <div class="panel"><div class="pad" style="padding:26px 30px 30px">
-    <h2 class="sec" data-i18n="needTitle"></h2>
-    <p class="secs" data-i18n="needIntro"></p>
-    <div class="need">
-      <div class="it">
-        <h3 data-i18n="need1t"></h3>
-        <p data-i18n="need1s"></p>
-        <pre data-i18n="need1x"></pre>
-      </div>
-      <div class="it">
-        <h3 data-i18n="need2t"></h3>
-        <p data-i18n="need2s"></p>
-        <pre data-i18n="need2x"></pre>
-      </div>
-    </div>
-    <p class="secs" style="margin:16px 0 0" data-i18n="needNote"></p>
   </div></div>
 
   <div class="panel"><div class="foot" id="foot"></div></div>
@@ -185,56 +205,44 @@ const $=id=>document.getElementById(id);
 const I18N={
 en:{
  hdSub:"English EIT · for researchers",
- q:"What do I need to get started?",
- qs:"Your target sentences with syllable counts, and — unless you administer the task here — audio recordings of the responses. Which of the three below describes where you are?",
- cCt:"I have not collected data yet",
- cCs:"Load your sentence set and the recorded stimuli, and administer the task here. Each response is written out as its own file, ready to be scored.",
- cCx:"session",
- cCb:"Administer the task →",
- cAt:"I already have one file per item",
- cAs:"Each file holds a single response to a single target sentence — usually 30 files per participant.",
- cAb:"Start scoring →",
- cBt:"I have one long recording per participant",
- cBs:"The whole session sits in a single file. Split it into one file per item first, then come back here.",
- cBx:"(≈ 8 min)",
- cBb:"Split it first →",
- cNote:"Either way you will also need your target sentences with syllable counts — the scoring page loads the English EIT of Ortega et al. (2002) as a worked example.",
- needTitle:"What you need to prepare",
- needIntro:"Neither input requires any software beyond a browser. Both can be prepared in a spreadsheet or a text editor.",
- need1t:"Target sentences",
- need1s:"A CSV, TSV, or pasted text with one item per line: number, sentence, syllable count. The syllable count is required, since it defines the response window used in administration and lets the segmenter place a boundary where a participant produced no audible response.",
- need1x:"1,I have to get a haircut.,7\n2,The red book is on the table.,8\n3,The streets in this city are wide.,8",
- need2t:"Audio recordings",
- need2s:"One file per item, in any format the browser can decode (WAV, MP3, M4A, FLAC, OGG, WebM). Files named participantID_itemNN are recognized automatically; the item number may be zero-padded or not.",
- need2x:"P01_item01.wav\nP01_item02.wav\nP01_item03.wav …",
- needNote:"If you would like to try the tool before preparing your own materials, the scoring page loads the English EIT of Ortega et al. (2002) as a worked example.",
+ srH1:"Start here",
+ s1t:"Prepare your target sentences",
+ s1d:"Three columns, one item per row: number, sentence, syllable count. Upload the sheet saved as CSV, or paste the rows straight into the page.",
+ pickB:"Or use a ready-made set.",
+ pickS:"Either page below loads the English EIT of Ortega et al. (2002), with its stimulus recordings for administration.",
+ s2t:"Administer, or score what you have",
+ capAdm:"Administer",
+ admT:"Collect data now",
+ admD:"Add the stimulus recordings and run the task here. Each response is written out as its own file, ready to score.",
+ admGo:"Set up a session",
+ capSc:"Score",
+ scT:"I already have recordings",
+ scD:"Whisper transcribes them here and word error rate is computed against the sentences above.",
+ scFn:"Files named this way are matched to items automatically.",
+ scQ:"Which describes your recordings?",
+ sc1:"One file per item", sc1s:"score now",
+ sc2:"One long recording per participant", sc2s:"split first",
  foot:"Everything runs locally in your browser · no upload, no account"
 },
 ko:{
  hdSub:"English EIT · 연구자용",
- q:"무엇부터 준비하면 되나요?",
- qs:"음절 수가 포함된 목표 문장, 그리고 — 여기서 시행하지 않으신다면 — 응답 녹음 파일입니다. 아래 세 가지 중 어느 쪽에 해당하시나요?",
- cCt:"아직 데이터를 수집하지 않았습니다",
- cCs:"문장 세트와 자극 녹음을 불러와 여기서 시행하십시오. 각 응답이 개별 파일로 저장되어 바로 채점할 수 있습니다.",
- cCx:"시행",
- cCb:"시행하기 →",
- cAt:"문항별 파일이 이미 있습니다",
- cAs:"각 파일에 하나의 목표 문장에 대한 응답 하나가 담겨 있습니다. 보통 참가자당 30개입니다.",
- cAb:"채점 시작 →",
- cBt:"참가자별로 긴 녹음 파일 하나가 있습니다",
- cBs:"한 세션 전체가 파일 하나에 들어 있습니다. 먼저 문항별 파일로 나눈 뒤 다시 돌아오시면 됩니다.",
- cBx:"(약 8분)",
- cBb:"먼저 나누기 →",
- cNote:"어느 쪽이든 음절 수가 포함된 목표 문장이 함께 필요합니다. 채점 페이지에서 Ortega et al. (2002)의 영어 EIT를 예시로 불러올 수 있습니다.",
- needTitle:"무엇을 준비해야 하나요",
- needIntro:"브라우저 외에 별도의 프로그램은 필요하지 않으며, 두 가지 모두 스프레드시트나 텍스트 편집기에서 준비할 수 있습니다.",
- need1t:"목표 문장",
- need1s:"CSV, TSV 또는 붙여넣은 텍스트로, 한 줄에 한 문항씩 번호, 문장, 음절 수를 적습니다. 음절 수는 필수입니다. 시행 시의 응답 시간을 결정하며, 참가자가 아무 말도 하지 않은 문항에서도 분절 도구가 경계를 잡을 수 있게 해 줍니다.",
- need1x:"1,I have to get a haircut.,7\n2,The red book is on the table.,8\n3,The streets in this city are wide.,8",
- need2t:"녹음 파일",
- need2s:"문항당 한 개씩, 브라우저가 디코딩할 수 있는 형식이면 됩니다(WAV, MP3, M4A, FLAC, OGG, WebM). participantID_itemNN 형식의 이름은 자동으로 인식되며, 문항 번호의 0 채움 여부는 상관없습니다.",
- need2x:"P01_item01.wav\nP01_item02.wav\nP01_item03.wav …",
- needNote:"직접 자료를 준비하기 전에 먼저 시험해 보고 싶으시다면, 채점 페이지에서 Ortega et al. (2002)의 영어 EIT를 예시로 불러올 수 있습니다.",
+ srH1:"시작하기",
+ s1t:"목표 문장을 준비하십시오",
+ s1d:"세 개의 열에 한 행씩 한 문항을 적습니다. 번호, 문장, 음절 수 순서이며, CSV로 저장한 파일을 올리시거나 행을 그대로 붙여넣으시면 됩니다.",
+ pickB:"이미 만들어진 세트를 쓰셔도 됩니다.",
+ pickS:"아래 두 페이지 모두 Ortega et al. (2002)의 영어 EIT를 불러올 수 있으며, 시행 페이지에서는 자극 녹음도 함께 불러옵니다.",
+ s2t:"시행하거나, 가지고 계신 녹음을 채점하십시오",
+ capAdm:"시행",
+ admT:"지금 데이터를 수집합니다",
+ admD:"자극 녹음을 추가하고 여기서 과제를 시행하십시오. 각 응답이 개별 파일로 저장되어 바로 채점할 수 있습니다.",
+ admGo:"세션 설정하기",
+ capSc:"채점",
+ scT:"이미 녹음 파일이 있습니다",
+ scD:"Whisper가 이 브라우저에서 전사하고, 위의 목표 문장과 대조해 단어 오류율을 계산합니다.",
+ scFn:"이 형식의 파일 이름은 문항에 자동으로 배정됩니다.",
+ scQ:"녹음 파일이 어느 쪽에 해당합니까?",
+ sc1:"문항당 파일 하나", sc1s:"바로 채점",
+ sc2:"참가자당 긴 녹음 하나", sc2s:"먼저 나누기",
  foot:"모든 처리는 브라우저 안에서 이루어집니다 · 업로드 없음, 계정 없음"
 }
 };
