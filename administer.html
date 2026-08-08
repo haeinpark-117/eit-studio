@@ -205,10 +205,6 @@
     font-size:22px; margin:0 auto 14px}
   .done-h h3{margin:0 0 6px; font-size:23px; letter-spacing:-.6px}
   .done-h p{margin:0 auto 20px; color:var(--muted); font-size:16.9px; max-width:54ch}
-  /* .mono carries word-break:break-all for file paths; these two are prose. */
-  .done-h p#dNote,.done-h p#dOrder{font-family:inherit; font-size:15.7px;
-    word-break:normal; margin:16px auto 0; max-width:60ch}
-  .done-h p#dOrder{margin-top:8px}
   /* The download is the one action that must happen, so it takes a row of its
      own; what follows it is a choice, not a next step. */
   .act{display:flex; align-items:center; gap:12px; border:1px solid var(--line);
@@ -471,8 +467,6 @@
         <button class="act" id="btnNext" disabled>
           <span class="lbl"><b data-i18n="dNext"></b><i id="dNextNote"></i></span></button>
       </div>
-      <p class="mono" id="dNote" style="margin-top:16px"></p>
-      <p class="mono" id="dOrder" style="margin-top:8px"></p>
     </div>
   </div></div>
   <div class="panel"><div class="pad"><table class="f"><tbody id="dRows"></tbody></table></div></div>
@@ -609,12 +603,9 @@ const STR={
   micBad:"No microphone. Either this page was refused permission, or no input device is connected. Permission is set from the icon at the left of the address bar; the page must then be reloaded.",
   fmtDone:(n,p)=>n+" responses recorded for "+p+". Nothing has left this computer. Save the recordings to disk before anything else — a participant's session cannot be repeated.",
   fmtEnded:(n,p,at,tot)=>"Ended at item "+at+" of "+tot+". "+n+" responses recorded for "+p+". Nothing has left this computer. Save the recordings to disk before anything else.",
-  dNote:"A session log is written alongside the audio so that the exact schedule used can be reported in the methods section.",
   dNext:"Next participant",
   dNextLocked:"Download the responses first",
   dNextReady:"Score at the end, from the downloaded files",
-  dOrder:"Score when the last participant is done. Opening the scoring page unloads the sentence set and the stimulus audio, which would then have to be added again.",
-  dOrderM:"Opening the scoring page discards the responses of the participant just finished from this browser. They have already been downloaded, so nothing is lost: score the whole study by loading the downloaded audio files there."
  },
  ko:{
   heroT:"시행",
@@ -696,12 +687,9 @@ const STR={
   micBad:"마이크를 사용할 수 없습니다. 이 페이지의 마이크 권한이 거부되었거나 입력 장치가 연결되어 있지 않습니다. 권한은 주소창 왼쪽 아이콘에서 설정한 뒤 페이지를 새로고침해야 적용됩니다.",
   fmtDone:(n,p)=>p+"의 응답 "+n+"개가 녹음되었습니다. 이 컴퓨터를 벗어난 자료는 없습니다. 무엇보다 먼저 디스크에 저장하십시오 — 참가자 세션은 다시 찍을 수 없습니다.",
   fmtEnded:(n,p,at,tot)=>tot+"문항 중 "+at+"번에서 종료했습니다. "+p+"의 응답 "+n+"개가 녹음되었습니다. 무엇보다 먼저 디스크에 저장하십시오.",
-  dNote:"정확한 시행 일정을 방법 절에 그대로 보고할 수 있도록 세션 로그가 음성과 함께 저장됩니다.",
   dNext:"다음 참가자",
   dNextLocked:"응답을 먼저 내려받으십시오",
   dNextReady:"채점은 모든 참가자를 마친 뒤 내려받은 파일로",
-  dOrder:"채점은 마지막 참가자를 마친 뒤에 하십시오. 채점 페이지를 열면 문장 세트와 자극 음성이 메모리에서 사라져 다시 올리셔야 합니다.",
-  dOrderM:"채점 페이지를 열면 방금 마친 참가자의 응답이 브라우저에서 지워집니다. 이미 내려받으셨으므로 잃는 것은 없습니다. 전체 연구의 채점은 내려받으신 음성 파일을 채점 페이지에 올려 진행하십시오."
  }
 };
 let LANG=localStorage.getItem("eitLang")==="ko"?"ko":"en";
@@ -1267,7 +1255,6 @@ function finish(){
   $("dSum").textContent=SESSION.ended_early
     ? T("fmtEnded")(RESULTS.length,SESSION.pid,ENDED_AT||RESULTS.length,SESSION.total_items)
     : T("fmtDone")(RESULTS.length,SESSION.pid);
-  $("dNote").textContent=T("dNote");
   ZIPPED=false; paintNext();
   $("dRows").innerHTML=RESULTS.map(r=>
       "<tr><td>"+r.name+"</td><td>“"+r.target+"”</td><td>"+r.window_s.toFixed(1)+" s</td></tr>")
@@ -1306,7 +1293,6 @@ function paintNext(){
   $("dChoose").textContent=T("dChoose");
   $("dScoreB").textContent=MULTI?T("dScoreM"):T("dScore");
   $("dScoreI").textContent=MULTI?T("dScoreMS"):T("dScoreS");
-  $("dOrder").textContent=MULTI?T("dOrderM"):T("dOrder");
 }
 async function nextParticipant(){
   RESULTS=[]; SESSION=null; ENDED_AT=null; ABORT=false; ZIPPED=false; MULTI=true;
