@@ -205,24 +205,39 @@
     font-size:22px; margin:0 auto 14px}
   .done-h h3{margin:0 0 6px; font-size:23px; letter-spacing:-.6px}
   .done-h p{margin:0 auto 20px; color:var(--muted); font-size:16.9px; max-width:54ch}
-  .done-h p#dNote{font-family:inherit; font-size:15.7px; margin:16px auto 0; max-width:60ch}
-  .cta{display:flex; gap:0; justify-content:center; margin-bottom:6px; align-items:stretch;
-    flex-wrap:wrap}
-  .cta .st2{display:flex; align-items:center; gap:11px; border:1px solid var(--line);
-    background:#fff; padding:13px 18px; cursor:pointer; text-align:left}
-  .cta .st2:first-child{border-radius:12px 0 0 12px; background:var(--accent-soft);
-    border-color:var(--accent-line)}
-  .cta .st2:not(:last-child){border-right:0}
-  .cta .st2:last-child{border-radius:0 12px 12px 0}
-  .cta .st2:disabled{opacity:.5; cursor:default}
-  .cta .num{width:22px; height:22px; border-radius:50%; display:grid; place-items:center;
-    font-family:var(--mono); font-size:13.3px; font-weight:700; background:#fff; color:var(--muted);
+  /* .mono carries word-break:break-all for file paths; these two are prose. */
+  .done-h p#dNote,.done-h p#dOrder{font-family:inherit; font-size:15.7px;
+    word-break:normal; margin:16px auto 0; max-width:60ch}
+  .done-h p#dOrder{margin-top:8px}
+  /* The download is the one action that must happen, so it takes a row of its
+     own; what follows it is a choice, not a next step. */
+  .act{display:flex; align-items:center; gap:12px; border:1px solid var(--line);
+    background:#fff; padding:14px 18px; cursor:pointer; text-align:left; font:inherit; width:100%}
+  .act .num{width:22px; height:22px; border-radius:50%; display:grid; place-items:center;
+    font-family:var(--mono); font-size:13px; font-weight:700; background:#fff; color:var(--muted);
     border:1px solid var(--line); flex:none}
-  .cta .st2:first-child .num{background:var(--accent); color:#fff; border-color:var(--accent)}
-  .cta .lbl{line-height:1.35}
-  .cta .lbl b{display:block; font-size:16.9px; font-weight:700; letter-spacing:-.2px}
-  .cta .lbl i{font-style:normal; font-size:14px; color:var(--muted)}
-  .cta .st2:first-child .lbl i{color:var(--accent-dark); font-weight:650}
+  .act .lbl{line-height:1.35}
+  .act .lbl b{display:block; font-size:16.8px; font-weight:700; letter-spacing:-.2px}
+  .act .lbl i{font-style:normal; font-size:13.9px; color:var(--muted)}
+  .act:hover:not(:disabled){border-color:#c9c9d4}
+  .act:disabled{opacity:.5; cursor:default}
+  .first{border-radius:13px; background:var(--accent-soft); border-color:var(--accent-line);
+    justify-content:center; padding:16px 20px}
+  .first:hover{border-color:var(--accent)}
+  .first .num{background:var(--accent); color:#fff; border-color:var(--accent)}
+  .first .lbl i{color:var(--accent-dark); font-weight:650}
+  .ruleline{display:flex; align-items:center; gap:14px; margin:20px 0 14px;
+    color:var(--muted); font-size:13.6px}
+  .ruleline:before,.ruleline:after{content:""; flex:1; height:1px; background:var(--line)}
+  .pair{display:grid; grid-template-columns:1fr 1fr; gap:0}
+  .pair .act:first-child{border-radius:12px 0 0 12px; border-right:0}
+  .pair .act:last-child{border-radius:0 12px 12px 0}
+  @media(max-width:620px){
+    .pair{grid-template-columns:1fr}
+    .pair .act:first-child{border-radius:12px 12px 0 0; border-right:1px solid var(--line);
+      border-bottom:0}
+    .pair .act:last-child{border-radius:0 0 12px 12px}
+  }
   table.f{width:100%; border-collapse:collapse; font-family:var(--mono); font-size:14px}
   table.f td{border-bottom:1px solid var(--line); padding:7px 4px; color:var(--muted)}
   table.f tr:last-child td{border-bottom:0}
@@ -447,12 +462,13 @@
       <div class="ic">✓</div>
       <h3 data-i18n="dTitle"></h3>
       <p id="dSum"></p>
-      <div class="cta">
-        <button class="st2" id="btnZip"><span class="num">1</span>
-          <span class="lbl"><b data-i18n="dZip"></b><i data-i18n="dZipS"></i></span></button>
-        <button class="st2" id="btnScore"><span class="num">2</span>
-          <span class="lbl"><b data-i18n="dScore"></b><i data-i18n="dScoreS"></i></span></button>
-        <button class="st2" id="btnNext" disabled><span class="num">3</span>
+      <button class="act first" id="btnZip"><span class="num">1</span>
+        <span class="lbl"><b data-i18n="dZip"></b><i data-i18n="dZipS"></i></span></button>
+      <div class="ruleline" id="dChoose"></div>
+      <div class="pair">
+        <button class="act" id="btnScore">
+          <span class="lbl"><b id="dScoreB"></b><i id="dScoreI"></i></span></button>
+        <button class="act" id="btnNext" disabled>
           <span class="lbl"><b data-i18n="dNext"></b><i id="dNextNote"></i></span></button>
       </div>
       <p class="mono" id="dNote" style="margin-top:16px"></p>
@@ -562,8 +578,10 @@ const STR={
   btnStart:"Start the session →", btnEnd:"✕ End session",
   stNeed:"Needed", stSet:"Set", stNotChecked:"Not checked", stOk:"Ready", stFail:"Failed",
   dTitle:"Session complete",
-  dZip:"Download all (ZIP)", dZipS:"Recommended — do this first",
-  dScore:"Score these now →", dScoreS:"Opens the scoring tool, already loaded",
+  dZip:"Download all (ZIP)", dZipS:"The response audio and the session log",
+  dChoose:"Then choose one",
+  dScore:"Score these now →", dScoreS:"If this was the only participant",
+  dScoreM:"Open the scoring page →", dScoreMS:"Load the downloaded files there",
   /* participant-facing */
   iLabel:"Instructions", iHead:"You will hear a sentence.",
   iSub:"Listen to the whole sentence. After the ring tone, repeat as much as you can.",
@@ -593,9 +611,10 @@ const STR={
   fmtEnded:(n,p,at,tot)=>"Ended at item "+at+" of "+tot+". "+n+" responses recorded for "+p+". Nothing has left this computer. Save the recordings to disk before anything else.",
   dNote:"A session log is written alongside the audio so that the exact schedule used can be reported in the methods section.",
   dNext:"Next participant",
-  dNextLocked:"Download the responses first — starting clears them",
-  dNextReady:"The sentence set and the audio stay loaded",
-  dOrder:"Score when the last participant is done. Opening the scoring page unloads the sentence set and the stimulus audio, which would then have to be added again."
+  dNextLocked:"Download the responses first",
+  dNextReady:"Score at the end, from the downloaded files",
+  dOrder:"Score when the last participant is done. Opening the scoring page unloads the sentence set and the stimulus audio, which would then have to be added again.",
+  dOrderM:"Only the participant just finished remains in this browser. Score the whole study by loading the downloaded audio files on the scoring page."
  },
  ko:{
   heroT:"시행",
@@ -647,8 +666,10 @@ const STR={
   btnStart:"세션 시작 →", btnEnd:"✕ 세션 종료",
   stNeed:"필요", stSet:"설정됨", stNotChecked:"미점검", stOk:"준비됨", stFail:"실패",
   dTitle:"세션 완료",
-  dZip:"전체 다운로드 (ZIP)", dZipS:"권장 — 이것을 먼저",
-  dScore:"바로 채점하기 →", dScoreS:"채점 도구가 이미 불러온 상태로 열립니다",
+  dZip:"전체 다운로드 (ZIP)", dZipS:"응답 음성과 세션 로그",
+  dChoose:"저장한 뒤 하나를 고르십시오",
+  dScore:"바로 채점하기 →", dScoreS:"참가자 1명으로 마쳤을 때",
+  dScoreM:"채점 페이지 열기 →", dScoreMS:"내려받은 파일을 올려 채점하십시오",
   iLabel:"안내", iHead:"문장을 듣게 됩니다.",
   iSub:"문장을 끝까지 들으십시오. 링톤이 울린 뒤에 기억나는 만큼 따라 말하십시오.",
   iBtn:"연습 시작 →",
@@ -677,9 +698,10 @@ const STR={
   fmtEnded:(n,p,at,tot)=>tot+"문항 중 "+at+"번에서 종료했습니다. "+p+"의 응답 "+n+"개가 녹음되었습니다. 무엇보다 먼저 디스크에 저장하십시오.",
   dNote:"정확한 시행 일정을 방법 절에 그대로 보고할 수 있도록 세션 로그가 음성과 함께 저장됩니다.",
   dNext:"다음 참가자",
-  dNextLocked:"응답을 먼저 내려받으십시오 — 시작하면 지워집니다",
-  dNextReady:"문장 세트와 음성은 그대로 유지됩니다",
-  dOrder:"채점은 마지막 참가자를 마친 뒤에 하십시오. 채점 페이지를 열면 문장 세트와 자극 음성이 메모리에서 사라져 다시 올리셔야 합니다."
+  dNextLocked:"응답을 먼저 내려받으십시오",
+  dNextReady:"채점은 모든 참가자를 마친 뒤 내려받은 파일로",
+  dOrder:"채점은 마지막 참가자를 마친 뒤에 하십시오. 채점 페이지를 열면 문장 세트와 자극 음성이 메모리에서 사라져 다시 올리셔야 합니다.",
+  dOrderM:"브라우저에는 방금 마친 참가자만 남아 있습니다. 전체 연구의 채점은 내려받으신 음성 파일을 채점 페이지에 올려 진행하십시오."
  }
 };
 let LANG=localStorage.getItem("eitLang")==="ko"?"ko":"en";
@@ -1098,6 +1120,9 @@ let ABORT=false, RESULTS=[], SESSION=null, ENDED_AT=null;
    Starting the next participant clears RESULTS and the stored responses,
    so the button that does so stays disabled until this is true. */
 let ZIPPED=false;
+/* Once a second participant has been started, the store holds only the most
+   recent one, so the scoring handoff is no longer offered as the whole study. */
+let MULTI=false;
 
 function showScreen(which){
   $("setup").classList.toggle("hidden",which!=="setup");
@@ -1243,7 +1268,6 @@ function finish(){
     ? T("fmtEnded")(RESULTS.length,SESSION.pid,ENDED_AT||RESULTS.length,SESSION.total_items)
     : T("fmtDone")(RESULTS.length,SESSION.pid);
   $("dNote").textContent=T("dNote");
-  $("dOrder").textContent=T("dOrder");
   ZIPPED=false; paintNext();
   $("dRows").innerHTML=RESULTS.map(r=>
       "<tr><td>"+r.name+"</td><td>“"+r.target+"”</td><td>"+r.window_s.toFixed(1)+" s</td></tr>")
@@ -1263,7 +1287,10 @@ $("btnZip").onclick=async()=>{
   a.href=URL.createObjectURL(zip); a.download=SESSION.pid+"_eit.zip"; a.click();
   ZIPPED=true; paintNext();
 };
-$("btnScore").onclick=()=>{ location.href="app.html?from=administer"; };
+/* The responses of the participant just finished stay in the store either way;
+   in a multi-participant run the scoring page is simply opened without being
+   told to treat that one session as the study. */
+$("btnScore").onclick=()=>{ location.href=MULTI?"app.html":"app.html?from=administer"; };
 
 /* ------------------------------------------------- another participant ---
    The sentence set, the stimulus audio and the practice items are already in
@@ -1273,9 +1300,13 @@ function paintNext(){
   const b=$("btnNext"); if(!b) return;
   b.disabled=!ZIPPED;
   $("dNextNote").textContent=ZIPPED?T("dNextReady"):T("dNextLocked");
+  $("dChoose").textContent=T("dChoose");
+  $("dScoreB").textContent=MULTI?T("dScoreM"):T("dScore");
+  $("dScoreI").textContent=MULTI?T("dScoreMS"):T("dScoreS");
+  $("dOrder").textContent=MULTI?T("dOrderM"):T("dOrder");
 }
 async function nextParticipant(){
-  RESULTS=[]; SESSION=null; ENDED_AT=null; ABORT=false; ZIPPED=false;
+  RESULTS=[]; SESSION=null; ENDED_AT=null; ABORT=false; ZIPPED=false; MULTI=true;
   $("dSum").textContent=""; $("dRows").innerHTML="";
   /* The store held the responses just downloaded; clearing it now keeps the
      unfinished-session banner from offering them back as a recovery. */
