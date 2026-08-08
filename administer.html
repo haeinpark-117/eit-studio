@@ -614,7 +614,7 @@ const STR={
   dNextLocked:"Download the responses first",
   dNextReady:"Score at the end, from the downloaded files",
   dOrder:"Score when the last participant is done. Opening the scoring page unloads the sentence set and the stimulus audio, which would then have to be added again.",
-  dOrderM:"Only the participant just finished remains in this browser. Score the whole study by loading the downloaded audio files on the scoring page."
+  dOrderM:"Opening the scoring page discards the responses of the participant just finished from this browser. They have already been downloaded, so nothing is lost: score the whole study by loading the downloaded audio files there."
  },
  ko:{
   heroT:"시행",
@@ -701,7 +701,7 @@ const STR={
   dNextLocked:"응답을 먼저 내려받으십시오",
   dNextReady:"채점은 모든 참가자를 마친 뒤 내려받은 파일로",
   dOrder:"채점은 마지막 참가자를 마친 뒤에 하십시오. 채점 페이지를 열면 문장 세트와 자극 음성이 메모리에서 사라져 다시 올리셔야 합니다.",
-  dOrderM:"브라우저에는 방금 마친 참가자만 남아 있습니다. 전체 연구의 채점은 내려받으신 음성 파일을 채점 페이지에 올려 진행하십시오."
+  dOrderM:"채점 페이지를 열면 방금 마친 참가자의 응답이 브라우저에서 지워집니다. 이미 내려받으셨으므로 잃는 것은 없습니다. 전체 연구의 채점은 내려받으신 음성 파일을 채점 페이지에 올려 진행하십시오."
  }
 };
 let LANG=localStorage.getItem("eitLang")==="ko"?"ko":"en";
@@ -1287,10 +1287,13 @@ $("btnZip").onclick=async()=>{
   a.href=URL.createObjectURL(zip); a.download=SESSION.pid+"_eit.zip"; a.click();
   ZIPPED=true; paintNext();
 };
-/* The responses of the participant just finished stay in the store either way;
-   in a multi-participant run the scoring page is simply opened without being
-   told to treat that one session as the study. */
-$("btnScore").onclick=()=>{ location.href=MULTI?"app.html":"app.html?from=administer"; };
+/* In a multi-participant run the store is cleared on the way out, so the
+   scoring page cannot offer the last participant alone as though it were the
+   study. Those responses have already been downloaded by this point. */
+$("btnScore").onclick=async()=>{
+  if(MULTI){ try{ await idbClear(); }catch(e){} }
+  location.href=MULTI?"app.html":"app.html?from=administer";
+};
 
 /* ------------------------------------------------- another participant ---
    The sentence set, the stimulus audio and the practice items are already in
