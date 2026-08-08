@@ -52,6 +52,17 @@
   p{margin:0 0 17px}
   .lead{font-size:19.2px}
 
+  /* ---- pipeline figure ----------------------------------------------------
+     Drawn as inline SVG rather than an image file, so it stays sharp at any
+     size and adds nothing to the page weight. */
+  .pipe{margin:2px 0 28px; border:1px solid var(--accent-line); border-radius:16px;
+    background:linear-gradient(180deg,#fbfbff 0%,var(--accent-soft) 100%);
+    padding:26px 24px 20px}
+  .pipe svg{display:block; width:100%; height:auto}
+  .pipe figcaption{margin:14px 0 0; font-size:14.7px; color:var(--muted); font-style:italic;
+    line-height:1.6; text-align:center}
+  @media(max-width:620px){ .pipe{padding:18px 14px 14px} }
+
   .stack{display:flex; flex-direction:column; gap:14px; margin:30px 0 8px}
   .phase{border:1px solid var(--line); border-radius:14px; padding:22px 24px; display:grid;
     grid-template-columns:82px 1fr; gap:20px; align-items:start}
@@ -149,6 +160,66 @@
 
 <section><div class="wrap narrow">
   <h2>What EIT Studio does</h2>
+
+  <figure class="pipe">
+    <svg viewBox="0 0 860 278" xmlns="http://www.w3.org/2000/svg" role="img"
+         aria-label="A sentence set and stimulus audio go into the browser, where the task is administered, transcribed by Whisper and scored by word error rate. Only the scores and the scoring rules come out. No audio leaves the browser.">
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7"
+                orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#3840f3"/></marker>
+        <marker id="arg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7"
+                orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#a8a8b8"/></marker>
+      </defs>
+
+      <rect x="150" y="46" width="560" height="196" rx="18" fill="#fff" stroke="#3840f3"
+            stroke-width="1.6" stroke-dasharray="7 5"/>
+      <text x="430" y="72" text-anchor="middle" font-family="ui-monospace,Menlo,monospace"
+            font-size="12.5" letter-spacing="1.6" fill="#3840f3">INSIDE YOUR BROWSER</text>
+
+      <rect x="10" y="104" width="118" height="34" rx="9" fill="#f5f5f9" stroke="#e8e8ef"/>
+      <text x="69" y="126" text-anchor="middle" font-size="13.4" fill="#4a4a5c">Sentence set</text>
+      <rect x="10" y="150" width="118" height="34" rx="9" fill="#f5f5f9" stroke="#e8e8ef"/>
+      <text x="69" y="172" text-anchor="middle" font-size="13.4" fill="#4a4a5c">Stimulus audio</text>
+      <path d="M132 121 H150" stroke="#a8a8b8" stroke-width="1.6" marker-end="url(#arg)"/>
+      <path d="M132 167 H150" stroke="#a8a8b8" stroke-width="1.6" marker-end="url(#arg)"/>
+
+      <rect x="172" y="106" width="150" height="76" rx="13" fill="#eef0ff" stroke="#d9dcff"/>
+      <text x="247" y="134" text-anchor="middle" font-size="14.6" font-weight="700" fill="#08080f">Administer</text>
+      <text x="247" y="155" text-anchor="middle" font-size="12.6" fill="#6a6a7d">fixed schedule,</text>
+      <text x="247" y="170" text-anchor="middle" font-size="12.6" fill="#6a6a7d">one file per item</text>
+
+      <rect x="356" y="106" width="150" height="76" rx="13" fill="#eef0ff" stroke="#d9dcff"/>
+      <text x="431" y="134" text-anchor="middle" font-size="14.6" font-weight="700" fill="#08080f">Transcribe</text>
+      <text x="431" y="155" text-anchor="middle" font-size="12.6" fill="#6a6a7d">Whisper,</text>
+      <text x="431" y="170" text-anchor="middle" font-size="12.6" fill="#6a6a7d">fixed settings</text>
+
+      <rect x="540" y="106" width="150" height="76" rx="13" fill="#3840f3" stroke="#3840f3"/>
+      <text x="615" y="134" text-anchor="middle" font-size="14.6" font-weight="700" fill="#fff">Score</text>
+      <text x="615" y="155" text-anchor="middle" font-size="12.6" fill="#dfe1ff">word error rate,</text>
+      <text x="615" y="170" text-anchor="middle" font-size="12.6" fill="#dfe1ff">rules you can edit</text>
+
+      <path d="M326 144 H352" stroke="#3840f3" stroke-width="1.8" marker-end="url(#ar)"/>
+      <path d="M510 144 H536" stroke="#3840f3" stroke-width="1.8" marker-end="url(#ar)"/>
+
+      <path d="M694 121 H746" stroke="#3840f3" stroke-width="1.8" marker-end="url(#ar)"/>
+      <path d="M694 167 H746" stroke="#3840f3" stroke-width="1.8" marker-end="url(#ar)"/>
+      <rect x="750" y="104" width="100" height="34" rx="9" fill="#fff" stroke="#d9dcff"/>
+      <text x="800" y="126" text-anchor="middle" font-size="13.2" fill="#2a31d4">Scores</text>
+      <rect x="750" y="150" width="100" height="34" rx="9" fill="#fff" stroke="#d9dcff"/>
+      <text x="800" y="172" text-anchor="middle" font-size="13.2" fill="#2a31d4">Scoring rules</text>
+
+      <!-- a seal sitting on the boundary, so its position carries the meaning -->
+      <rect x="291" y="225" width="278" height="34" rx="17" fill="#fff" stroke="#ff1493"
+            stroke-width="1.6"/>
+      <circle cx="314" cy="242" r="8.4" fill="none" stroke="#ff1493" stroke-width="2"/>
+      <path d="M308.1 247.9 L319.9 236.1" stroke="#ff1493" stroke-width="2" stroke-linecap="round"/>
+      <text x="331" y="247" font-size="13.4" font-weight="650" fill="#ff1493">No audio leaves this boundary</text>
+    </svg>
+    <figcaption>Everything between the dashed boundary happens on the researcher’s own machine.
+      Only the scores and the scoring configuration ever leave it, and only when exported by
+      hand.</figcaption>
+  </figure>
+
   <p>EIT Studio was built to make an elicited imitation task easier to implement. Transcription
     is automated, and the scoring procedure is made explicit: normalization rules are visible,
     editable, and exportable as JSON, so the exact configuration used in a study can be deposited
