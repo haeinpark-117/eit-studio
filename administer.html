@@ -210,9 +210,11 @@
     flex-wrap:wrap}
   .cta .st2{display:flex; align-items:center; gap:11px; border:1px solid var(--line);
     background:#fff; padding:13px 18px; cursor:pointer; text-align:left}
-  .cta .st2:first-child{border-radius:12px 0 0 12px; border-right:0; background:var(--accent-soft);
+  .cta .st2:first-child{border-radius:12px 0 0 12px; background:var(--accent-soft);
     border-color:var(--accent-line)}
+  .cta .st2:not(:last-child){border-right:0}
   .cta .st2:last-child{border-radius:0 12px 12px 0}
+  .cta .st2:disabled{opacity:.5; cursor:default}
   .cta .num{width:22px; height:22px; border-radius:50%; display:grid; place-items:center;
     font-family:var(--mono); font-size:13.3px; font-weight:700; background:#fff; color:var(--muted);
     border:1px solid var(--line); flex:none}
@@ -221,10 +223,6 @@
   .cta .lbl b{display:block; font-size:16.9px; font-weight:700; letter-spacing:-.2px}
   .cta .lbl i{font-style:normal; font-size:14px; color:var(--muted)}
   .cta .st2:first-child .lbl i{color:var(--accent-dark); font-weight:650}
-  /* Another participant on the same material. Kept apart from the numbered
-     pair above, which is the sequence for the participant just finished. */
-  .again{margin-top:22px; padding-top:18px; border-top:1px solid var(--line)}
-  .again .agn{margin:9px auto 0; font-size:14.6px; color:var(--muted); max-width:58ch}
   table.f{width:100%; border-collapse:collapse; font-family:var(--mono); font-size:14px}
   table.f td{border-bottom:1px solid var(--line); padding:7px 4px; color:var(--muted)}
   table.f tr:last-child td{border-bottom:0}
@@ -322,8 +320,6 @@
     <div class="row">
       <span class="fl" data-i18n="lblPid"></span>
       <input class="inp sm" id="pid" value="P01" spellcheck="false">
-      <span class="fl" data-i18n="lblGrp"></span>
-      <input class="inp" id="grp" placeholder="—" spellcheck="false">
     </div>
   </div></div>
 
@@ -456,12 +452,11 @@
           <span class="lbl"><b data-i18n="dZip"></b><i data-i18n="dZipS"></i></span></button>
         <button class="st2" id="btnScore"><span class="num">2</span>
           <span class="lbl"><b data-i18n="dScore"></b><i data-i18n="dScoreS"></i></span></button>
+        <button class="st2" id="btnNext" disabled><span class="num">3</span>
+          <span class="lbl"><b data-i18n="dNext"></b><i id="dNextNote"></i></span></button>
       </div>
       <p class="mono" id="dNote" style="margin-top:16px"></p>
-      <div class="again">
-        <button class="btn-g" id="btnNext" disabled data-i18n="dNext"></button>
-        <p class="agn" id="dNextNote"></p>
-      </div>
+      <p class="mono" id="dOrder" style="margin-top:8px"></p>
     </div>
   </div></div>
   <div class="panel"><div class="pad"><table class="f"><tbody id="dRows"></tbody></table></div></div>
@@ -530,7 +525,7 @@ const STR={
   g3:"for the whole session. Browsers throttle background tabs, which can disturb the schedule the responses are timed against.",
   p1t:"Session",
   p1h:"The participant identifier becomes the filename prefix, so it should match whatever you use in your data file. Items are always presented in the order listed, which in this instrument runs from the shortest sentence to the longest; the progression is part of the design and is therefore not offered as a setting.",
-  lblPid:"Participant ID", lblGrp:"Group or condition (optional)",
+  lblPid:"Participant ID",
   p2t:"Sentence set",
   p2h:"Two things go in: what the participant hears, and what the responses will be scored against. The item count comes from what you load — nothing assumes thirty.",
   btnEitA:"Load EIT A (Ortega et al., 2002)", btnClear:"Clear",
@@ -597,9 +592,10 @@ const STR={
   fmtDone:(n,p)=>n+" responses recorded for "+p+". Nothing has left this computer. Save the recordings to disk before anything else — a participant's session cannot be repeated.",
   fmtEnded:(n,p,at,tot)=>"Ended at item "+at+" of "+tot+". "+n+" responses recorded for "+p+". Nothing has left this computer. Save the recordings to disk before anything else.",
   dNote:"A session log is written alongside the audio so that the exact schedule used can be reported in the methods section.",
-  dNext:"Run another participant",
-  dNextLocked:"Available once the responses have been downloaded. Starting the next participant clears them from this browser.",
-  dNextReady:"The sentence set, the stimulus audio and the practice items stay loaded. Only the participant ID has to be entered again."
+  dNext:"Next participant",
+  dNextLocked:"Download the responses first — starting clears them",
+  dNextReady:"The sentence set and the audio stay loaded",
+  dOrder:"Score when the last participant is done. Opening the scoring page unloads the sentence set and the stimulus audio, which would then have to be added again."
  },
  ko:{
   heroT:"시행",
@@ -615,7 +611,7 @@ const STR={
   g3:"브라우저는 백그라운드 탭의 타이머를 조절하므로, 응답이 맞춰지는 일정이 흐트러질 수 있습니다.",
   p1t:"세션",
   p1h:"참가자 식별자는 파일명 접두사가 되므로 데이터 파일에서 쓰시는 것과 같게 하십시오. 문항은 항상 입력된 순서대로 제시되며, 이 도구에서는 가장 짧은 문장에서 가장 긴 문장으로 나아갑니다. 이 점증적 배열은 설계의 일부이므로 설정으로 제공하지 않습니다.",
-  lblPid:"참가자 ID", lblGrp:"집단 또는 조건(선택)",
+  lblPid:"참가자 ID",
   p2t:"문장 세트",
   p2h:"두 가지가 들어갑니다. 참가자가 듣는 것과, 응답을 대조할 목표 문장입니다. 문항 수는 불러온 자료에서 정해지며 30개를 가정하지 않습니다.",
   btnEitA:"EIT A (Ortega et al., 2002) 불러오기", btnClear:"지우기",
@@ -680,9 +676,10 @@ const STR={
   fmtDone:(n,p)=>p+"의 응답 "+n+"개가 녹음되었습니다. 이 컴퓨터를 벗어난 자료는 없습니다. 무엇보다 먼저 디스크에 저장하십시오 — 참가자 세션은 다시 찍을 수 없습니다.",
   fmtEnded:(n,p,at,tot)=>tot+"문항 중 "+at+"번에서 종료했습니다. "+p+"의 응답 "+n+"개가 녹음되었습니다. 무엇보다 먼저 디스크에 저장하십시오.",
   dNote:"정확한 시행 일정을 방법 절에 그대로 보고할 수 있도록 세션 로그가 음성과 함께 저장됩니다.",
-  dNext:"다음 참가자 진행",
-  dNextLocked:"응답을 내려받으면 활성화됩니다. 다음 참가자를 시작하면 이 브라우저에서 응답이 지워집니다.",
-  dNextReady:"문장 세트, 자극 음성, 연습 문항은 그대로 유지됩니다. 참가자 ID만 다시 입력하시면 됩니다."
+  dNext:"다음 참가자",
+  dNextLocked:"응답을 먼저 내려받으십시오 — 시작하면 지워집니다",
+  dNextReady:"문장 세트와 음성은 그대로 유지됩니다",
+  dOrder:"채점은 마지막 참가자를 마친 뒤에 하십시오. 채점 페이지를 열면 문장 세트와 자극 음성이 메모리에서 사라져 다시 올리셔야 합니다."
  }
 };
 let LANG=localStorage.getItem("eitLang")==="ko"?"ko":"en";
@@ -1059,7 +1056,7 @@ function paintStart(){
 function paintSums(){
   const c=consts(), pl=$("pracLang");
   const set=(id,v)=>{ const e=$(id); if(e) e.textContent=v||""; };
-  set("sum1",$("pid").value.trim()+($("grp").value.trim()?" · "+$("grp").value.trim():""));
+  set("sum1",$("pid").value.trim());
   set("sum2",STIM.length?STIM.length+" items · "+TGT.length+" targets":"");
   set("sum3",pl.value==="off"?T("optNone"):pl.options[pl.selectedIndex].text+" · "+PRAC.length);
   set("sum4",c.pause+" s · "+c.tone+" s · +"+c.per+" s/syl");
@@ -1195,7 +1192,7 @@ $("btnEnd").onclick=()=>{ if(confirm(T("confirmEnd"))) ABORT=true; };
 $("btnStart").onclick=async()=>{
   ABORT=false; RESULTS=[]; ENDED_AT=null;
   const pid=$("pid").value.trim().replace(/[^\w.-]+/g,"_");
-  SESSION={pid,group:$("grp").value.trim(),started:new Date().toISOString(),
+  SESSION={pid,started:new Date().toISOString(),
            schedule:consts(),practice:$("pracLang").value,items:[]};
   if(!(await confirmOverwrite())) return;
   stopMeter();
@@ -1246,6 +1243,7 @@ function finish(){
     ? T("fmtEnded")(RESULTS.length,SESSION.pid,ENDED_AT||RESULTS.length,SESSION.total_items)
     : T("fmtDone")(RESULTS.length,SESSION.pid);
   $("dNote").textContent=T("dNote");
+  $("dOrder").textContent=T("dOrder");
   ZIPPED=false; paintNext();
   $("dRows").innerHTML=RESULTS.map(r=>
       "<tr><td>"+r.name+"</td><td>“"+r.target+"”</td><td>"+r.window_s.toFixed(1)+" s</td></tr>")
