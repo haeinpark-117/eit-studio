@@ -102,6 +102,33 @@
   .prop h4{margin:0 0 6px; font-size:17px; letter-spacing:-.25px}
   .prop p{margin:0; font-size:15.2px; line-height:1.6; color:var(--muted)}
   @media(max-width:760px){ .props{grid-template-columns:1fr} }
+
+  /* A single constructed response, scored two ways, so that the claim about
+     constrained recognition can be seen rather than only asserted. */
+  .illus{border:1px solid var(--accent-line); border-radius:16px; margin:24px 0 22px;
+    background:linear-gradient(180deg,#fbfbff 0%,var(--accent-soft) 100%); padding:22px 24px 18px}
+  .illus .lab{font-family:var(--mono); font-size:11.4px; letter-spacing:.12em;
+    text-transform:uppercase; color:var(--accent); margin:0 0 14px}
+  .illus .row{display:grid; grid-template-columns:186px minmax(0,1fr); gap:14px;
+    align-items:baseline; margin-bottom:9px}
+  .illus .k{font-size:13.6px; color:var(--muted); text-align:right; line-height:1.5}
+  .illus .v{font-family:var(--mono); font-size:14.6px; line-height:1.55}
+  .illus hr{border:0; border-top:1px solid var(--accent-line); margin:16px 0 15px}
+  .illus .out{margin-bottom:15px}
+  .illus .out:last-child{margin-bottom:2px}
+  .illus .out .hd{display:flex; justify-content:space-between; align-items:baseline; gap:16px;
+    font-size:13.6px; color:var(--muted); margin-bottom:5px}
+  .illus .verdict{font-size:13.4px; font-weight:650; white-space:nowrap}
+  .illus .bad{color:#ff1493} .illus .good{color:var(--accent)}
+  .illus .mk-bad{text-decoration:underline; text-decoration-color:#ff1493;
+    text-decoration-thickness:2px; text-underline-offset:3px}
+  .illus .mk{text-decoration:underline; text-decoration-color:var(--accent);
+    text-decoration-thickness:2px; text-underline-offset:3px}
+  @media(max-width:640px){
+    .illus .row{grid-template-columns:1fr; gap:2px; margin-bottom:13px}
+    .illus .k{text-align:left}
+    .illus .out .hd{flex-direction:column; gap:2px}
+  }
   p .mono, td .mono{font-family:var(--mono); font-size:14.3px}
 
   ol.refs{list-style:none; counter-reset:r; padding:0; margin:8px 0 0}
@@ -169,14 +196,42 @@
 <section><div class="wrap narrow">
   <h2>Why Whisper large-v3-turbo</h2>
 
-  <h3>Why Whisper large-v3-turbo</h3>
-  <p>Elicited imitation needs a recognizer accurate enough on accented, disfluent speech to be
-    used <em>without</em> being told what was expected. Earlier systems reached usable accuracy on
-    learner responses only through tuning that often included <em>forced alignment</em>, which
-    constrains the recognizer to the words of the prompt — self-defeating here, since a recognizer
-    that can only output the target sentence will report the target sentence, and the deviations
-    that constitute the measurement disappear. Four properties Radford et al. (2023) report make
-    Whisper usable without any of that.</p>
+  <p>Whisper is an open speech recognition model released by OpenAI (Radford et al., 2023): it
+    takes an audio recording and returns a transcription of what it hears. EIT Studio runs it on
+    every response and scores that transcription against the target sentence.</p>
+  <p>Choosing a recognizer for this task is not the same as choosing one for dictation. In an
+    elicited imitation task the participant hears a sentence and repeats it as closely as possible,
+    and the score is the distance between the sentence presented and the words actually produced.
+    The deviations are the measurement, so a recognizer that tidies them away removes the very
+    thing being measured. That rules out the usual method of raising accuracy on learner speech:
+    earlier systems reached usable accuracy on learner responses only through tuning that often
+    included <em>forced alignment</em>, a procedure that constrains the output to the words of the
+    prompt.</p>
+
+  <div class="illus">
+    <p class="lab">Illustration — one response, scored two ways</p>
+    <div class="row"><span class="k">Target sentence</span>
+      <span class="v">The scientist who discovered the vaccine won a prize.</span></div>
+    <div class="row"><span class="k">What the participant said</span>
+      <span class="v">The scientist who <span class="mk">discover</span> the vaccine won a
+        prize.</span></div>
+    <hr>
+    <div class="out">
+      <div class="hd"><span>Recognizer constrained to the prompt</span>
+        <span class="verdict bad">no error recorded</span></div>
+      <div class="v">the scientist who <span class="mk-bad">discovered</span> the vaccine won a prize</div>
+    </div>
+    <div class="out">
+      <div class="hd"><span>Recognizer told nothing — what EIT Studio does</span>
+        <span class="verdict good">one substitution recorded</span></div>
+      <div class="v">the scientist who <span class="mk">discover</span> the vaccine won a prize</div>
+    </div>
+  </div>
+
+  <p>A recognizer that can only return the target sentence will return the target sentence, and
+    every deviation disappears with it. Whisper is accurate enough on accented, disfluent speech to
+    be used without being told what to expect, which is what this task requires. Four properties
+    Radford et al. (2023) report are what make that possible.</p>
   <div class="props">
     <div class="prop">
       <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3840f3"
@@ -214,9 +269,12 @@
   </div>
 
 
-  <p>The turbo variant is large-v3 with its decoder layers reduced, keeping the same encoder and,
-    per its model card, only minor quality degradation while running several times faster — which
-    is what lets it run inside a browser rather than on rented hardware. Reaching Whisper through
+  <p>Whisper is released in several sizes, of which <span class="mono">large-v3</span> is the
+    largest. The <span class="mono">turbo</span> variant is that same model with its decoder layers
+    reduced — the half that interprets the audio is left intact and only the half that writes the
+    words out is made smaller — which, per its model card, costs only minor quality while running
+    several times faster. That is what lets it run inside a browser rather than on rented
+    hardware. Reaching Whisper through
     a commercial API is not expensive, at USD 0.006 per minute of audio for OpenAI's
     <span class="mono">whisper-1</span> endpoint, but it requires an account, a token, and a
     script, and the recordings leave the researcher's machine. The turbo weights are openly
