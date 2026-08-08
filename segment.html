@@ -287,6 +287,8 @@
       <p class="meta" style="margin:0 0 6px" data-i18n="textHelp"></p>
       <div class="row" style="margin-bottom:8px">
         <button class="btn-g btn-s" id="loadPreset" data-i18n="btnPreset"></button>
+        <button class="btn-g btn-s" id="tgtFileBtn" data-i18n="btnTgtFile"></button>
+        <input type="file" id="tgtFile" accept=".csv,.txt" style="display:none">
         <button class="btn-g btn-s" id="clearTgt" data-i18n="btnClearTgt"></button>
         <span class="meta" id="tgtCount" style="margin:0"></span>
       </div>
@@ -402,7 +404,7 @@ en:{
  s2Title:"Detection",
  s2Help:"Boundaries are placed where the recording falls silent. Recordings often open with the researcher's spoken instructions; use “ignore before” to skip that stretch, or drag the orange marker on the waveform. The maximum response length discards anything too long to be a single-sentence response, which also removes most instruction speech. Raise the silence length if a single response is being split in two; lower it if two responses are being merged.",
  lblMode:"Boundaries from:",
- btnPreset:"Load English EIT (Ortega et al., 2002)", btnClearTgt:"Clear",
+ btnPreset:"Load English EIT (Ortega et al., 2002)", btnTgtFile:"Upload CSV", btnClearTgt:"Clear",
  fmtTgtN:n=>n+" items loaded.",
  modeHint:"Prefer a timing grid whenever the schedule of the session is known.",
  rkStim:"Most accurate", mtStim:"Timing grid — sentence set + stimulus audio",
@@ -414,7 +416,7 @@ en:{
  stimIdle:"Drop the stimulus audio files here (one per item), or click to choose",
  fmtStimLoaded:n=>n+" stimulus files measured.",
  stimOrder:"Files are ordered by name, so item numbering follows the file names.",
- textHelp:"Paste the target sentence set: one item per line as “number, sentence, syllables”. This is the same list you load in the scoring tool.",
+ textHelp:"Load the target sentence set: one item per line as “number, sentence, syllables”. Paste the rows in, or upload a sheet saved as CSV. This is the same list you load in the scoring tool.",
  lblToneHz:"Beep (Hz):",
  fmtGridTone:(n,rms)=>n+" windows placed, anchored on the beep that starts each response window. Mean offset of the detected responses is "+rms.toFixed(2)+" s.",
  lblPause:"Pause (s):", lblTone:"Tone (s):", lblBase:"Window base (s):",
@@ -496,7 +498,7 @@ ko:{
  s2Title:"경계 검출",
  s2Help:"녹음이 무음이 되는 지점을 경계로 삼습니다. 녹음 앞부분에는 연구자의 구두 안내가 들어가는 경우가 많으므로, “앞부분 무시”로 해당 구간을 건너뛰거나 파형 위의 주황색 표시를 끌어 옮기십시오. 최대 응답 길이는 한 문장 응답으로 보기 어려운 긴 구간을 제외하므로 안내 발화도 대부분 함께 걸러집니다. 한 응답이 둘로 나뉘면 무음 길이를 늘리고, 두 응답이 하나로 합쳐지면 줄이십시오.",
  lblMode:"경계 산출 방식:",
- btnPreset:"English EIT 불러오기 (Ortega et al., 2002)", btnClearTgt:"비우기",
+ btnPreset:"English EIT 불러오기 (Ortega et al., 2002)", btnTgtFile:"CSV 올리기", btnClearTgt:"비우기",
  fmtTgtN:n=>n+"개 문항이 로드되었습니다.",
  modeHint:"시행 일정을 알고 있다면 타이밍 격자를 사용하십시오.",
  rkStim:"가장 정확", mtStim:"타이밍 격자 — 문장 세트 + 자극 음성",
@@ -508,7 +510,7 @@ ko:{
  stimIdle:"자극 음성 파일을 여기에 끌어다 놓거나 클릭해서 선택 (문항당 한 개)",
  fmtStimLoaded:n=>n+"개 자극 파일의 길이를 측정했습니다.",
  stimOrder:"파일은 이름순으로 정렬되므로 문항 번호는 파일 이름 순서를 따릅니다.",
- textHelp:"목표 문장 세트를 붙여넣으세요. 한 줄에 한 문항씩 “번호, 문장, 음절 수” 형식이며, 채점 도구에 넣는 것과 같은 목록입니다.",
+ textHelp:"목표 문장 세트를 불러오십시오. 한 줄에 한 문항씩 “번호, 문장, 음절 수” 형식이며, 붙여넣거나 CSV로 저장한 파일을 올리시면 됩니다. 채점 도구에 넣는 것과 같은 목록입니다.",
  lblToneHz:"삐 소리(Hz):",
  fmtGridTone:(n,rms)=>"응답창 시작을 알리는 삐 소리를 기준으로 "+n+"개 구간을 배치했습니다. 검출된 응답의 평균 편차는 "+rms.toFixed(2)+"초입니다.",
  lblPause:"휴지(초):", lblTone:"톤(초):", lblBase:"응답창 기준(초):",
@@ -998,12 +1000,31 @@ function applyGrid(){
   else setDetect("fmtGridOk",SEGS.length,rms);
 }
 /* Minimal target-set parser: number, sentence, syllables — or sentence, syllables. */
+function csvSplit(line){
+  const out=[]; let cur="", q=false;
+  for(let i=0;i<line.length;i++){
+    const c=line[i];
+    if(q){
+      if(c==='"' && line[i+1]==='"'){ cur+='"'; i++; }
+      else if(c==='"') q=false;
+      else cur+=c;
+    }else{
+      if(c==='"') q=true;
+      else if(c===","){ out.push(cur.trim()); cur=""; }
+      else cur+=c;
+    }
+  }
+  out.push(cur.trim());
+  return out;
+}
 function parseTargetLines(text){
   const out=[]; let auto=0;
   String(text||"").split(/\r?\n/).forEach(line=>{
     const raw=line.trim(); if(!raw) return;
-    const cells=raw.indexOf("\t")>=0 ? raw.split("\t").map(c=>c.trim())
-                                    : raw.split(",").map(c=>c.trim());
+    /* A sheet saved as CSV quotes any sentence that contains a comma, so the
+       line has to be split with the quoting rules rather than on every comma. */
+    const cells=raw.indexOf("\t")>=0 ? raw.split("\t").map(c=>c.trim()) : csvSplit(raw);
+    if(cells.length>=2&&/^(item|number|no|num|sentence|번호)$/i.test(cells[0])) return;   /* header */
     if(cells.length>=3&&/^\d+$/.test(cells[0])&&/^\d+$/.test(cells[cells.length-1]))
       out.push([parseInt(cells[0],10),cells.slice(1,-1).join(","),parseInt(cells[cells.length-1],10)]);
     else if(cells.length>=2&&/^\d+$/.test(cells[cells.length-1])&&!/^\d+$/.test(cells[0]))
@@ -1066,6 +1087,12 @@ $("loadPreset").onclick=()=>{
   if(BUF && $("mode").value!=="silence") applyGrid();
 };
 $("clearTgt").onclick=()=>{ $("tgtBox").value=""; countTargets(); };
+$("tgtFileBtn").onclick=()=>$("tgtFile").click();
+$("tgtFile").onchange=async e=>{
+  const f=e.target.files&&e.target.files[0]; e.target.value="";
+  if(!f) return;
+  $("tgtBox").value=await f.text(); countTargets();
+};
 function countTargets(){
   const n=parseTargetLines($("tgtBox").value).length;
   $("tgtCount").textContent=n?T("fmtTgtN")(n):"";

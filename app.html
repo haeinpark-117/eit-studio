@@ -222,7 +222,7 @@
     <div class="row">
       <button class="btn-g btn-s" id="loadPreset" data-i18n="btnPreset"></button>
       <button class="btn-g btn-s" id="tgtFileBtn" data-i18n="btnTgtFile"></button>
-      <input type="file" id="tgtFile" accept=".csv,.tsv,.txt" style="display:none">
+      <input type="file" id="tgtFile" accept=".csv,.txt" style="display:none">
       <button class="btn-g btn-s" id="clearTgt" data-i18n="btnClearTgt"></button>
     </div>
     <textarea id="tgtBox" spellcheck="false"></textarea>
@@ -388,8 +388,8 @@ en:{
  heroSub:"Transcribe and score any English elicited imitation task. Everything runs in your browser — no audio leaves your computer.",
  heroBack:"← Home",
  s1Title:"Target sentences", s1Ok:"loaded",
- s1Help:"Paste your target sentences below, or upload a CSV/TSV file. One item per line as “number, sentence, syllables” — or “sentence, syllables”, in which case items are numbered in order. The syllable count is required: it defines the response window in the administration timing and is what lets the segmenter place an item boundary when a participant produced no audible response.",
- btnPreset:"Load English EIT (Ortega et al., 2002)", btnTgtFile:"Upload file", btnClearTgt:"Clear",
+ s1Help:"Paste your target sentences below, or upload a sheet saved as CSV. One item per line as “number, sentence, syllables” — or “sentence, syllables”, in which case items are numbered in order. The syllable count is required: it defines the response window in the administration timing and is what lets the segmenter place an item boundary when a participant produced no audible response.",
+ btnPreset:"Load English EIT (Ortega et al., 2002)", btnTgtFile:"Upload CSV", btnClearTgt:"Clear",
  btnApplyTgt:"Apply target set",
  fmtTgtInfo:n=>n+" items loaded.",
  tgtNone:"No target set loaded yet.",
@@ -460,8 +460,8 @@ ko:{
  heroSub:"영어 elicited imitation task 응답을 자동으로 전사하고 WER로 채점합니다. 모든 처리는 브라우저 안에서 이루어지며, 음성 파일은 외부로 전송되지 않습니다.",
  heroBack:"← 홈",
  s1Title:"목표 문장 세트", s1Ok:"불러옴",
- s1Help:"아래에 목표 문장을 붙여넣거나 CSV·TSV 파일을 올리세요. 한 줄에 한 문항씩 “번호, 문장, 음절 수” 형식이며, “문장, 음절 수”로 적으면 번호가 순서대로 매겨집니다. 음절 수는 필수입니다. 시행 타이밍에서 응답창 길이를 결정하는 값이며, 참가자가 아무 응답도 하지 않은 문항의 경계를 분절 도구가 잡을 때 필요합니다.",
- btnPreset:"English EIT 불러오기 (Ortega et al., 2002)", btnTgtFile:"파일 올리기", btnClearTgt:"비우기",
+ s1Help:"아래에 목표 문장을 붙여넣거나 CSV로 저장한 파일을 올리세요. 한 줄에 한 문항씩 “번호, 문장, 음절 수” 형식이며, “문장, 음절 수”로 적으면 번호가 순서대로 매겨집니다. 음절 수는 필수입니다. 시행 타이밍에서 응답창 길이를 결정하는 값이며, 참가자가 아무 응답도 하지 않은 문항의 경계를 분절 도구가 잡을 때 필요합니다.",
+ btnPreset:"English EIT 불러오기 (Ortega et al., 2002)", btnTgtFile:"CSV 올리기", btnClearTgt:"비우기",
  btnApplyTgt:"목표 세트 적용",
  fmtTgtInfo:n=>n+"개 문항이 등록되었습니다.",
  tgtNone:"아직 목표 세트가 없습니다.",

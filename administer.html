@@ -340,6 +340,8 @@
     <p class="hint" data-i18n="p2h"></p>
     <div class="row" style="margin-bottom:14px">
       <button class="btn-g" id="loadEitA" data-i18n="btnEitA"></button>
+      <button class="btn-g" id="tgtFileBtn" data-i18n="btnTgtFile"></button>
+      <input type="file" id="tgtFile" accept=".csv,.txt" class="hidden">
       <button class="btn-g" id="clearAll" data-i18n="btnClear"></button>
     </div>
     <div class="two">
@@ -538,7 +540,7 @@ const STR={
   lblPid:"Participant ID",
   p2t:"Sentence set",
   p2h:"Two things go in: what the participant hears, and what the responses will be scored against. The item count comes from what you load — nothing assumes thirty.",
-  btnEitA:"Load EIT A (Ortega et al., 2002)", btnClear:"Clear",
+  btnEitA:"Load EIT A (Ortega et al., 2002)", btnTgtFile:"Upload CSV", btnClear:"Clear",
   recTitle:"An unfinished session is still in storage.",
   recGo:"Recover them →", recDrop:"Discard",
   fmtRec:(n,p)=>n+" response"+(n===1?"":"s")+" recorded for "+p+" before the session stopped. "+
@@ -550,7 +552,7 @@ const STR={
   zoneIdle:"Drop audio files here, or click to choose",
   s2bt:"What it is scored against", s2bd:"The target sentence for each item, with its syllable count.",
   fmtN:"number", fmtS:"sentence", fmtY:"syllables",
-  s2bd2:"One item per line, the three fields separated by a tab or a comma. A column copied from a spreadsheet already has the tabs. Numbers may be omitted; syllable counts may not, since they set the response window.",
+  s2bd2:"One item per line, the three fields separated by a tab or a comma. Paste the rows in, or upload a sheet saved as CSV. Numbers may be omitted; syllable counts may not, since they set the response window.",
   p3t:"Instructions and practice",
   p3h:"Instructions and practice items are supplied in the participant's L1 in the original design, and are recorded in a different voice from the stimuli. Three practice items are provided in English and in Korean; another L1 means recording your own.",
   lblPrac:"Practice items", optNone:"None",
@@ -624,7 +626,7 @@ const STR={
   lblPid:"참가자 ID",
   p2t:"문장 세트",
   p2h:"두 가지가 들어갑니다. 참가자가 듣는 것과, 응답을 대조할 목표 문장입니다. 문항 수는 불러온 자료에서 정해지며 30개를 가정하지 않습니다.",
-  btnEitA:"EIT A (Ortega et al., 2002) 불러오기", btnClear:"지우기",
+  btnEitA:"EIT A (Ortega et al., 2002) 불러오기", btnTgtFile:"CSV 올리기", btnClear:"지우기",
   recTitle:"완료되지 않은 세션이 저장소에 남아 있습니다.",
   recGo:"복구하기 →", recDrop:"버리기",
   fmtRec:(n,p)=>"세션이 중단되기 전 "+p+"의 응답 "+n+"개가 녹음되어 있습니다. "+
@@ -635,7 +637,7 @@ const STR={
   zoneIdle:"음성 파일을 끌어다 놓거나 클릭해 선택",
   s2bt:"대조할 목표 문장", s2bd:"각 문항의 목표 문장과 음절 수입니다.",
   fmtN:"번호", fmtS:"문장", fmtY:"음절",
-  s2bd2:"한 줄에 한 문항씩, 세 필드를 탭이나 쉼표로 구분합니다. 스프레드시트 열에서 복사하면 탭이 이미 들어 있습니다. 번호는 생략할 수 있지만 음절 수는 생략할 수 없습니다. 응답창 길이를 정하는 값이기 때문입니다.",
+  s2bd2:"한 줄에 한 문항씩, 세 필드를 탭이나 쉼표로 구분합니다. 스프레드시트에서 붙여넣거나 CSV로 저장한 파일을 올리시면 됩니다. 번호는 생략할 수 있지만 음절 수는 생략할 수 없습니다. 응답창 길이를 정하는 값이기 때문입니다.",
   p3t:"지시문과 연습",
   p3h:"원 설계에서 지시문과 연습 문항은 참가자의 L1으로 제시되며, 자극과는 다른 화자가 녹음합니다. 연습 문항은 영어와 한국어로 세 개씩 제공됩니다. 다른 L1이라면 직접 녹음하셔야 합니다.",
   lblPrac:"연습 문항", optNone:"사용 안 함",
@@ -711,11 +713,31 @@ $("langKo").onclick=()=>{LANG="ko"; localStorage.setItem("eitLang","ko"); applyL
 let STIM=[];      /* [{name, dur, buf|null, src:File|url}] */
 let TGT=[];       /* [[n, text, syl]] */
 
+function csvSplit(line){
+  const out=[]; let cur="", q=false;
+  for(let i=0;i<line.length;i++){
+    const c=line[i];
+    if(q){
+      if(c==='"' && line[i+1]==='"'){ cur+='"'; i++; }
+      else if(c==='"') q=false;
+      else cur+=c;
+    }else{
+      if(c==='"') q=true;
+      else if(c===","){ out.push(cur.trim()); cur=""; }
+      else cur+=c;
+    }
+  }
+  out.push(cur.trim());
+  return out;
+}
 function parseTargets(text){
   const out=[]; let auto=0;
   String(text||"").split(/\r?\n/).forEach(line=>{
     const raw=line.trim(); if(!raw) return;
-    const cells=raw.indexOf("\t")>=0?raw.split("\t").map(c=>c.trim()):raw.split(",").map(c=>c.trim());
+    /* A sheet saved as CSV quotes any sentence that contains a comma, so the
+       line has to be split with the quoting rules rather than on every comma. */
+    const cells=raw.indexOf("\t")>=0?raw.split("\t").map(c=>c.trim()):csvSplit(raw);
+    if(cells.length>=2&&/^(item|number|no|num|sentence|번호)$/i.test(cells[0])) return;   /* header */
     if(cells.length>=3&&/^\d+$/.test(cells[0])&&/^\d+$/.test(cells[cells.length-1]))
       out.push([parseInt(cells[0],10),cells.slice(1,-1).join(","),parseInt(cells[cells.length-1],10)]);
     else if(cells.length>=2&&/^\d+$/.test(cells[cells.length-1])&&!/^\d+$/.test(cells[0]))
@@ -725,6 +747,12 @@ function parseTargets(text){
 }
 function readTargets(){ TGT=parseTargets($("tgtBox").value); paintTally(); paintSchedule(); paintStart(); }
 $("tgtBox").addEventListener("input",readTargets);
+$("tgtFileBtn").onclick=()=>$("tgtFile").click();
+$("tgtFile").onchange=async e=>{
+  const f=e.target.files&&e.target.files[0]; e.target.value="";
+  if(!f) return;
+  $("tgtBox").value=await f.text(); readTargets(); foldAdvance();
+};
 
 /* stimulus intake ---------------------------------------------------------- */
 const zone=$("zone");
