@@ -21,7 +21,12 @@
     -webkit-font-smoothing:antialiased}
   a{color:var(--accent)}
   .wrap{max-width:1120px; margin:0 auto; padding:0 26px}
-  .narrow{max-width:765px}
+  /* The section is as wide as the widest thing in it — tables, figures, the
+     pipeline diagram — while continuous prose keeps a readable line length.
+     Only top-level paragraphs are capped; paragraphs inside cards and callouts
+     take the width of whatever encloses them. */
+  .narrow{max-width:860px}
+  .narrow > p, .narrow > ol, .narrow > ul{max-width:765px}
 
   .nav{position:sticky; top:0; z-index:30; background:rgba(255,255,255,.88);
     backdrop-filter:blur(12px); border-bottom:1px solid var(--line)}
