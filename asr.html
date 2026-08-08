@@ -81,6 +81,27 @@
   table.ev tr:last-child td{border-bottom:0}
   table.ev td:first-child{white-space:nowrap; font-weight:650}
   .num{font-family:var(--mono); color:var(--accent); font-weight:700; white-space:nowrap}
+
+  /* Figures. The three on this page carry the evidence for the choice of
+     recognizer, so they are given the full section width rather than the
+     prose measure. */
+  figure.fig{border:1px solid var(--accent-line); border-radius:16px; margin:24px 0 20px;
+    background:linear-gradient(180deg,#fbfbff 0%,var(--accent-soft) 100%);
+    padding:24px 26px 20px}
+  figure.rng{border:1px solid var(--line); border-radius:16px; margin:24px 0 20px;
+    background:#fff; padding:24px 26px 18px}
+  figure.fig svg, figure.rng svg{display:block; width:100%; height:auto}
+  figure.fig figcaption, figure.rng figcaption{margin:14px 0 0; font-size:14.7px;
+    color:var(--muted); font-style:italic; line-height:1.6}
+
+  /* The four properties, as cards rather than a two-column table. */
+  .props{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:24px 0 8px}
+  .prop{border:1px solid var(--line); border-radius:16px; padding:20px 20px 18px; background:#fff}
+  .prop .ic{width:38px; height:38px; border-radius:11px; background:var(--accent-soft);
+    display:flex; align-items:center; justify-content:center; margin-bottom:13px}
+  .prop h4{margin:0 0 6px; font-size:17px; letter-spacing:-.25px}
+  .prop p{margin:0; font-size:15.2px; line-height:1.6; color:var(--muted)}
+  @media(max-width:760px){ .props{grid-template-columns:1fr} }
   p .mono, td .mono{font-family:var(--mono); font-size:14.3px}
 
   ol.refs{list-style:none; counter-reset:r; padding:0; margin:8px 0 0}
@@ -156,19 +177,41 @@
     that can only output the target sentence will report the target sentence, and the deviations
     that constitute the measurement disappear. Four properties Radford et al. (2023) report make
     Whisper usable without any of that.</p>
-  <table class="ev">
-    <tbody>
-      <tr><td>Accuracy</td><td>Error rates on standard benchmarks that approach human
-        transcription, and that are competitive with fully supervised systems</td></tr>
-      <tr><td>Scale and breadth</td><td>Trained on 680,000 hours of multilingual, multitask
-        supervision rather than on a single curated corpus of read speech</td></tr>
-      <tr><td>Robustness</td><td>Trained to generalize across recording conditions, accents, and
-        speech styles rather than to one variety, which is what makes accented learner speech and
-        recordings made on participants' own phones and laptops usable</td></tr>
-      <tr><td>No adaptation needed</td><td>Used zero-shot, without dataset-specific fine-tuning —
-        and, as above, without forced alignment, which is what makes the scores meaningful</td></tr>
-    </tbody>
-  </table>
+  <div class="props">
+    <div class="prop">
+      <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3840f3"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.4"/></svg></div>
+      <h4>Accuracy</h4>
+      <p>Error rates on standard benchmarks that approach human transcription, and that are
+        competitive with fully supervised systems.</p>
+    </div>
+    <div class="prop">
+      <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3840f3"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M3 18V9M8 18V5M13 18v-7M18 18V8M21 21H3"/></svg></div>
+      <h4>Trained at scale</h4>
+      <p>Trained on 680,000 hours of multilingual, multitask supervision rather than on a single
+        curated corpus of read speech.</p>
+    </div>
+    <div class="prop">
+      <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3840f3"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 3l8 4v6c0 4.5-3.4 7.4-8 8-4.6-.6-8-3.5-8-8V7z"/></svg></div>
+      <h4>Robustness</h4>
+      <p>Trained to generalize across recording conditions, accents, and speech styles rather than
+        to one variety — which is what makes accented learner speech, and recordings made on
+        participants' own phones and laptops, usable.</p>
+    </div>
+    <div class="prop">
+      <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3840f3"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <h4>No adaptation needed</h4>
+      <p>Used zero-shot, without dataset-specific fine-tuning — and, as above, without forced
+        alignment, which is what makes the scores meaningful.</p>
+    </div>
+  </div>
 
 
   <p>The turbo variant is large-v3 with its decoder layers reduced, keeping the same encoder and,
@@ -186,17 +229,129 @@
   <p>What Whisper is asked to transcribe matters more than any other single factor: O'Connor
     Russell et al. (2024) found it at <span class="num">3.12 %</span> word error rate on read
     audiobook speech but <span class="num">19.4 %</span> on telephone conversation and
-    <span class="num">26.7 %</span> on videoconferencing speech. Elicited imitation responses sit
-    at the favorable end of that range — short single sentences, recorded under controlled
-    conditions, with no overlapping talk. On read speech from learners specifically, McGuire
-    (2026) compared five current systems on 2,400 recordings from the L2-ARCTIC corpus and found
-    Whisper large-v3 lowest in match error rate (<span class="num">.054</span>), though
-    performance varied by first language, from <span class="num">.007</span> for US English
-    controls to <span class="num">.124</span> for Vietnamese speakers. Accuracy is not the whole
-    story, though: Whisper normalizes as it transcribes, regularizing morphosyntax and omitting
-    disfluencies rather than reporting them verbatim (Shen et al., 2026; Zusag et al., 2024),
-    which is why a human-verified subsample remains necessary where the deviations are the
-    measurement.</p>
+    <span class="num">26.7 %</span> on videoconferencing speech.</p>
+
+  <figure class="fig">
+    <svg viewBox="0 0 780 226" xmlns="http://www.w3.org/2000/svg" role="img"
+         aria-label="Word error rate by speech type: read audiobook speech 3.12 percent, telephone conversation 19.4 percent, videoconferencing speech 26.7 percent. Elicited imitation responses resemble the read-speech condition.">
+      <line x1="196" y1="26" x2="196" y2="196" stroke="#d9dcff" stroke-width="1"/>
+      <line x1="196" y1="196" x2="760" y2="196" stroke="#d9dcff" stroke-width="1"/>
+      <g font-size="12" fill="#9a9aab" font-family="ui-monospace,Menlo,monospace">
+        <text x="196" y="214" text-anchor="middle">0</text>
+        <text x="384" y="214" text-anchor="middle">10</text>
+        <text x="572" y="214" text-anchor="middle">20</text>
+        <text x="760" y="214" text-anchor="middle">30 %</text>
+      </g>
+
+      <text x="184" y="52" text-anchor="end" font-size="14.4" fill="#08080f" font-weight="650">Read audiobook</text>
+      <rect x="196" y="36" width="58.7" height="26" rx="5" fill="#3840f3"/>
+      <text x="266" y="54" font-size="14" font-weight="700" fill="#3840f3"
+            font-family="ui-monospace,Menlo,monospace">3.12 %</text>
+
+      <text x="184" y="106" text-anchor="end" font-size="14.4" fill="#08080f" font-weight="650">Telephone</text>
+      <text x="184" y="122" text-anchor="end" font-size="14.4" fill="#08080f" font-weight="650">conversation</text>
+      <rect x="196" y="96" width="364.7" height="26" rx="5" fill="#a9adf9"/>
+      <text x="572" y="114" font-size="14" font-weight="700" fill="#6b6fdd"
+            font-family="ui-monospace,Menlo,monospace">19.4 %</text>
+
+      <text x="184" y="166" text-anchor="end" font-size="14.4" fill="#08080f" font-weight="650">Videoconferencing</text>
+      <rect x="196" y="156" width="502" height="26" rx="5" fill="#c9cbfc"/>
+      <text x="709" y="174" font-size="14" font-weight="700" fill="#8a8de6"
+            font-family="ui-monospace,Menlo,monospace">26.7 %</text>
+
+      <text x="340" y="54" font-size="13.6" font-weight="650" fill="#ff1493">&#8592; where elicited imitation responses sit</text>
+    </svg>
+    <figcaption>Word error rate by kind of speech, from O'Connor Russell et al. (2024). Elicited
+      imitation responses share the properties of the read-speech condition — short single
+      sentences, recorded deliberately, with no overlapping talk — which places the task at the
+      favorable end of this range. Its position here reflects that resemblance rather than a
+      measurement taken from that study.</figcaption>
+  </figure>
+
+  <p>Elicited imitation responses sit at the favorable end of that range — short single sentences,
+    recorded under controlled conditions, with no overlapping talk. On read speech from learners
+    specifically, McGuire (2026) compared five current systems on 2,400 recordings from the
+    L2-ARCTIC corpus and found Whisper large-v3 lowest in match error rate
+    (<span class="num">.054</span>), though performance varied by first language.</p>
+
+  <figure class="rng">
+    <svg viewBox="0 0 780 306" xmlns="http://www.w3.org/2000/svg" role="img"
+         aria-label="Match error rate for Whisper large-v3 on the L2-ARCTIC corpus by first language: US English controls .007, Hindi .021, Korean .033, Spanish .046, Arabic .047, Chinese .053, Vietnamese .124, against an overall value of .054.">
+      <g stroke="#f0f0f6" stroke-width="1">
+        <line x1="363.6" y1="34" x2="363.6" y2="264"/>
+        <line x1="557.1" y1="34" x2="557.1" y2="264"/>
+        <line x1="712" y1="34" x2="712" y2="264"/>
+      </g>
+      <line x1="379.1" y1="42" x2="379.1" y2="264" stroke="#b9bcfb" stroke-width="1.4"
+            stroke-dasharray="5 4"/>
+      <text x="379.1" y="32" text-anchor="middle" font-size="12.6" fill="#6b6fdd"
+            font-family="ui-monospace,Menlo,monospace">.054 overall</text>
+
+      <g font-size="14.2" fill="#08080f" text-anchor="end">
+        <text x="152" y="65">US English</text>
+        <text x="152" y="97">Hindi</text>
+        <text x="152" y="129">Korean</text>
+        <text x="152" y="161">Spanish</text>
+        <text x="152" y="193">Arabic</text>
+        <text x="152" y="225">Chinese</text>
+        <text x="152" y="257" fill="#0e7490" font-weight="650">Vietnamese</text>
+      </g>
+      <text x="152" y="79" text-anchor="end" font-size="11.8" fill="#9a9aab">controls</text>
+
+      <g stroke="#dcdefc" stroke-width="3" stroke-linecap="round">
+        <line x1="170" y1="60" x2="197.1" y2="60"/>
+        <line x1="170" y1="92" x2="251.3" y2="92"/>
+        <line x1="170" y1="124" x2="297.8" y2="124"/>
+        <line x1="170" y1="156" x2="348.1" y2="156"/>
+        <line x1="170" y1="188" x2="352.0" y2="188"/>
+        <line x1="170" y1="220" x2="375.2" y2="220"/>
+      </g>
+      <line x1="170" y1="252" x2="650.1" y2="252" stroke="#c7ecf5" stroke-width="3"
+            stroke-linecap="round"/>
+
+      <circle cx="197.1" cy="60" r="6.4" fill="#fff" stroke="#3840f3" stroke-width="2.2"/>
+      <circle cx="251.3" cy="92" r="6.4" fill="#3840f3"/>
+      <circle cx="297.8" cy="124" r="6.4" fill="#3840f3"/>
+      <circle cx="348.1" cy="156" r="6.4" fill="#3840f3"/>
+      <circle cx="352.0" cy="188" r="6.4" fill="#3840f3"/>
+      <circle cx="375.2" cy="220" r="6.4" fill="#3840f3"/>
+      <circle cx="650.1" cy="252" r="7.4" fill="#06b6d4"/>
+
+      <g font-size="13.4" font-weight="700" font-family="ui-monospace,Menlo,monospace" fill="#3840f3"
+         stroke="#fff" stroke-width="3.2" paint-order="stroke">
+        <text x="211" y="65">.007</text>
+        <text x="265" y="97">.021</text>
+        <text x="312" y="129">.033</text>
+        <text x="362" y="161">.046</text>
+        <text x="366" y="193">.047</text>
+        <text x="389" y="225">.053</text>
+      </g>
+      <text x="664" y="257" font-size="13.8" font-weight="700" fill="#0e7490"
+            font-family="ui-monospace,Menlo,monospace">.124</text>
+      <text x="650.1" y="236" text-anchor="middle" font-size="12.8" font-weight="650"
+            fill="#0e7490">check here first</text>
+
+      <line x1="170" y1="272" x2="712" y2="272" stroke="#e8e8ef" stroke-width="1"/>
+      <g font-size="12" fill="#9a9aab" font-family="ui-monospace,Menlo,monospace">
+        <text x="170" y="292" text-anchor="middle">0</text>
+        <text x="363.6" y="292" text-anchor="middle">.05</text>
+        <text x="557.1" y="292" text-anchor="middle">.10</text>
+        <text x="712" y="292" text-anchor="end">match error rate</text>
+      </g>
+    </svg>
+    <figcaption>Match error rate for Whisper large-v3 on 2,400 L2-ARCTIC recordings, by
+      first-language background (McGuire, 2026). Whisper returned the lowest overall error rate of
+      the five systems compared, and the same broad pattern — Hindi lowest, Chinese and Vietnamese
+      highest — held across all five, which suggests that the spread reflects the speech rather
+      than the recognizer. The dashed line marks the overall value of .054; the Vietnamese group
+      is the one that sits clearly above it, and is where a human-verified
+      subsample earns its place.</figcaption>
+  </figure>
+
+  <p>Accuracy is not the whole story, though: Whisper normalizes as it transcribes, regularizing
+    morphosyntax and omitting disfluencies rather than reporting them verbatim (Shen et al., 2026;
+    Zusag et al., 2024), which is why a human-verified subsample remains necessary where the
+    deviations are the measurement.</p>
 
   <h3>What to check in your own data</h3>
   <p>Two things support treating word error rate as a proficiency measure, and both belong in a
