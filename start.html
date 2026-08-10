@@ -40,11 +40,11 @@
   .lang button:first-child{border-radius:7px 0 0 7px}
   .lang button:last-child{border-radius:0 7px 7px 0; border-left:0}
   .lang button.on{background:var(--accent); color:#fff; border-color:var(--accent)}
-  .stage{width:100%; max-width:1100px}
+  .stage{width:100%; max-width:1300px}
 
   .panel{background:var(--panel); border:1px solid var(--line); border-radius:14px;
     margin-bottom:18px; overflow:hidden}
-  .pad{padding:32px 32px 34px}
+  .pad{padding:32px 34px 34px}
 
   .sr{position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden;
     clip:rect(0 0 0 0); white-space:nowrap; border:0}
@@ -55,15 +55,14 @@
     font-size:14px; font-weight:800; display:inline-flex; align-items:center;
     justify-content:center; flex:none; transform:translateY(3px)}
   .sh h2{margin:0; font-size:21px; letter-spacing:-.45px; font-weight:750}
-  .stepbody{padding-left:36px}
-  .stepbody > p.d1{margin:0 0 14px; color:var(--muted); font-size:16.4px; line-height:1.66;
-    max-width:70ch}
-  .sep{height:1px; background:var(--line); margin:30px 0 24px}
+  .stepbody > p.d1{margin:0 0 14px; color:var(--muted); font-size:16.4px; line-height:1.66}
 
   /* ---------- the sheet ---------- */
-  .xl{border:1px solid #cfcfda; border-radius:10px; overflow:hidden; max-width:640px;
-    box-shadow:0 2px 10px rgba(8,8,15,.05); background:#fff}
-  .xl table{border-collapse:collapse; width:100%; font-size:16px}
+  /* the sheet is sized by its contents: a full-width table stretched column B
+     and left the sentences swimming in empty space */
+  .xl{border:1px solid #cfcfda; border-radius:10px; overflow:hidden; display:inline-block;
+    max-width:100%; box-shadow:0 2px 10px rgba(8,8,15,.05); background:#fff}
+  .xl table{border-collapse:collapse; width:auto; font-size:16px}
   .xl th,.xl td{border-right:1px solid #e4e4ec; border-bottom:1px solid #e4e4ec;
     padding:8px 12px; text-align:left}
   .xl tr:last-child td,.xl tr:last-child th{border-bottom:0}
@@ -74,45 +73,57 @@
   .xl td.a{font-family:var(--mono); width:54px; color:var(--muted)}
   .xl td.c{font-family:var(--mono); color:var(--muted); width:68px}
 
-  .pick{display:inline-block; margin:26px 0 0; max-width:680px; font-size:16px;
-    line-height:1.62; color:#3b3e73; background:var(--accent-soft);
-    border:1px solid var(--accent-line); border-left:3px solid var(--accent);
-    border-radius:4px 11px 11px 4px; padding:11px 17px}
+  .pick{margin:24px 0 0; font-size:15.6px; line-height:1.62; color:#3b3e73;
+    background:var(--accent-soft); border:1px solid var(--accent-line);
+    border-left:3px solid var(--accent); border-radius:4px 11px 11px 4px; padding:11px 16px}
   .pick b{color:var(--accent-dark); font-weight:750}
 
-  /* ---------- branch ---------- */
-  .br{display:grid; grid-template-columns:1fr 1fr; gap:16px}
-  .b{border:1px solid var(--accent-line); background:#fbfbff; border-radius:14px;
-    padding:21px 21px 19px; display:flex; flex-direction:column}
-  .b.pk{border-color:var(--pink-line); background:#fffafd}
-  .b .cap{font-family:var(--mono); font-size:11.6px; letter-spacing:.12em;
-    text-transform:uppercase; color:var(--accent); margin-bottom:7px}
-  .b.pk .cap{color:var(--pink)}
-  .b h3{margin:0 0 5px; font-size:19.6px; letter-spacing:-.4px; font-weight:750}
-  .b .d{margin:0 0 12px; color:var(--muted); font-size:16px; line-height:1.6; flex:1 1 auto}
-  .b .fn{margin:0 0 13px; font-size:14.6px; color:#8a4a6d; line-height:1.55}
-  .b .fn code{font-family:var(--mono); font-size:13.6px; background:#fff;
-    border:1px solid var(--pink-line); border-radius:6px; padding:1px 6px; color:var(--pink-dark)}
-  .go{display:flex; align-items:baseline; gap:9px; text-decoration:none; padding:10px 2px;
-    border-top:1px solid var(--accent-line); color:inherit; transition:.15s}
-  .go:last-child{border-bottom:1px solid var(--accent-line)}
-  .go:hover{background:#f3f4ff}
-  .b.pk .go{border-color:var(--pink-line)} .b.pk .go:hover{background:#fff5fa}
-  .go b{font-size:16px; letter-spacing:-.2px}
-  .go i{font-style:normal; font-size:14.4px; color:#4a4c86; flex:1 1 auto}
-  .b.pk .go i{color:#8a4a6d}
-  .go .ar{color:var(--accent); font-weight:700}
-  .b.pk .go .ar{color:var(--pink)}
-  .qq{font-size:13.8px; color:var(--muted); margin:0 0 3px; font-weight:650}
+  /* ---------- the two routes, as on the landing page ---------- */
+  .two-routes{display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:14px 0 4px}
+  .route{border:1px solid var(--accent-line); border-radius:18px; padding:26px 28px 24px;
+    background:var(--accent-soft); display:flex; flex-direction:column; position:relative}
+  .route.pk{border-color:var(--pink-line); background:var(--pink-soft)}
+  .route .rstep{position:absolute; top:-13px; left:28px; font-family:var(--mono); font-size:11px;
+    letter-spacing:.14em; text-transform:uppercase; background:var(--accent); color:#fff;
+    border-radius:999px; padding:5px 13px; font-weight:700}
+  .route.pk .rstep{background:var(--pink)}
+  .route h3{margin:12px 0 8px; font-size:24px; letter-spacing:-.75px; font-weight:800}
+  .route p{margin:0 0 10px; font-size:17.2px; color:#40415e; flex:1 1 auto; line-height:1.68}
+  .route.pk p{color:#6b2049}
+  .menu{margin-top:2px}
+  .menu a{display:flex; align-items:baseline; gap:9px; text-decoration:none;
+    border-top:1px solid var(--accent-line); padding:8px 2px; transition:.15s}
+  .menu a:last-child{border-bottom:1px solid var(--accent-line)}
+  .menu a:hover{background:#f4f5ff}
+  .menu b{font-size:15.7px; font-weight:700; color:var(--ink); letter-spacing:-.2px}
+  .menu i{font-style:normal; font-size:14.1px; color:#4a4c86; flex:1 1 auto}
+  .menu .ar{color:var(--accent); font-weight:700}
+  .route.pk .menu a{border-color:var(--pink-line)}
+  .route.pk .menu a:hover{background:#fff7fb}
+  .route.pk .menu i{color:#8a4a6d}
+  .route.pk .menu .ar{color:var(--pink)}
+
+  /* ---------- the two steps sit side by side on a wide screen ---------- */
+  .cols{display:grid; grid-template-columns:420px minmax(0,1fr); gap:34px; align-items:start}
+  .cols > .rt2{position:relative}
+  .cols > .rt2:before{content:""; position:absolute; left:-17px; top:4px; bottom:4px; width:1px;
+    background:var(--line)}
 
   .foot{font-size:14px; color:var(--muted); padding:11px 22px; border-top:1px solid var(--line);
     background:#fafafb; font-family:var(--mono)}
 
-  @media(max-width:820px){ .br{grid-template-columns:1fr} }
+  @media(max-width:1080px){
+    .cols{grid-template-columns:1fr; gap:0}
+    .cols > .rt2:before{display:none}
+    .cols > .rt2{border-top:1px solid var(--line); margin-top:30px; padding-top:26px}
+  }
+  @media(max-width:820px){ .two-routes{grid-template-columns:1fr; gap:26px} }
   @media(max-width:720px){
     .pad{padding:24px 20px 28px}
-    .stepbody{padding-left:0}
     .sh h2{font-size:19px}
+    .route{padding:24px 22px 20px}
+    .route h3{font-size:22px}
+    .route p{font-size:16.4px}
     .xl table{font-size:15px}
     .xl th,.xl td{padding:7px 9px}
   }
@@ -154,46 +165,50 @@
   <h1 class="sr" data-i18n="srH1"></h1>
 
   <div class="panel"><div class="pad">
+    <div class="cols">
 
-    <div class="sh"><span class="num">1</span><h2 data-i18n="s1t"></h2></div>
-    <div class="stepbody">
-      <p class="d1" data-i18n="s1d"></p>
-      <div class="xl">
-        <table>
-          <thead><tr><th></th><th>A</th><th>B</th><th>C</th></tr></thead>
-          <tbody>
-            <tr><th>1</th><td class="a">1</td><td>I have to get a haircut.</td><td class="c">7</td></tr>
-            <tr><th>2</th><td class="a">2</td><td>The red book is on the table.</td><td class="c">8</td></tr>
-            <tr><th>3</th><td class="a">3</td><td>The streets in this city are wide.</td><td class="c">8</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="pick"><b data-i18n="pickB"></b> <span data-i18n="pickS"></span></p>
-    </div>
-
-    <div class="sep"></div>
-
-    <div class="sh"><span class="num">2</span><h2 data-i18n="s2t"></h2></div>
-    <div class="stepbody">
-      <div class="br">
-        <div class="b">
-          <span class="cap" data-i18n="capAdm"></span>
-          <h3 data-i18n="admT"></h3>
-          <p class="d" data-i18n="admD"></p>
-          <a class="go" href="administer.html"><b data-i18n="admGo"></b><i></i><span class="ar">→</span></a>
-        </div>
-        <div class="b pk">
-          <span class="cap" data-i18n="capSc"></span>
-          <h3 data-i18n="scT"></h3>
-          <p class="d" data-i18n="scD"></p>
-          <p class="fn"><code>P01_item01.wav</code> <span data-i18n="scFn"></span></p>
-          <p class="qq" data-i18n="scQ"></p>
-          <a class="go" href="app.html"><b data-i18n="sc1"></b><i data-i18n="sc1s"></i><span class="ar">→</span></a>
-          <a class="go" href="segment.html"><b data-i18n="sc2"></b><i data-i18n="sc2s"></i><span class="ar">→</span></a>
+      <div>
+        <div class="sh"><span class="num">1</span><h2 data-i18n="s1t"></h2></div>
+        <div class="stepbody">
+          <p class="d1" data-i18n="s1d"></p>
+          <div class="xl">
+            <table>
+              <thead><tr><th></th><th>A</th><th>B</th><th>C</th></tr></thead>
+              <tbody>
+                <tr><th>1</th><td class="a">1</td><td>I have to get a haircut.</td><td class="c">7</td></tr>
+                <tr><th>2</th><td class="a">2</td><td>The red book is on the table.</td><td class="c">8</td></tr>
+                <tr><th>3</th><td class="a">3</td><td>The streets in this city are wide.</td><td class="c">8</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="pick"><b data-i18n="pickB"></b> <span data-i18n="pickS"></span></p>
         </div>
       </div>
-    </div>
 
+      <div class="rt2">
+        <div class="sh"><span class="num">2</span><h2 data-i18n="s2t"></h2></div>
+        <div class="two-routes">
+          <div class="route">
+            <span class="rstep" data-i18n="capAdm"></span>
+            <h3 data-i18n="admT"></h3>
+            <p data-i18n="admD"></p>
+            <div class="menu">
+              <a href="administer.html"><b data-i18n="admGo"></b><i></i><span class="ar">→</span></a>
+            </div>
+          </div>
+          <div class="route pk">
+            <span class="rstep" data-i18n="capSc"></span>
+            <h3 data-i18n="scT"></h3>
+            <p data-i18n="scD"></p>
+            <div class="menu">
+              <a href="app.html"><b data-i18n="sc1"></b><i data-i18n="sc1s"></i><span class="ar">→</span></a>
+              <a href="segment.html"><b data-i18n="sc2"></b><i data-i18n="sc2s"></i><span class="ar">→</span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
   </div></div>
 
   <div class="panel"><div class="foot" id="foot"></div></div>
@@ -208,20 +223,18 @@ en:{
  srH1:"Start here",
  s1t:"Prepare your target sentences",
  s1d:"Three columns, one item per row: number, sentence, syllable count. Upload the sheet saved as CSV, or paste the rows straight into the page.",
- pickB:"Or use a ready-made set.",
- pickS:"Either page below loads the English EIT of Ortega et al. (2002), with its stimulus recordings for administration.",
+ pickB:"Or use a ready-made set:",
+ pickS:"the English EIT of Ortega et al. (2002), available for both administration and scoring.",
  s2t:"Administer, or score what you have",
  capAdm:"Administer",
- admT:"Collect data now",
- admD:"Add the stimulus recordings and run the task here. Each response is written out as its own file, ready to score.",
+ admT:"Administer your EIT",
+ admD:"Add the stimulus recordings: the task runs in the browser on a fixed schedule and each response is saved as its own audio file.",
  admGo:"Set up a session",
  capSc:"Score",
- scT:"I already have recordings",
- scD:"Whisper transcribes them here and word error rate is computed against the sentences above.",
- scFn:"Files named this way are matched to items automatically.",
- scQ:"Which describes your recordings?",
+ scT:"Score what you collected",
+ scD:"Whisper large-v3-turbo transcribes your response audio in the browser and word error rate is computed against the targets.",
  sc1:"One file per item", sc1s:"score now",
- sc2:"One long recording per participant", sc2s:"split first",
+ sc2:"One long recording", sc2s:"split first",
  foot:"Everything runs locally in your browser · no upload, no account"
 },
 ko:{
@@ -229,20 +242,18 @@ ko:{
  srH1:"시작하기",
  s1t:"목표 문장을 준비하십시오",
  s1d:"세 개의 열에 한 행씩 한 문항을 적습니다. 번호, 문장, 음절 수 순서이며, CSV로 저장한 파일을 올리시거나 행을 그대로 붙여넣으시면 됩니다.",
- pickB:"이미 만들어진 세트를 쓰셔도 됩니다.",
- pickS:"아래 두 페이지 모두 Ortega et al. (2002)의 영어 EIT를 불러올 수 있으며, 시행 페이지에서는 자극 녹음도 함께 불러옵니다.",
+ pickB:"이미 만들어진 세트도 있습니다.",
+ pickS:"Ortega et al. (2002)의 영어 EIT를 시행과 채점 양쪽에서 불러올 수 있습니다.",
  s2t:"시행하거나, 가지고 계신 녹음을 채점하십시오",
  capAdm:"시행",
- admT:"지금 데이터를 수집합니다",
- admD:"자극 녹음을 추가하고 여기서 과제를 시행하십시오. 각 응답이 개별 파일로 저장되어 바로 채점할 수 있습니다.",
+ admT:"EIT 시행하기",
+ admD:"자극 녹음을 추가하십시오. 과제가 브라우저에서 정해진 일정대로 진행되고, 각 응답이 개별 음성 파일로 저장됩니다.",
  admGo:"세션 설정하기",
  capSc:"채점",
- scT:"이미 녹음 파일이 있습니다",
- scD:"Whisper가 이 브라우저에서 전사하고, 위의 목표 문장과 대조해 단어 오류율을 계산합니다.",
- scFn:"이 형식의 파일 이름은 문항에 자동으로 배정됩니다.",
- scQ:"녹음 파일이 어느 쪽에 해당합니까?",
+ scT:"수집한 자료 채점하기",
+ scD:"Whisper large-v3-turbo가 브라우저에서 응답 음성을 전사하고, 목표 문장과 대조해 단어 오류율을 계산합니다.",
  sc1:"문항당 파일 하나", sc1s:"바로 채점",
- sc2:"참가자당 긴 녹음 하나", sc2s:"먼저 나누기",
+ sc2:"긴 녹음 하나", sc2s:"먼저 나누기",
  foot:"모든 처리는 브라우저 안에서 이루어집니다 · 업로드 없음, 계정 없음"
 }
 };
