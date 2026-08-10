@@ -135,6 +135,9 @@
   .badge.rev{background:var(--cy-soft); color:var(--cy-ink); border-color:var(--cy-line)}
   .wasline{display:block; font-family:var(--mono); font-size:13.4px; color:#8a4a6d; margin-top:4px}
   .werold{color:#b98aa4; text-decoration:line-through; margin-right:6px; font-size:14px}
+  .revnote{display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+    margin:14px 20px 0; padding:10px 14px; font-size:15.2px; color:#155e6b;
+    background:var(--cy-soft); border:1px solid var(--cy-line); border-radius:10px}
   tr.drawer td{background:#fbfbff; border-bottom:2px solid var(--accent-line)}
   .dr{display:grid; grid-template-columns:minmax(0,1fr) 250px; gap:22px; padding:4px 2px 8px}
   .dr .k{font-family:var(--mono); font-size:11.6px; letter-spacing:.1em; text-transform:uppercase;
@@ -364,6 +367,10 @@
 
   <!-- ============ results ============ -->
   <div class="panel hidden" id="resPanel">
+    <div class="revnote hidden" id="revNote">
+      <span id="revNoteT"></span>
+      <button class="btn-g btn-s" id="revClear" data-i18n="revClear"></button>
+    </div>
     <div class="sumhead">
       <h2 data-i18n="resTitle"></h2>
       <a href="how.html#reading" target="_blank" rel="noopener"
@@ -492,6 +499,10 @@ en:{
  drTarget:"Target", drHeard:"Whisper heard", drCorrected:"Corrected transcription",
  drSave:"Save the correction", drOk:"Whisper was right — mark reviewed",
  drUndo:"Remove the correction", drCancel:"Cancel",
+ fmtRestored:(v,c)=>v+" item"+(v===1?"":"s")+" carried over from earlier work in this browser"+
+   (c?" — "+c+" of them corrected":" — marked reviewed"),
+ revClear:"Discard saved corrections",
+ revClearAsk:"Discard every correction and review saved in this browser? The results on screen are left as they are.",
  drListen:"Listen", drEffect:"If you save this",
  drKept:"Whisper's output is kept in both exports; the score is recomputed from the line above.",
  wgpuWarn:"WebGPU is not available here, so the model runs on the CPU (WASM) and will be very slow. Either the browser does not support it, or it does but no graphics adapter could be obtained on this machine. Support depends on the browser version and the operating system rather than on the browser alone.",
@@ -1060,6 +1071,7 @@ function foldAdvance(){
 $("runBtn").onclick=async()=>{
   $("runBtn").disabled=true; RESULTS=[]; $("rows").innerHTML=""; $("sumRows").innerHTML="";
   confAvailable=true; $("confWarn").classList.add("hidden");
+  OPEN=null; await loadReview();
   const t0=performance.now();
   try{
     await loadModel($("modelSel").value);
@@ -1082,6 +1094,7 @@ $("runBtn").onclick=async()=>{
         target,text:r.text,dur,err,conf:r.conf,avgLogprob:r.avgLogprob,
         corrected:null,reviewed:false,sc:null,scRaw:null};
       rescoreRow(rec);
+      rec.restored=applySaved(rec);
       RESULTS.push(rec);
       render();
     }
@@ -1184,8 +1197,77 @@ function render(){
   });
   wireDrawer();
   $("foot").textContent=loadedModel||"";
+  paintRestored();
 }
 $("sortSel").onchange=()=>{ OPEN=null; render(); };
+$("revClear").onclick=async()=>{
+  if(!confirm(T("revClearAsk"))) return;
+  await revClear(); REV=new Map();
+  RESULTS.forEach(r=>{ r.restored=false; });
+  paintRestored();
+};
+
+/* ---------- corrections are kept in this browser ----------------------------
+   A correction is a person's work, and the results table itself does not
+   survive a reload, so the corrections are written to their own database as
+   they are made and reapplied to a later run of the same files. A separate
+   database is used so that nothing the administration page stores is touched.
+   A saved correction is only reapplied when the target sentence is identical,
+   which keeps a file of the same name in a different study from picking it up. */
+const REV_DB="eit-studio-review", REV_STORE="corrections";
+function revOpen(){
+  return new Promise((res,rej)=>{
+    const q=indexedDB.open(REV_DB,1);
+    q.onupgradeneeded=()=>{ if(!q.result.objectStoreNames.contains(REV_STORE))
+      q.result.createObjectStore(REV_STORE,{keyPath:"id"}); };
+    q.onsuccess=()=>res(q.result); q.onerror=()=>rej(q.error);
+  });
+}
+async function revPut(r){
+  try{
+    const db=await revOpen();
+    const tx=db.transaction(REV_STORE,"readwrite");
+    tx.objectStore(REV_STORE).put({id:r.name,pid:r.pid,item:r.item,target:r.target,
+      corrected:r.corrected,reviewed:!!r.reviewed,at:new Date().toISOString()});
+  }catch(e){}
+}
+async function revAll(){
+  try{
+    const db=await revOpen();
+    return await new Promise(res=>{
+      const q=db.transaction(REV_STORE,"readonly").objectStore(REV_STORE).getAll();
+      q.onsuccess=()=>res(q.result||[]); q.onerror=()=>res([]);
+    });
+  }catch(e){ return []; }
+}
+async function revClear(){
+  try{
+    const db=await revOpen();
+    db.transaction(REV_STORE,"readwrite").objectStore(REV_STORE).clear();
+  }catch(e){}
+}
+let REV=new Map();
+async function loadReview(){
+  const all=await revAll();
+  REV=new Map(all.map(x=>[x.id,x]));
+  return REV.size;
+}
+function applySaved(r){
+  const s=REV.get(r.name);
+  if(!s || s.target!==r.target) return false;
+  r.corrected=s.corrected!=null?s.corrected:null;
+  r.reviewed=!!s.reviewed;
+  rescoreRow(r);
+  return true;
+}
+function paintRestored(){
+  const box=$("revNote"); if(!box) return;
+  const c=RESULTS.filter(r=>r.restored&&r.corrected!=null).length;
+  const v=RESULTS.filter(r=>r.restored).length;
+  if(!v){ box.classList.add("hidden"); return; }
+  box.classList.remove("hidden");
+  $("revNoteT").textContent=T("fmtRestored")(v,c);
+}
 
 /* ---------- correcting one transcription ---------- */
 let OPEN=null;
@@ -1238,10 +1320,10 @@ function wireDrawer(){
     const v=($("drText").value||"").trim();
     /* a correction identical to what Whisper produced is a review, not an edit */
     r.corrected = (v && v!==r.text) ? v : null;
-    r.reviewed=true; rescoreRow(r); close();
+    r.reviewed=true; rescoreRow(r); revPut(r); close();
   });
-  on("drOk",()=>{ r.reviewed=true; close(); });
-  on("drUndo",()=>{ r.corrected=null; r.reviewed=true; rescoreRow(r); close(); });
+  on("drOk",()=>{ r.reviewed=true; revPut(r); close(); });
+  on("drUndo",()=>{ r.corrected=null; r.reviewed=true; rescoreRow(r); revPut(r); close(); });
   on("drCancel",close);
 }
 
