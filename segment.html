@@ -42,13 +42,22 @@
   .lang button.on{background:var(--accent); color:#fff; border-color:var(--accent)}
   .stage{width:100%; max-width:1180px}
 
-  .hero{padding:22px 4px 18px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;
-    border-bottom:1px solid var(--line); margin-bottom:20px}
-  .hero-t{margin:0; font-size:23px; line-height:1.2; font-weight:800;
-    letter-spacing:-.5px; color:var(--accent); white-space:nowrap}
-  .hero-s{margin:0; flex:1 1 340px; font-size:15.2px; line-height:1.6; color:var(--muted)}
+  /* ---- page heading, in the manner of the start page ----------------------
+     The tool pages carried a one-word blue title and a grey sentence, which
+     read as a label rather than as a statement of what the page does. */
+  .hero{padding:16px 4px 24px; border-bottom:1px solid var(--line); margin-bottom:20px}
+  .hero .top{display:flex; align-items:baseline; gap:26px; margin:0 0 13px}
+  .hero-eye{font-family:var(--mono); font-size:12.4px; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--accent); margin:0}
+  .hero-t{margin:0; font-size:38px; line-height:1.14; letter-spacing:-1.35px;
+    font-weight:800; max-width:900px}
+  .hero-t em{font-style:normal; color:var(--accent)}
+  .hero-s{margin:15px 0 0; font-size:16px; line-height:1.62; color:var(--muted); max-width:76ch}
   .hero-back{font-size:15.2px; color:var(--accent); text-decoration:none; font-weight:600;
-    white-space:nowrap}
+    white-space:nowrap; margin-left:auto; flex:none}
+  .hero-back:hover{text-decoration:underline}
+  @media(max-width:860px){ .hero-t{font-size:30px; letter-spacing:-1px} }
+  @media(max-width:640px){ .hero{padding:12px 2px 20px} .hero-t{font-size:26px; letter-spacing:-.8px} }
 
   .panel{background:var(--panel); border:1px solid var(--line); border-radius:14px;
     margin-bottom:18px; overflow:hidden}
@@ -233,9 +242,12 @@
 
 <div class="stage">
   <div class="hero">
-    <h1 class="hero-t" data-i18n="heroT"></h1>
+    <div class="top">
+      <p class="hero-eye" data-i18n="heroEye"></p>
+      <a class="hero-back" href="app.html" data-i18n="heroBack"></a>
+    </div>
+    <h1 class="hero-t"><span data-i18n="heroT"></span> <em data-i18n="heroT2"></em></h1>
     <p class="hero-s" data-i18n="heroSub"></p>
-    <a class="hero-back" href="app.html" data-i18n="heroBack"></a>
   </div>
 
   <div class="panel gpanel"><div class="pad">
@@ -417,8 +429,10 @@ en:{
  guideNaming:"One recording per participant. Whatever the format, play through a few boundaries before exporting.",
  guideSpeed:"<b>Speed.</b> A 30-item recording of six to eight minutes is analysed in about five seconds and exported in about one more, so roughly <b>five to ten seconds per participant</b> — the time you spend is the checking, not the computing. Everything runs on your own machine, so a slower computer takes proportionally longer.",
 
- heroT:"Segment",
- heroSub:"Split one continuous recording into one file per item. Everything runs in your browser — no audio leaves your computer.",
+ heroEye:"Before scoring",
+ heroT:"Split one long recording into",
+ heroT2:"one file per item.",
+ heroSub:"Boundaries are proposed from the syllable counts and the silences, and can be moved by hand. Everything runs in your browser — no audio leaves your computer.",
  tabStart:"Start", tabAdm:"Administer", tabScore:"Score", tabSeg:"Segment",
  heroBack:"Go to the scoring tool →",
  s1Title:"Recording",

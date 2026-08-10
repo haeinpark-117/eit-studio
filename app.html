@@ -41,15 +41,24 @@
     background:#fff; color:#52525b; border-radius:0}
   .lang button.on{background:var(--accent); color:#fff}
   .stage{width:100%; max-width:1280px}
-  .hero{padding:22px 4px 18px; display:flex; align-items:center; gap:14px;
-    flex-wrap:wrap; border-bottom:1px solid var(--line); margin-bottom:20px}
-  .hero-t{margin:0; font-size:23px; line-height:1.2; font-weight:800;
-    letter-spacing:-.5px; color:var(--accent); white-space:nowrap}
-  .hero-s{margin:0; flex:1 1 340px; font-size:15.2px; line-height:1.6; color:var(--muted)}
+  /* ---- page heading, in the manner of the start page ----------------------
+     The tool pages carried a one-word blue title and a grey sentence, which
+     read as a label rather than as a statement of what the page does. */
+  .hero{padding:16px 4px 24px; border-bottom:1px solid var(--line); margin-bottom:20px}
+  .hero .top{display:flex; align-items:baseline; gap:26px; margin:0 0 13px}
+  .hero-eye{font-family:var(--mono); font-size:12.4px; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--accent); margin:0}
+  /* the width is set so that the line breaks at the comma rather than inside
+     the emphasized phrase */
+  .hero-t{margin:0; font-size:38px; line-height:1.14; letter-spacing:-1.35px;
+    font-weight:800; max-width:700px}
+  .hero-t em{font-style:normal; color:var(--accent)}
+  .hero-s{margin:15px 0 0; font-size:16px; line-height:1.62; color:var(--muted); max-width:76ch}
   .hero-back{font-size:15.2px; color:var(--accent); text-decoration:none; font-weight:600;
-    white-space:nowrap}
+    white-space:nowrap; margin-left:auto; flex:none}
   .hero-back:hover{text-decoration:underline}
-  @media(max-width:640px){ .hero{padding:16px 4px 14px} }
+  @media(max-width:860px){ .hero-t{font-size:30px; letter-spacing:-1px} }
+  @media(max-width:640px){ .hero{padding:12px 2px 20px} .hero-t{font-size:26px; letter-spacing:-.8px} }
   .panel{background:var(--panel); border:1px solid #dcdce2; border-radius:12px;
     margin-bottom:16px; overflow:hidden}
   .pad{padding:20px 24px}
@@ -266,9 +275,12 @@
 <div class="stage">
 
   <div class="hero">
-    <h1 class="hero-t" data-i18n="heroT"></h1>
+    <div class="top">
+      <p class="hero-eye" data-i18n="heroEye"></p>
+      <a class="hero-back" href="index.html" data-i18n="heroBack"></a>
+    </div>
+    <h1 class="hero-t"><span data-i18n="heroT"></span> <em data-i18n="heroT2"></em></h1>
     <p class="hero-s" data-i18n="heroSub"></p>
-    <a class="hero-back" href="index.html" data-i18n="heroBack"></a>
   </div>
 
   <div class="panel hidden" id="handoff" style="border-color:var(--accent-line);
@@ -465,8 +477,10 @@ const PRESET_EITA = [
    ============================================================ */
 const I18N={
 en:{
- heroT:"Score",
- heroSub:"Transcribe and score any English elicited imitation task. Everything runs in your browser — no audio leaves your computer.",
+ heroEye:"Transcribe and score",
+ heroT:"Transcribe your recordings, and score them,",
+ heroT2:"against your targets.",
+ heroSub:"Whisper transcribes each response and word error rate is computed against the target. Everything runs in your browser — no audio leaves your computer.",
  heroBack:"← Home",
  s1Title:"Target sentences", s1Ok:"loaded",
  s1Help:"Paste your target sentences below, or upload a sheet saved as CSV. One item per line as “number, sentence, syllables” — or “sentence, syllables”, in which case items are numbered in order. The syllable count is required: it defines the response window in the administration timing and is what lets the segmenter place an item boundary when a participant produced no audible response.",
