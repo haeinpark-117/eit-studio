@@ -113,6 +113,8 @@
   table.pw td{padding:5px 16px 5px 0; color:var(--muted); white-space:nowrap}
   table.pw td:first-child{color:var(--ink)}
   .two{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-left:34px}
+  .two.three{grid-template-columns:1fr 1fr 1fr}
+  @media(max-width:1000px){ .two.three{grid-template-columns:1fr} }
   .sub{border:1px solid var(--line); border-radius:11px; padding:14px 16px 15px; background:#fafafb}
   .sub .k{font-size:16.4px; font-weight:700; letter-spacing:-.2px; margin:0 0 3px}
   .sub .d{margin:0 0 11px; font-size:16px; color:var(--muted); line-height:1.6}
@@ -203,6 +205,8 @@
   .done-h .ic{width:46px; height:46px; border-radius:14px; background:var(--cy-soft);
     border:1px solid var(--cy-line); color:var(--cy-ink); display:grid; place-items:center;
     font-size:22px; margin:0 auto 14px}
+  .done-h.stopped .ic{background:var(--pink-soft); border-color:var(--pink-line);
+    color:#be185d}
   .done-h h3{margin:0 0 6px; font-size:23px; letter-spacing:-.6px}
   .done-h p{margin:0 auto 20px; color:var(--muted); font-size:16.9px; max-width:54ch}
   /* The download is the one action that must happen, so it takes a row of its
@@ -428,7 +432,7 @@
     <div class="ph"><span class="n">5</span><h3 data-i18n="p5t"></h3>
       <span class="sum" id="sum5"></span><span class="st wait" id="st5" data-i18n="stNotChecked"></span><span class="chevp">›</span></div>
     <p class="hint" data-i18n="p5h"></p>
-    <div class="two">
+    <div class="two three">
       <div class="sub">
         <p class="k" data-i18n="s5at"></p>
         <p class="d" data-i18n="s5ad"></p>
@@ -448,6 +452,13 @@
         <p class="d" style="margin:0 0 11px" data-i18n="s5bd2"></p>
         <div class="ln"><button class="btn-g" id="btnStore" data-i18n="btnStore"></button></div>
         <div class="ln"><span id="storeInfo"></span></div>
+      </div>
+      <div class="sub">
+        <p class="k" data-i18n="s5ct"></p>
+        <p class="d" data-i18n="s5cd"></p>
+        <p class="d" style="margin:0 0 11px" data-i18n="s5cd2"></p>
+        <div class="ln"><button class="btn-g" id="btnWake" data-i18n="btnWake"></button></div>
+        <div class="ln"><span id="wakeInfo"></span></div>
       </div>
     </div>
   </div></div>
@@ -591,6 +602,19 @@ const STR={
   s5at:"Microphone", s5ad:"Browser permission is requested now rather than mid-session.",
   s5ad2:"A level meter shows only that something is arriving. Record, play it back, and listen — that is what catches a muted headset microphone or a browser writing silence.",
   lblInput:"Input", btnRec:"● Record 5 s", btnRecing:"● Recording…", btnPlay:"▶ Play back",
+  s5ct:"Screen and window",
+  s5cd:"A session runs for several minutes with nothing to click, so the display can sleep. It is held awake while the session runs.",
+  s5cd2:"Keep this window in front once the session has started. The schedule only advances while it is, so leaving it stops the session rather than letting it drift.",
+  btnWake:"Check", wakeOk:"The screen can be held awake for the session.",
+  wakeNo:"This browser cannot hold the screen awake. Set the display not to sleep before starting.",
+  sTitle:"Session stopped",
+  fmtStopped:(why,at,n,p)=>({
+      mic:"The microphone stopped during item "+at+". The input device was disconnected or taken by another application, so nothing was being recorded.",
+      audio:"Audio was interrupted during item "+at+", so nothing was being recorded.",
+      hidden:"This window was left during item "+at+". The schedule only advances while it is in front."
+    }[why]||"The session was stopped during item "+at+".")
+    +" Item "+at+" was discarded. "+(n===1?"1 response":n+" responses")+" recorded for "+p
+    +(n?" "+(n===1?"is":"are")+" saved — download "+(n===1?"it":"them")+" now.":" — nothing was saved."),
   s5bt:"Storage", s5bd:"Responses are written to the browser as each one is recorded, so an interruption costs a single item.",
   s5bd2:"One test record is written and deleted now, so that a private window, a blocked database, or a full disk surfaces before the session rather than after it.",
   btnStore:"Run storage check",
@@ -995,6 +1019,12 @@ async function idbClear(){
   return new Promise(res=>{ const tx=db.transaction(STORE,"readwrite");
     tx.objectStore(STORE).clear(); tx.oncomplete=()=>res(); tx.onerror=()=>res(); });
 }
+$("btnWake").onclick=async()=>{
+  /* Only support is checked here; the lock itself is taken when the session
+     starts, because a lock is released as soon as the page is hidden. */
+  $("wakeInfo").textContent = navigator.wakeLock ? "✓ "+T("wakeOk") : T("wakeNo");
+  $("wakeInfo").style.color = navigator.wakeLock ? "" : "#be185d";
+};
 $("btnStore").onclick=async()=>{
   try{
     await idbPut({id:"__test",blob:new Blob(["x"])});
@@ -1067,6 +1097,10 @@ function foldAdvance(){
 
 /* ------------------------------------------------------------ the session */
 let ABORT=false, RESULTS=[], SESSION=null, ENDED_AT=null;
+/* Why a run stopped: "" for the researcher's own End button, otherwise the
+   machine-side fault that was detected while it was running. */
+let STOPPED_BY="";
+let RUNNING=false, WAKE=null;
 /* Whether the responses for the participant just finished have been saved.
    Starting the next participant clears RESULTS and the stored responses,
    so the button that does so stays disabled until this is true. */
@@ -1101,8 +1135,12 @@ function gate(labelKey,headHtml,subKey,btnKey,footKey){
       "<div style='margin-top:32px'><button class='btn-p' id='gateBtn'>"+T(btnKey)+"</button></div>",
       footKey?T(footKey):"");
     $("gateBtn").onclick=res;
+    /* A gate waits for a click, so a run stopped while one is open would hang
+       here; the watchers release it too. */
+    GATE_RELEASE=res;
   });
 }
+let GATE_RELEASE=null;
 
 /* One item: stimulus → pause → ring tone → response window.
    Every boundary is placed on the audio clock, so the schedule does not drift
@@ -1163,10 +1201,33 @@ async function runItem(item,idx,total,isPractice){
           captured_s:+(samples.length/SR).toFixed(3)};
 }
 
-$("btnEnd").onclick=()=>{ if(confirm(T("confirmEnd"))) ABORT=true; };
+$("btnEnd").onclick=()=>{ if(confirm(T("confirmEnd"))){ STOPPED_BY=""; ABORT=true; } };
+
+/* ---- watched while a session runs -----------------------------------------
+   Three machine-side faults cannot be caught by the checks in step 5, because
+   they happen after them. None of them can be recovered from honestly: an item
+   recorded through any of them is not a response, so the run is stopped and
+   what was already saved is offered. */
+function stopRun(reason){
+  if(!RUNNING || ABORT) return;
+  STOPPED_BY=reason; ABORT=true;
+  if(GATE_RELEASE){ const r=GATE_RELEASE; GATE_RELEASE=null; r(); }
+}
+function watchStream(){
+  if(!STREAM) return;
+  STREAM.getTracks().forEach(t=>{ t.onended=()=>stopRun("mic"); });
+}
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden) stopRun("hidden");
+});
+async function holdScreenAwake(){
+  try{ if(navigator.wakeLock) WAKE=await navigator.wakeLock.request("screen"); }
+  catch(e){ WAKE=null; }
+}
+function releaseScreen(){ try{ if(WAKE) WAKE.release(); }catch(e){} WAKE=null; }
 
 $("btnStart").onclick=async()=>{
-  ABORT=false; RESULTS=[]; ENDED_AT=null;
+  ABORT=false; RESULTS=[]; ENDED_AT=null; STOPPED_BY="";
   const pid=$("pid").value.trim().replace(/[^\w.-]+/g,"_");
   SESSION={pid,started:new Date().toISOString(),
            schedule:consts(),practice:$("pracLang").value,items:[]};
@@ -1179,6 +1240,10 @@ $("btnStart").onclick=async()=>{
                      in_progress:true}); }catch(e){}
   showScreen("run");
   try{ if(CTX.state==="suspended") await CTX.resume(); }catch(e){}
+  RUNNING=true; watchStream(); await holdScreenAwake();
+  /* The context is suspended by the system on a device change or an
+     interruption; mid-run that means capture has stopped. */
+  CTX.onstatechange=()=>{ if(CTX.state!=="running") stopRun("audio"); };
 
   if(PRAC.length){
     $("rCnt").textContent=""; $("rDots").innerHTML="";
@@ -1204,8 +1269,11 @@ $("btnStart").onclick=async()=>{
     try{ await idbPut({id:"item-"+String(i+1).padStart(2,"0"),...rec,blob:r.blob}); }catch(e){}
   }
   ARM=null;
+  RUNNING=false; GATE_RELEASE=null; releaseScreen();
+  try{ CTX.onstatechange=null; }catch(e){}
   SESSION.ended=new Date().toISOString();
   SESSION.ended_early=!!ABORT; SESSION.ended_at_item=ENDED_AT;
+  SESSION.stopped_by=STOPPED_BY||null;
   SESSION.total_items=STIM.length; SESSION.recorded=RESULTS.length;
   SESSION.sample_rate=SR;
   try{ await idbPut({id:"meta",...SESSION,targets:TGT,in_progress:false}); }catch(e){}
@@ -1215,9 +1283,16 @@ $("btnStart").onclick=async()=>{
 function finish(){
   startMeter();
   showScreen("done");
-  $("dSum").textContent=SESSION.ended_early
-    ? T("fmtEnded")(RESULTS.length,SESSION.pid,ENDED_AT||RESULTS.length,SESSION.total_items)
-    : T("fmtDone")(RESULTS.length,SESSION.pid);
+  const head=$("done").querySelector(".done-h");
+  const stopped=!!STOPPED_BY;
+  head.classList.toggle("stopped",stopped);
+  head.querySelector(".ic").textContent=stopped?"!":"✓";
+  head.querySelector("h3").textContent=stopped?T("sTitle"):T("dTitle");
+  $("dSum").textContent=stopped
+    ? T("fmtStopped")(STOPPED_BY,ENDED_AT||RESULTS.length+1,RESULTS.length,SESSION.pid)
+    : SESSION.ended_early
+      ? T("fmtEnded")(RESULTS.length,SESSION.pid,ENDED_AT||RESULTS.length,SESSION.total_items)
+      : T("fmtDone")(RESULTS.length,SESSION.pid);
   ZIPPED=false; paintNext();
   $("dRows").innerHTML=RESULTS.map(r=>
       "<tr><td>"+r.name+"</td><td>“"+r.target+"”</td><td>"+r.window_s.toFixed(1)+" s</td></tr>")
