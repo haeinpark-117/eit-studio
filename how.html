@@ -487,6 +487,27 @@
           <a href="cite.html" style="color:var(--accent); font-weight:650">citation page</a> gives
           a methods-section template that includes reporting the agreement with a human-verified
           subsample.</p>
+
+        <h4>Correcting a transcription</h4>
+        <p>Any row opens on a click. The panel that appears shows the target sentence, what the
+          model produced, and an editable copy of that transcription, together with the recording,
+          so a questionable item can be heard and corrected without leaving the table. The word
+          error rate that would follow from the edit is shown as it is typed.</p>
+        <p>A correction does not replace the automatic transcription. It is stored as a second
+          field: <span class="mono2">transcription_raw</span> holds what the model produced,
+          <span class="mono2">transcription_final</span> what the item was scored on, and
+          <span class="mono2">reviewed</span> records that a person examined the item, whether or
+          not anything was changed. Both word error rates are exported —
+          <span class="mono2">wer_raw</span> and <span class="mono2">wer_final</span> — so the
+          agreement between automatic and hand-verified scoring can be computed from the export
+          itself rather than reconstructed afterward.</p>
+        <p>Corrections are kept in the browser and are reapplied when the same recordings are
+          scored again, so a review interrupted partway through can be resumed. They are matched
+          by file name and are restored only where the target sentence is unchanged, which
+          prevents a similarly named file from another study from inheriting an earlier
+          correction. A note above the results reports how many items were carried over, and
+          offers to discard them. Nothing is transmitted: the corrections are held in the browser
+          alongside the recordings, and clearing the browser data removes them.</p>
       </div>
     </details>
 
@@ -494,24 +515,25 @@
       <summary>
         <span class="n">05</span>
         <span class="tx"><span class="tt">Exporting the results</span>
-          <span class="ds">JSON when you intend to correct transcriptions by hand, CSV when the scores go straight into analysis.</span></span>
+          <span class="ds">CSV when the scores go straight into analysis, JSON when the alignment and the settings have to travel with them.</span></span>
         <span class="chev">›</span></summary>
       <div class="body">
-        <p>Two formats are offered above the table. Export the JSON when you intend to correct by hand: each item carries a
-          <span class="mono2">transcription_corrected</span> field, a
-          <span class="mono2">flag</span> field, and a <span class="mono2">reviewed</span> marker,
-          so a corrected transcription is recorded alongside the automatic one rather than
-          replacing it.</p>
+        <p>Two formats are offered above the table. Both carry the automatic transcription and any
+          correction made to it, so the export records what was scored and what the model
+          originally produced. Use the CSV where the scores go directly into analysis, and the
+          JSON where the alignment, the decoding settings, and the scoring configuration have to
+          travel with them.</p>
         <h4>CSV</h4>
-        <p class="mono2" style="color:var(--muted)">participant, item, target, whisper, wer,
-          accuracy_pct, confidence, avg_logprob, duration_s, file, model, rules,
-          self_corrections_removed</p>
+        <p class="mono2" style="color:var(--muted)">participant, item, target,
+          transcription_raw, transcription_final, reviewed, wer_raw, wer_final, accuracy_pct,
+          confidence, avg_logprob, duration_s, file, model, rules, self_corrections_removed</p>
         <h4>JSON</h4>
         <p>The same item-level fields, plus the alignment operations under
           <span class="mono2">ops</span>, the string the score was computed on under
           <span class="mono2">transcription_scored</span>, and a <span class="mono2">meta</span> block recording
           the Whisper model, the decoding description, how confidence was computed, the full
-          scoring-rule configuration, the number of target items, and a timestamp.</p>
+          scoring-rule configuration, the number of target items, how many of them were reviewed
+          and corrected, and a timestamp.</p>
       </div>
     </details>
   </div>

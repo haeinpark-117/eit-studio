@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,8 +10,10 @@
 <style>
   :root{
     --bg:#f2f2f4; --panel:#fff; --ink:#17171c; --muted:#6b6b76; --line:#e3e3e8;
-    --accent:#3840f3; --accent-dark:#2a31d4; --accent-soft:#eef0ff;
-    --pink:#ff1493; --pink-soft:#fff0f8; --sev:#be185d;
+    --accent:#3840f3; --accent-dark:#2a31d4; --accent-soft:#eef0ff; --accent-line:#d9dcff;
+    --pink:#ff1493; --pink-dark:#d1097a; --pink-soft:#fff0f8; --pink-line:#ffcfe8;
+    --cy:#06b6d4; --cy-ink:#0e7490; --cy-soft:#ecfeff; --cy-line:#a5f3fc;
+    --sev:#be185d;
     --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   }
   *{box-sizing:border-box}
@@ -135,6 +137,20 @@
   .badge.rev{background:var(--cy-soft); color:var(--cy-ink); border-color:var(--cy-line)}
   .wasline{display:block; font-family:var(--mono); font-size:13.4px; color:#8a4a6d; margin-top:4px}
   .werold{color:#b98aa4; text-decoration:line-through; margin-right:6px; font-size:14px}
+  /* ---- the correction facility has to be announced once -------------------
+     A drawer that opens on a row click is invisible until the row is clicked,
+     and nothing else on the page says that the transcription may be edited.
+     The tip is shown above the item table until it is dismissed, and the
+     dismissal is remembered so that it appears once per browser. */
+  .tip{display:flex; align-items:flex-start; gap:14px; margin:14px 20px 0;
+    padding:13px 16px; font-size:15.4px; line-height:1.6; color:#2c2c6b;
+    background:var(--accent-soft); border:1px solid var(--accent-line);
+    border-left:3px solid var(--accent); border-radius:4px 11px 11px 4px}
+  .tip[hidden]{display:none}
+  .tip b{color:var(--accent-dark)}
+  .tip .x{margin-left:auto; flex:none}
+  .tip .mono{font-family:var(--mono); font-size:14.2px; background:#fff;
+    border:1px solid var(--accent-line); border-radius:4px; padding:1px 5px}
   .revnote{display:flex; align-items:center; gap:14px; flex-wrap:wrap;
     margin:14px 20px 0; padding:10px 14px; font-size:15.2px; color:#155e6b;
     background:var(--cy-soft); border:1px solid var(--cy-line); border-radius:10px}
@@ -396,6 +412,11 @@
   </div>
 
   <div class="panel hidden" id="tabPanel">
+    <div class="tip" id="corrTip" hidden>
+      <span><b data-i18n="tipCorrB"></b> <span data-i18n="tipCorr"></span>
+        <span class="mono">reviewed</span><span data-i18n="tipCorrEnd"></span></span>
+      <button class="btn-g btn-s x" id="tipX" data-i18n="tipGot"></button>
+    </div>
     <table class="itemtab"><thead><tr>
       <th style="width:96px" data-i18n="thPid"></th>
       <th style="width:56px" data-i18n="thItem"></th>
@@ -495,6 +516,10 @@ en:{
  thNItems:"Items", thMAcc:"Mean accuracy", thMWer:"Mean WER", thMConf:"Mean confidence",
  thTarget:"Target", thWhisper:"Whisper", thAcc:"Accuracy", thConf:"Confidence", thAudio:"Audio",
  readGuide:"How to read the output table →",
+ tipCorrB:"Transcriptions can be corrected.",
+ tipCorr:"Click a row to hear the recording, edit what Whisper produced, and the score is recomputed from your version. The automatic output is never overwritten — both lines appear in the export, with a",
+ tipCorrEnd:" marker.",
+ tipGot:"Got it",
  bEdited:"edited", bReviewed:"reviewed", whisperWas:"Whisper:",
  drTarget:"Target", drHeard:"Whisper heard", drCorrected:"Corrected transcription",
  drSave:"Save the correction", drOk:"Whisper was right — mark reviewed",
@@ -1198,7 +1223,20 @@ function render(){
   wireDrawer();
   $("foot").textContent=loadedModel||"";
   paintRestored();
+  paintTip();
 }
+
+/* ---------- the correction tip, shown once per browser ---------- */
+const TIP_KEY="eitTipCorrection";
+function tipDone(){ try{ return localStorage.getItem(TIP_KEY)==="1"; }catch(e){ return false; } }
+function paintTip(){
+  const el=$("corrTip"); if(!el) return;
+  el.hidden = !RESULTS.length || tipDone();
+}
+$("tipX").onclick=()=>{
+  try{ localStorage.setItem(TIP_KEY,"1"); }catch(e){}
+  $("corrTip").hidden=true;
+};
 $("sortSel").onchange=()=>{ OPEN=null; render(); };
 $("revClear").onclick=async()=>{
   if(!confirm(T("revClearAsk"))) return;
