@@ -43,7 +43,7 @@
   .stage{width:100%; max-width:1300px}
 
   .panel{background:var(--panel); border:1px solid var(--line); border-radius:14px;
-    margin-bottom:18px; overflow:hidden}
+    overflow:hidden}
   .pad{padding:32px 34px 34px}
 
   /* ---------- hero ---------- */
@@ -61,18 +61,7 @@
     background:var(--accent-soft); border:1px solid var(--accent-line); border-radius:7px;
     padding:2px 9px}
 
-  /* ---------- closing band ---------- */
-  .out{background:var(--panel); border:1px solid var(--line); border-radius:14px;
-    padding:26px 30px 24px; margin-bottom:18px;
-    display:grid; grid-template-columns:minmax(0,1fr) auto; gap:28px; align-items:center}
-  .out h2{margin:0 0 6px; font-size:19px; letter-spacing:-.4px; font-weight:750}
-  .out p{margin:0; color:var(--muted); font-size:16.2px; line-height:1.62; max-width:70ch}
-  .chips{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
-  .chip{font-family:var(--mono); font-size:12.8px; color:var(--accent-dark);
-    background:var(--accent-soft); border:1px solid var(--accent-line); border-radius:999px;
-    padding:6px 13px; white-space:nowrap}
-  .chip.k{color:#8a4a6d; background:var(--pink-soft); border-color:var(--pink-line)}
-  .chip.c{color:var(--cy-ink); background:var(--cy-soft); border-color:var(--cy-line)}
+
 
   /* ---------- step furniture ---------- */
   .sh{display:flex; align-items:baseline; gap:11px; margin:0 0 5px}
@@ -137,14 +126,11 @@
   .cols > .rt2:before{content:""; position:absolute; left:-17px; top:4px; bottom:4px; width:1px;
     background:var(--line)}
 
-  .foot{font-size:14px; color:var(--muted); padding:11px 22px; border-top:1px solid var(--line);
-    background:#fafafb; font-family:var(--mono)}
+
 
   @media(max-width:1080px){
     .hero{gap:26px; padding-bottom:24px}
     .hero h1{font-size:34px; letter-spacing:-1.1px}
-    .out{grid-template-columns:1fr; gap:16px}
-    .chips{justify-content:flex-start}
     .cols{grid-template-columns:1fr; gap:0}
     .cols > .rt2:before{display:none}
     .cols > .rt2{border-top:1px solid var(--line); margin-top:30px; padding-top:26px}
@@ -153,7 +139,6 @@
   @media(max-width:720px){
     .hero{padding:6px 2px 20px}
     .hero h1{font-size:28px; letter-spacing:-.8px}
-    .out{padding:22px 20px 20px}
     .pad{padding:24px 20px 28px}
     .sh h2{font-size:19px}
     .route{padding:24px 22px 20px}
@@ -256,17 +241,6 @@
     </div>
   </div></div>
 
-  <div class="out">
-    <div>
-      <h2 data-i18n="outT"></h2>
-      <p data-i18n="outD"></p>
-    </div>
-    <div class="chips"><span class="chip" data-i18n="chip1"></span>
-      <span class="chip k" data-i18n="chip2"></span>
-      <span class="chip c" data-i18n="chip3"></span></div>
-  </div>
-
-  <div class="panel"><div class="foot" id="foot"></div></div>
 </div>
 
 <script>
@@ -281,9 +255,6 @@ en:{
  f1k:"2 steps", f1v:"prepare the sentences, then administer or score",
  f2k:"5–10 min", f2v:"to transcribe and score 30 items, on a recent laptop",
  f3k:"0 uploads", f3v:"no server, no account, nothing leaves the machine",
- outT:"What you end up with",
- outD:"Word error rate for every item and every participant, with the transcription beside each target, exported as CSV and JSON.",
- chip1:"no upload", chip2:"no account", chip3:"CSV + JSON",
  s1t:"Prepare your target sentences",
  s1d:"Three columns, one item per row: number, sentence, syllable count. Upload the sheet saved as CSV, or paste the rows straight into the page.",
  pickB:"Or use a ready-made set:",
@@ -298,7 +269,6 @@ en:{
  scD:"Whisper large-v3-turbo transcribes your response audio in the browser and word error rate is computed against the targets.",
  sc1:"One file per item", sc1s:"score now",
  sc2:"One long recording", sc2s:"split first",
- foot:"Everything runs locally in your browser · no upload, no account"
 },
 ko:{
  hdSub:"English EIT · 연구자용",
@@ -308,9 +278,6 @@ ko:{
  f1k:"2단계", f1v:"문장을 준비한 뒤, 시행하거나 채점합니다",
  f2k:"5~10분", f2v:"최신 노트북에서 30문항을 전사·채점하는 데 걸리는 시간",
  f3k:"업로드 0", f3v:"서버도 계정도 없고, 어떤 파일도 컴퓨터를 떠나지 않습니다",
- outT:"무엇이 남는가",
- outD:"문항별·참가자별 단어 오류율과 각 목표 문장 옆의 전사 결과가 CSV와 JSON으로 내보내집니다.",
- chip1:"업로드 없음", chip2:"계정 없음", chip3:"CSV + JSON",
  s1t:"목표 문장을 준비하십시오",
  s1d:"세 개의 열에 한 행씩 한 문항을 적습니다. 번호, 문장, 음절 수 순서이며, CSV로 저장한 파일을 올리시거나 행을 그대로 붙여넣으시면 됩니다.",
  pickB:"이미 만들어진 세트도 있습니다.",
@@ -325,7 +292,6 @@ ko:{
  scD:"Whisper large-v3-turbo가 브라우저에서 응답 음성을 전사하고, 목표 문장과 대조해 단어 오류율을 계산합니다.",
  sc1:"문항당 파일 하나", sc1s:"바로 채점",
  sc2:"긴 녹음 하나", sc2s:"먼저 나누기",
- foot:"모든 처리는 브라우저 안에서 이루어집니다 · 업로드 없음, 계정 없음"
 }
 };
 
@@ -342,7 +308,6 @@ function applyLang(){
   document.documentElement.lang=LANG;
   $("langEn").classList.toggle("on",LANG==="en");
   $("langKo").classList.toggle("on",LANG==="ko");
-  $("foot").textContent=T("foot");
 }
 function setLang(l){ LANG=l; try{ localStorage.setItem("eitLang",l); }catch(e){} applyLang(); }
 $("langEn").onclick=()=>setLang("en");
