@@ -461,7 +461,7 @@ en:{
  thNItems:"Items", thMAcc:"Mean accuracy", thMWer:"Mean WER", thMConf:"Mean confidence",
  thTarget:"Target", thWhisper:"Whisper", thAcc:"Accuracy", thConf:"Confidence", thAudio:"Audio",
  readGuide:"How to read the output table →",
- wgpuWarn:"This browser does not provide WebGPU, so the model runs on the CPU (WASM) and will be very slow. A browser version that supports WebGPU is strongly recommended; support depends on the browser version and the operating system rather than on the browser alone.",
+ wgpuWarn:"WebGPU is not available here, so the model runs on the CPU (WASM) and will be very slow. Either the browser does not support it, or it does but no graphics adapter could be obtained on this machine. Support depends on the browser version and the operating system rather than on the browser alone.",
  dlWarn:"A network error occurred while downloading the model; retrying automatically. Files already downloaded stay in the browser cache, so the download resumes rather than restarting.",
  confWarn:"Whisper's token probabilities could not be read in this environment, so no confidence values are shown. Transcription and scoring are unaffected.",
  stPick:"Load a target set and choose the recordings to score.",
@@ -823,9 +823,19 @@ async function decodeTo16k(file){
 }
 const MAX_TRIES=5;
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-const hasGPU=!!navigator.gpu;
-$("gpuBadge").textContent=hasGPU?"WebGPU ✓":"CPU (WASM)";
-if(!hasGPU) $("wgpuWarn").classList.remove("hidden");
+/* navigator.gpu being present does not mean WebGPU can be used: a browser can
+   expose the object and still hand back no adapter (headless, a blocked driver,
+   a machine with no suitable GPU). Asking for the adapter is the real test, and
+   it is what decides whether the model is loaded onto the GPU or the CPU. */
+let hasGPU=false;
+$("gpuBadge").textContent="…";
+const gpuReady=(async()=>{
+  try{ hasGPU = !!(navigator.gpu && await navigator.gpu.requestAdapter()); }
+  catch(e){ hasGPU=false; }
+  $("gpuBadge").textContent=hasGPU?"WebGPU ✓":"CPU (WASM)";
+  if(!hasGPU) $("wgpuWarn").classList.remove("hidden");
+  return hasGPU;
+})();
 let libCache=null,MODEL=null,PROC=null,TOK=null,loadedModel=null,confAvailable=true;
 
 async function loadLib(){
@@ -842,6 +852,7 @@ async function loadLib(){
 }
 async function loadModel(id){
   if(MODEL&&loadedModel===id) return;
+  await gpuReady;                     /* the adapter probe decides the device */
   const lib=await loadLib();
   const {AutoProcessor,AutoTokenizer,WhisperForConditionalGeneration}=lib;
   const dtype=id.includes("turbo")?{encoder_model:"fp16",decoder_model_merged:"q4"}:"q8";
