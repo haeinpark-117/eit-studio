@@ -219,11 +219,15 @@
   .act .lbl{line-height:1.35}
   .act .lbl b{display:block; font-size:16.8px; font-weight:700; letter-spacing:-.2px}
   .act .lbl i{font-style:normal; font-size:13.9px; color:var(--muted)}
-  .act:hover:not(:disabled){border-color:#c9c9d4}
+  /* the two choices are easy to read past, so hovering tints the whole row */
+  .act:hover:not(:disabled){border-color:var(--pink-line); background:var(--pink-soft)}
+  .act:hover:not(:disabled) .lbl b{color:var(--pink-dark)}
+  .act:hover:not(:disabled) .lbl i{color:#8a4a6d}
   .act:disabled{opacity:.5; cursor:default}
   .first{border-radius:13px; background:var(--accent-soft); border-color:var(--accent-line);
     justify-content:center; padding:16px 20px}
-  .first:hover{border-color:var(--accent)}
+  .first:hover:not(:disabled){border-color:var(--pink); background:var(--pink-soft)}
+  .first:hover:not(:disabled) .num{background:var(--pink); border-color:var(--pink)}
   .first .num{background:var(--accent); color:#fff; border-color:var(--accent)}
   .first .lbl i{color:var(--accent-dark); font-weight:650}
   .ruleline{display:flex; align-items:center; gap:14px; margin:20px 0 14px;

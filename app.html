@@ -269,7 +269,7 @@
       <label class="chk"><input type="checkbox" id="optContr" checked><span data-i18n="optContr"></span></label>
     </div>
     <div class="row" style="margin-top:2px">
-      <label class="chk"><input type="checkbox" id="optRep"><span data-i18n="optRep"></span></label>
+      <label class="chk"><input type="checkbox" id="optRep" checked><span data-i18n="optRep"></span></label>
     </div>
     <p class="meta" data-i18n="repHelp" style="margin:-4px 0 12px"></p>
     <details id="ruleDetails">
@@ -425,7 +425,7 @@ en:{
  optNum:"Spell out numbers (3 → three, 11:30 → eleven thirty)",
  optContr:"Expand contractions (I'm → I am, can't → cannot)",
  optRep:"Score a self-correction as the final attempt (drop the restarted stretch)",
- repHelp:"Off by default. Applied to Whisper's output only, never to the target sentence: where a stretch of words is restarted — “the boy was the boy is late” — the first attempt is removed and only the repair is scored. Removed words stay visible in the output table, struck through, and are listed in both exports. A stretch that also occurs in the target sentence is never removed. The rule cannot distinguish every self-correction from a genuine repetition, so items scored under it still warrant review.",
+ repHelp:"On by default. Applied to Whisper's output only, never to the target sentence: where a stretch of words is restarted — “the boy was the boy is late” — the first attempt is removed and only the repair is scored. Removed words stay visible in the output table, struck through, and are listed in both exports. A stretch that also occurs in the target sentence is never removed. The rule cannot distinguish every self-correction from a genuine repetition, so items scored under it still warrant review.",
  repTitle:"self-correction, not scored",
  ruleSummary:"Additional replacements and export",
  ruleHelp:"One rule per line, written as “from => to”. Applied after punctuation is removed, longest phrase first. Use this for spelling variants that should count as the same word.",
@@ -551,7 +551,7 @@ const CONTR={
  "ain't":"is not","shan't":"shall not"
 };
 const DEFAULT_RULES="town house => townhouse\ntown houses => townhouses";
-let CFG={ numbers:true, contractions:true, repairs:false, rulesText:DEFAULT_RULES, rules:[] };
+let CFG={ numbers:true, contractions:true, repairs:true, rulesText:DEFAULT_RULES, rules:[] };
 
 function compileRules(text){
   const out=[];
@@ -1177,7 +1177,7 @@ function dl(blob,name){
   try{ localStorage.removeItem("eitTargets"); }catch(e){}
   $("optNum").checked = savedCfg ? !!savedCfg.numbers : true;
   $("optContr").checked = savedCfg ? !!savedCfg.contractions : true;
-  $("optRep").checked = savedCfg ? !!savedCfg.repairs : false;
+  $("optRep").checked = savedCfg ? !!savedCfg.repairs : true;
   $("ruleBox").value = savedCfg && savedCfg.rulesText!=null ? savedCfg.rulesText : DEFAULT_RULES;
   CFG.numbers=$("optNum").checked; CFG.contractions=$("optContr").checked;
   CFG.repairs=$("optRep").checked;
