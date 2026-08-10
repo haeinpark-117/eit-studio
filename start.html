@@ -24,12 +24,12 @@
   .hd{position:fixed; top:0; left:0; right:0; z-index:20; height:50px;
     background:rgba(255,255,255,.92); backdrop-filter:blur(10px);
     border-bottom:1px solid var(--line); display:flex; align-items:center;
-    justify-content:space-between; padding:0 22px}
+    justify-content:flex-start; gap:14px; padding:0 22px}
   .hd .t{font-weight:800; font-size:18.2px; letter-spacing:-.3px}
   .hd .t a{text-decoration:none; color:inherit}
   .hd .t span{font-weight:400; color:var(--muted); font-size:13.3px; margin-left:9px;
     letter-spacing:.08em; text-transform:uppercase; font-family:var(--mono)}
-  .tabs2{display:flex; gap:6px; margin-left:auto; margin-right:14px}
+  .tabs2{display:flex; gap:6px}
   .tabs2 a{font-size:15.2px; font-weight:600; text-decoration:none; color:var(--muted);
     padding:5px 12px; border-radius:8px; border:1px solid transparent; white-space:nowrap}
   .tabs2 a:hover{color:var(--ink); background:#f0f0f5}
@@ -148,11 +148,19 @@
     .xl th,.xl td{padding:7px 9px}
   }
 
+  /* ---- links out to the documentation ---------------------------------------
+     The tool pages used to link only to one another, so a question that came up
+     mid-run ("what does the normalizer do", "how do I cite this") had no exit. */
+  .hsep{width:1px; height:22px; background:var(--line); margin-left:auto; flex:none}
+  .docs2{display:flex; gap:19px; font-size:14.6px; white-space:nowrap}
+  .docs2 a{text-decoration:none; color:var(--muted)}
+  .docs2 a:hover{color:var(--ink)}
+
   /* ---- narrow screens: the tool header becomes two rows -------------------
      Four tabs plus the language switch do not fit one 50 px row on a phone,
      and the overflow put the Segment tab and the switch out of reach. */
   @media(max-width:760px){
-    body{padding-top:94px}
+    body,body.running{padding-top:175px}
     .hd{height:auto; flex-wrap:wrap; padding:9px 14px 0; align-items:center}
     .hd .t{font-size:16.9px}
     .hd .t span{display:none}
@@ -164,6 +172,18 @@
     .tabs2::-webkit-scrollbar{display:none}
     .tabs2 a{font-size:14.5px; padding:5px 10px; flex:0 0 auto}
   }
+  /* on a narrow screen the documentation links drop to their own row, so the
+     body has to clear a taller fixed header */
+  @media(max-width:1100px){
+    .hsep{display:none}
+    .docs2{order:4; width:100%; margin:0 -14px; padding:8px 14px 9px;
+      border-top:1px solid var(--line); gap:16px; font-size:14px;
+      overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none}
+    .docs2::-webkit-scrollbar{display:none}
+    .hd{height:auto; flex-wrap:wrap; padding:9px 14px 0; align-items:center}
+  }
+  @media(max-width:1100px) and (min-width:761px){ body,body.running{padding-top:117px} }
+  @media(max-width:760px){ body,body.running{padding-top:175px} }
 </style>
 </head>
 <body>
@@ -176,8 +196,12 @@
     <a href="app.html" data-i18n="tabScore"></a>
     <a href="segment.html" data-i18n="tabSeg"></a>
   </div>
-  <div class="rt">
-    <span class="lang"><button id="langEn">English</button><button id="langKo">한국어</button></span>
+  <span class="hsep"></span>
+  <div class="docs2">
+    <a href="how.html">How it works</a>
+    <a href="asr.html">Speech recognition</a>
+    <a href="cite.html">How to cite</a>
+    <a href="about.html">About</a>
   </div>
 </div>
 
@@ -269,36 +293,12 @@ en:{
  scD:"Whisper large-v3-turbo transcribes your response audio in the browser and word error rate is computed against the targets.",
  sc1:"One file per item", sc1s:"score now",
  sc2:"One long recording", sc2s:"split first",
-},
-ko:{
- hdSub:"English EIT · 연구자용",
- eyebrow:"시작하기",
- h1a:"Elicited imitation 과제를 시행하고 채점합니다,",
- h1b:"브라우저 안에서.",
- f1k:"2단계", f1v:"문장을 준비한 뒤, 시행하거나 채점합니다",
- f2k:"5~10분", f2v:"최신 노트북에서 30문항을 전사·채점하는 데 걸리는 시간",
- f3k:"업로드 0", f3v:"서버도 계정도 없고, 어떤 파일도 컴퓨터를 떠나지 않습니다",
- s1t:"목표 문장을 준비하십시오",
- s1d:"세 개의 열에 한 행씩 한 문항을 적습니다. 번호, 문장, 음절 수 순서이며, CSV로 저장한 파일을 올리시거나 행을 그대로 붙여넣으시면 됩니다.",
- pickB:"이미 만들어진 세트도 있습니다.",
- pickS:"Ortega et al. (2002)의 영어 EIT를 시행과 채점 양쪽에서 불러올 수 있습니다.",
- s2t:"시행하거나, 가지고 계신 녹음을 채점하십시오",
- capAdm:"시행",
- admT:"EIT 시행하기",
- admD:"자극 녹음을 추가하십시오. 과제가 브라우저에서 정해진 일정대로 진행되고, 각 응답이 개별 음성 파일로 저장됩니다.",
- admGo:"세션 설정하기",
- capSc:"채점",
- scT:"수집한 자료 채점하기",
- scD:"Whisper large-v3-turbo가 브라우저에서 응답 음성을 전사하고, 목표 문장과 대조해 단어 오류율을 계산합니다.",
- sc1:"문항당 파일 하나", sc1s:"바로 채점",
- sc2:"긴 녹음 하나", sc2s:"먼저 나누기",
 }
 };
 
 I18N.en.tabStart="Start"; I18N.en.tabAdm="Administer"; I18N.en.tabScore="Score"; I18N.en.tabSeg="Segment";
-I18N.ko.tabStart="시작"; I18N.ko.tabAdm="시행"; I18N.ko.tabScore="채점"; I18N.ko.tabSeg="분절";
 
-let LANG=(()=>{ try{ return localStorage.getItem("eitLang")||"en"; }catch(e){ return "en"; } })();
+const LANG="en";
 const T=k=>(I18N[LANG]&&I18N[LANG][k])!=null?I18N[LANG][k]:(I18N.en[k]||"");
 function applyLang(){
   document.querySelectorAll("[data-i18n]").forEach(el=>{
@@ -306,12 +306,7 @@ function applyLang(){
     if(typeof v==="string") el.textContent=v;
   });
   document.documentElement.lang=LANG;
-  $("langEn").classList.toggle("on",LANG==="en");
-  $("langKo").classList.toggle("on",LANG==="ko");
 }
-function setLang(l){ LANG=l; try{ localStorage.setItem("eitLang",l); }catch(e){} applyLang(); }
-$("langEn").onclick=()=>setLang("en");
-$("langKo").onclick=()=>setLang("ko");
 applyLang();
 </script>
 </body>

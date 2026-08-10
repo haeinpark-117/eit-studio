@@ -22,12 +22,12 @@
   .hd{position:fixed; top:0; left:0; right:0; z-index:20; height:50px;
     background:rgba(255,255,255,.92); backdrop-filter:blur(10px);
     border-bottom:1px solid var(--line); display:flex; align-items:center;
-    justify-content:space-between; padding:0 22px}
+    justify-content:flex-start; gap:14px; padding:0 22px}
   .hd .t{font-weight:800; font-size:18.2px; letter-spacing:-.3px}
   .hd .t a{text-decoration:none; color:inherit}
   .hd .t span{font-weight:400; color:var(--muted); font-size:13.3px; margin-left:9px;
     letter-spacing:.08em; text-transform:uppercase; font-family:var(--mono)}
-  .tabs2{display:flex; gap:6px; margin-left:auto; margin-right:14px}
+  .tabs2{display:flex; gap:6px}
   .tabs2 a{font-size:15.2px; font-weight:600; text-decoration:none; color:var(--muted);
     padding:5px 12px; border-radius:8px; border:1px solid transparent; white-space:nowrap}
   .tabs2 a:hover{color:var(--ink); background:#f0f0f5}
@@ -172,12 +172,19 @@
   .bar i{display:block; height:100%; width:0; background:var(--accent); transition:width .2s}
   @media(max-width:700px){ table.segs th:nth-child(4),table.segs td:nth-child(4){display:none} }
 
+  /* ---- links out to the documentation ---------------------------------------
+     The tool pages used to link only to one another, so a question that came up
+     mid-run ("what does the normalizer do", "how do I cite this") had no exit. */
+  .hsep{width:1px; height:22px; background:var(--line); margin-left:auto; flex:none}
+  .docs2{display:flex; gap:19px; font-size:14.6px; white-space:nowrap}
+  .docs2 a{text-decoration:none; color:var(--muted)}
+  .docs2 a:hover{color:var(--ink)}
+
   /* ---- narrow screens: the tool header becomes two rows -------------------
      Four tabs plus the language switch do not fit one 50 px row on a phone,
      and the overflow put the Segment tab and the switch out of reach. */
   @media(max-width:760px){
-    body{padding-top:94px}
-    body.running{padding-top:94px}
+    body,body.running{padding-top:175px}
     .hd{height:auto; flex-wrap:wrap; padding:9px 14px 0; align-items:center}
     .hd .t{font-size:16.9px}
     .hd .t span{display:none}
@@ -189,6 +196,18 @@
     .tabs2::-webkit-scrollbar{display:none}
     .tabs2 a{font-size:14.5px; padding:5px 10px; flex:0 0 auto}
   }
+  /* on a narrow screen the documentation links drop to their own row, so the
+     body has to clear a taller fixed header */
+  @media(max-width:1100px){
+    .hsep{display:none}
+    .docs2{order:4; width:100%; margin:0 -14px; padding:8px 14px 9px;
+      border-top:1px solid var(--line); gap:16px; font-size:14px;
+      overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none}
+    .docs2::-webkit-scrollbar{display:none}
+    .hd{height:auto; flex-wrap:wrap; padding:9px 14px 0; align-items:center}
+  }
+  @media(max-width:1100px) and (min-width:761px){ body,body.running{padding-top:117px} }
+  @media(max-width:760px){ body,body.running{padding-top:175px} }
 </style>
 </head>
 <body>
@@ -201,8 +220,12 @@
     <a href="app.html" data-i18n="tabScore"></a>
     <a href="segment.html" class="on" data-i18n="tabSeg"></a>
   </div>
-  <div class="rt">
-    <span class="lang"><button id="langEn">English</button><button id="langKo">한국어</button></span>
+  <span class="hsep"></span>
+  <div class="docs2">
+    <a href="how.html">How it works</a>
+    <a href="asr.html">Speech recognition</a>
+    <a href="cite.html">How to cite</a>
+    <a href="about.html">About</a>
   </div>
 </div>
 
@@ -473,102 +496,9 @@ en:{
  errNoSeg:"No speech was detected. Try lowering the minimum response length.",
  errZip:"The ZIP library could not be loaded. Check your connection and try again.",
  needPid:"Enter a participant ID first."
-},
-ko:{
- guideBadge:"먼저 읽기",
- guideTitle:"어떤 녹음이 잘 나뉘는지",
- guideIntro:"각 문항의 시작을 알려주는 규칙적인 표지가 녹음에 있을수록 분절이 잘 됩니다. 신뢰도가 높은 순서입니다.",
- guideA:"<b>삐 소리가 녹음에 들어 있는 경우.</b> 가장 좋습니다. 응답창 시작을 알리는 1000 Hz 순음이므로 말소리 아래에서도 검출되며, 모든 구간이 여기서 직접 결정됩니다. 자극 음성이 함께 녹음되었는지 여부는 상관없습니다. 타이밍 격자 방식을 고르시고, 주파수가 1000 Hz가 아니면 값을 입력하십시오.",
- guideB:"<b>응답만 녹음되었고 삐 소리가 없으며 간격이 고른 경우.</b> 자극을 헤드폰으로 들려준 경우입니다. 무음 검출이 잘 작동하며 타이밍 격자를 응답에 맞춰 정합할 수도 있습니다.",
- guideC:"<b>자극 음성이 함께 녹음되었고 삐 소리가 없는 경우.</b> 무음 검출은 문항 수의 약 두 배를 찾아냅니다. 타이밍 격자를 사용하시고 표시되는 정합 오차를 확인하십시오.",
- guideD:"<b>앞부분에 연습문항이나 구두 안내가 있는 경우.</b> 처리됩니다. 간격이 규칙적인 구간을 본 과제로 식별하고 그 앞은 무시합니다. 추정된 시작 지점을 귀로 확인해 주십시오.",
- guideWorst:"가장 어려운 경우는 삐 소리가 없으면서 참가자가 여러 문항에 아무 말도 하지 않은 녹음입니다. 무음만으로는 건너뛴 문항과 쉼을 구별할 수 없어 이후 문항 번호가 전부 밀립니다. 시행 일정을 알고 계시면 반드시 타이밍 격자를 쓰십시오. 응답이 없는 문항에도 구간을 배치하고 표시해 줍니다.",
- guideNaming:"참가자 한 명당 녹음 파일 하나입니다. 어떤 형식이든 내보내기 전에 경계 몇 개를 재생해 확인해 주십시오.",
- guideSpeed:"<b>소요 시간.</b> 6~8분 길이의 30문항 녹음은 분석에 약 5초, 내보내기에 약 1초가 걸립니다. 참가자 한 명당 <b>5~10초</b> 정도이며, 실제로 시간이 드는 것은 계산이 아니라 확인 작업입니다. 모든 처리가 사용자 컴퓨터에서 이루어지므로 사양이 낮으면 그만큼 더 걸립니다.",
-
- heroT:"분절",
- heroSub:"하나로 이어진 녹음을 문항별 파일로 나눕니다. 모든 처리는 브라우저 안에서 이루어지며, 음성 파일은 외부로 전송되지 않습니다.",
- tabStart:"시작", tabAdm:"시행", tabScore:"채점", tabSeg:"분절",
- heroBack:"채점 도구로 이동 →",
- s1Title:"녹음 파일",
- s1Help:"한 참가자의 전체 세션이 담긴 연속 녹음 파일 하나를 올려 주십시오. 아래의 참가자 ID와 문항 번호는 생성될 파일 이름에 사용됩니다.",
- lblPid:"참가자 ID:", lblCount:"예상 문항 수:", lblStart:"시작 문항 번호:",
- dropIdle:"여기에 음성 파일 하나를 끌어다 놓거나 클릭해서 선택",
- fmtLoaded:(n,d)=>n+" — "+fmtT(d)+" ("+d.toFixed(1)+"초)",
- s2Title:"경계 검출",
- s2Help:"녹음이 무음이 되는 지점을 경계로 삼습니다. 녹음 앞부분에는 연구자의 구두 안내가 들어가는 경우가 많으므로, “앞부분 무시”로 해당 구간을 건너뛰거나 파형 위의 주황색 표시를 끌어 옮기십시오. 최대 응답 길이는 한 문장 응답으로 보기 어려운 긴 구간을 제외하므로 안내 발화도 대부분 함께 걸러집니다. 한 응답이 둘로 나뉘면 무음 길이를 늘리고, 두 응답이 하나로 합쳐지면 줄이십시오.",
- lblMode:"경계 산출 방식:",
- btnPreset:"English EIT 불러오기 (Ortega et al., 2002)", btnTgtFile:"CSV 올리기", btnClearTgt:"비우기",
- fmtTgtN:n=>n+"개 문항이 로드되었습니다.",
- modeHint:"시행 일정을 알고 있다면 타이밍 격자를 사용하십시오.",
- rkStim:"가장 정확", mtStim:"타이밍 격자 — 문장 세트 + 자극 음성",
- mdStim:"각 자극의 길이를 음절 수로 추정하지 않고 실제로 측정하며, 참가자가 응답하지 않은 문항에도 창을 배치합니다.",
- rkText:"정확도 중간", mtText:"타이밍 격자 — 문장 세트만",
- mdText:"모든 문항에 창을 배치하지만, 자극 길이를 측정하지 않고 음절 수로 추정합니다.",
- rkSil:"정확도 가장 낮음", mtSil:"녹음의 무음 기준",
- mdSil:"일정을 알 수 없을 때의 대안입니다. 건너뛴 문항과 단순한 휴지를 구분하지 못하므로, 무응답 문항이 하나라도 있으면 이후 문항 번호가 모두 밀립니다.",
- stimIdle:"자극 음성 파일을 여기에 끌어다 놓거나 클릭해서 선택 (문항당 한 개)",
- fmtStimLoaded:n=>n+"개 자극 파일의 길이를 측정했습니다.",
- stimOrder:"파일은 이름순으로 정렬되므로 문항 번호는 파일 이름 순서를 따릅니다.",
- textHelp:"목표 문장 세트를 불러오십시오. 한 줄에 한 문항씩 “번호, 문장, 음절 수” 형식이며, 붙여넣거나 CSV로 저장한 파일을 올리시면 됩니다. 채점 도구에 넣는 것과 같은 목록입니다.",
- lblToneHz:"삐 소리(Hz):",
- fmtGridTone:(n,rms)=>"응답창 시작을 알리는 삐 소리를 기준으로 "+n+"개 구간을 배치했습니다. 검출된 응답의 평균 편차는 "+rms.toFixed(2)+"초입니다.",
- lblPause:"휴지(초):", lblTone:"톤(초):", lblBase:"응답창 기준(초):",
- lblPer:"음절당(초):", lblThr:"기준 음절 수:",
- btnFitGrid:"녹음에 격자 맞추기",
- thNote:"비고",
- noteEmpty:"발화 없음",
- fmtNoteOff:d=>(d>0?"+":"")+d.toFixed(2)+"초",
- fmtGridOk:(n,rms)=>"타이밍 격자로 "+n+"개 구간을 배치했습니다. 검출된 응답 기준 평균 정합 오차는 "+rms.toFixed(2)+"초입니다.",
- fmtGridDrift:(n,mx)=>n+"개 구간을 배치했으나 정합 오차가 최대 "+mx.toFixed(1)+"초까지 벌어집니다. 녹음이 중간에 멈췄거나 타이밍 상수가 이 시행과 맞지 않을 수 있습니다. 내보내기 전에 뒤쪽 문항을 확인해 주십시오.",
- gridNeedText:"목표 문장 세트를 먼저 입력해 주십시오. 각 줄에 음절 수가 있어야 합니다.",
- gridNeedStim:"자극 음성 파일을 먼저 추가해 주십시오.",
- fmtGridCount:(g,e)=>"타이밍 자료의 문항 수는 "+g+"개인데 예상 문항 수는 "+e+"개입니다. 예상 문항 수를 맞추시거나 자료를 확인해 주십시오.",
- fmtEstRate:r=>"자극 길이를 음절 수로 추정한 뒤 이 녹음에 맞추어 "+r.toFixed(2)+"배로 보정했습니다. 자극 음성을 사용할 때보다 경계가 덜 정확합니다.",
- lblSil:"최소 무음(초):", lblMinLen:"최소 응답 길이(초):", lblPad:"여유(초):",
- lblSkip:"앞부분 무시(초):", lblMaxLen:"최대 응답 길이(초):",
- btnSkipAuto:"과제 시작 지점 찾기", btnRedetect:"다시 검출", btnAutoFit:"예상 개수에 맞추기",
- btnKeepLast:"과제 구간 찾기",
- fmtFound:(n,exp)=>n+"개 구간이 검출되었습니다. 예상은 "+exp+"개입니다.",
- fmtFoundOk:n=>n+"개 구간이 검출되어 예상 개수와 일치합니다.",
- fitFail:"예상 개수를 만드는 설정을 찾지 못했습니다. 위의 과제 시작 지점을 확인하신 뒤 아래에서 경계를 직접 조정해 주십시오.",
- fmtSkipFound:t=>"과제 시작 지점을 "+fmtT(t)+"로 추정했습니다. 해당 지점부터 재생해 확인하시고 다르면 조정해 주십시오.",
- skipNone:"안내 구간으로 볼 만한 부분을 찾지 못해 파일 전체를 사용합니다.",
- fmtIrregular:(mx,md)=>"예상한 개수는 찾았으나 간격이 고르지 않습니다. 응답 사이의 최대 공백이 "+mx+"로, 통상적인 "+md+"보다 큽니다. 내보내기 전에 경계를 재생해 확인해 주십시오. 참가자가 아무 말도 하지 않은 구간은 무음과 구별되지 않아 검출되지 않으며, 그 이후 문항 번호가 모두 밀리게 됩니다.",
- s3Title:"조정",
- s3Help:"경계선을 끌어 옮길 수 있습니다. 파형의 빈 곳을 클릭하면 경계가 추가되고, 표의 삭제 버튼으로 구간을 제거할 수 있습니다. 1초 미만인 구간은 표시됩니다.",
- editHint:"표의 행을 클릭하면 해당 구간이 재생됩니다.",
- btnPlayAll:"▶ 전체 재생", btnStop:"■ 정지",
- thConf:"신뢰도",
- lv_ok:"양호", lv_mid:"확인", lv_low:"검증",
- srcTone:"삐 소리를 기준으로 배치되었습니다", srcGrid:"타이밍 격자로 배치되었습니다",
- srcSilence:"녹음의 무음을 기준으로 배치되었습니다",
- wEmpty:"창 안에 발화 없음", wClipStart:"시작 경계에 발화가 걸침",
- wClipEnd:"끝 경계에 발화가 걸침", wShort:"매우 짧음", wLong:"비정상적으로 긺",
- wCadence:"주변 간격에서 벗어남", wOffset:"예측 위치에서 멀리 떨어짐",
- fmtConf:(n,ok,mid,low,src)=>{
-   let s=n+"개 구간이 "+src+". 이 중 "+ok+"개는 양호합니다";
-   if(mid) s+=", "+mid+"개는 들어보시는 편이 좋습니다";
-   if(low) s+=", "+low+"개는 내보내기 전에 확인이 필요합니다";
-   s+=".";
-   s += low ? " ‘검증’으로 표시된 구간을 재생해 주십시오. 자동 분절은 건너뛴 문항과 쉼을 구별하지 못하며, 경계가 하나 어긋나면 이후 문항 번호가 모두 밀립니다."
-       : (mid ? " ‘확인’으로 표시된 구간을 재생해 응답이 온전한지 확인해 주십시오."
-              : " 그래도 내보내기 전에 경계 몇 개는 재생해 확인해 주십시오.");
-   if(!GRIDINFO) s += " 이 표시는 경계 자체에 대한 것입니다. 시행 일정을 모르는 상태에서는 참가자가 침묵으로 건너뛴 문항이 음성에 아무 흔적을 남기지 않으므로 문항 번호 자체는 여기서 확인할 수 없습니다. 첫 문항과 마지막 문항을 목표 문장과 대조해 주십시오.";
-   return s;
- },
- thNo:"문항", thFile:"출력 파일", thStart:"시작", thEnd:"끝", thDur:"길이",
- toApp:"이제 채점 도구에서 전사 및 채점을 진행하세요 →",
- s4Title:"내보내기",
- s4Help:"참가자ID_itemNN.wav 형식의 16비트 16 kHz 모노 WAV로 저장되며, 채점 도구에 그대로 끌어다 놓을 수 있는 ZIP으로 묶입니다.",
- btnExport:"ZIP 내려받기", btnReset:"처음부터",
- expWorking:"파일을 준비하는 중…", fmtExpDone:n=>"완료 — "+n+"개 파일을 내보냈습니다.",
- errDecode:"음성 파일로 읽을 수 없습니다. WAV, MP3, M4A, WEBM 형식을 사용해 주십시오.",
- errNoSeg:"발화가 검출되지 않았습니다. 최소 응답 길이를 줄여 보십시오.",
- errZip:"ZIP 라이브러리를 불러오지 못했습니다. 연결을 확인한 뒤 다시 시도해 주십시오.",
- needPid:"참가자 ID를 먼저 입력해 주십시오."
-}};
-let LANG=(()=>{ try{ return localStorage.getItem("eitLang")||"en"; }catch(e){ return "en"; } })();
+}
+};
+const LANG="en";
 const T=k=>(I18N[LANG]&&I18N[LANG][k])!=null?I18N[LANG][k]:(I18N.en[k]||"");
 function applyLang(){
   document.querySelectorAll("[data-i18n]").forEach(el=>{
@@ -576,14 +506,9 @@ function applyLang(){
     if(typeof v!=="string") return;
     if(/^guide/.test(el.getAttribute("data-i18n"))) el.innerHTML=v; else el.textContent=v;
   });
-  $("langEn").classList.toggle("on",LANG==="en");
-  $("langKo").classList.toggle("on",LANG==="ko");
   $("editHint").textContent=T("editHint");
   paintDrop(); paintDetect(); renderTable();
 }
-function setLang(l){ LANG=l; try{ localStorage.setItem("eitLang",l); }catch(e){} applyLang(); }
-$("langEn").onclick=()=>setLang("en");
-$("langKo").onclick=()=>setLang("ko");
 
 function fmtT(s){
   const m=Math.floor(s/60), r=s-m*60;

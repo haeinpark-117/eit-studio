@@ -21,11 +21,11 @@
     padding:66px 18px 60px; display:flex; flex-direction:column; align-items:center}
   .hd{position:fixed; top:0; left:0; right:0; z-index:20; height:50px;
     background:rgba(242,242,244,.95); border-bottom:1px solid var(--line);
-    display:flex; align-items:center; justify-content:space-between; padding:0 22px}
+    display:flex; align-items:center; justify-content:flex-start; gap:14px; padding:0 22px}
   .hd .t{font-weight:700; font-size:18.2px}
   .hd .t span{font-weight:400; color:var(--muted); font-size:13.3px; margin-left:9px;
     text-transform:uppercase; letter-spacing:.08em}
-  .tabs2{display:flex; gap:6px; margin-left:auto; margin-right:14px}
+  .tabs2{display:flex; gap:6px}
   .tabs2 a{font-size:15.2px; font-weight:600; text-decoration:none; color:var(--muted);
     padding:5px 12px; border-radius:8px; border:1px solid transparent; white-space:nowrap}
   .tabs2 a:hover{color:var(--ink); background:#f0f0f5}
@@ -157,12 +157,20 @@
     .itemtab th, .itemtab td{padding:9px 8px}
   }
 
+  /* ---- links out to the documentation ---------------------------------------
+     The tool pages used to link only to one another, so a question that came up
+     mid-run ("what does the normalizer do", "how do I cite this") had no exit. */
+  .hsep{width:1px; height:22px; background:var(--line); margin-left:auto; flex:none}
+  .docs2{display:flex; gap:19px; font-size:14.6px; white-space:nowrap}
+  .docs2 a{text-decoration:none; color:var(--muted)}
+  .docs2 a:hover{color:var(--ink)}
+  .docs2{margin-right:6px}
+
   /* ---- narrow screens: the tool header becomes two rows -------------------
      Four tabs plus the language switch do not fit one 50 px row on a phone,
      and the overflow put the Segment tab and the switch out of reach. */
   @media(max-width:760px){
-    body{padding-top:94px}
-    body.running{padding-top:94px}
+    body,body.running{padding-top:175px}
     .hd{height:auto; flex-wrap:wrap; padding:9px 14px 0; align-items:center}
     .hd .t{font-size:16.9px}
     .hd .t span{display:none}
@@ -175,6 +183,18 @@
     .tabs2 a{font-size:14.5px; padding:5px 10px; flex:0 0 auto}
     select,input[type=text]{max-width:100%}
   }
+  /* on a narrow screen the documentation links drop to their own row, so the
+     body has to clear a taller fixed header */
+  @media(max-width:1100px){
+    .hsep{display:none}
+    .docs2{order:4; width:100%; margin:0 -14px; padding:8px 14px 9px;
+      border-top:1px solid var(--line); gap:16px; font-size:14px;
+      overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none}
+    .docs2::-webkit-scrollbar{display:none}
+    .hd{height:auto; flex-wrap:wrap; padding:9px 14px 0; align-items:center}
+  }
+  @media(max-width:1100px) and (min-width:761px){ body,body.running{padding-top:117px} }
+  @media(max-width:760px){ body,body.running{padding-top:175px} }
 </style>
 </head>
 <body>
@@ -187,9 +207,15 @@
     <a href="app.html" class="on" data-i18n="tabScore"></a>
     <a href="segment.html" data-i18n="tabSeg"></a>
   </div>
+  <span class="hsep"></span>
+  <div class="docs2">
+    <a href="how.html">How it works</a>
+    <a href="asr.html">Speech recognition</a>
+    <a href="cite.html">How to cite</a>
+    <a href="about.html">About</a>
+  </div>
   <div class="rt">
     <span class="badge" id="gpuBadge"></span>
-    <span class="lang"><button id="langEn">English</button><button id="langKo">한국어</button></span>
   </div>
 </div>
 <div class="stage">
@@ -454,80 +480,9 @@ en:{
  errModel:(max,msg)=>"The model could not be loaded after "+max+" attempts. Check your connection and try again. ("+msg+")",
  errLib:msg=>"Could not load the Whisper library: "+msg,
  errPrefix:"Error: ", noSpeech:"(no speech detected)", unassigned:"unassigned"
-},
-ko:{
- heroT:"채점",
- heroSub:"영어 elicited imitation task 응답을 자동으로 전사하고 WER로 채점합니다. 모든 처리는 브라우저 안에서 이루어지며, 음성 파일은 외부로 전송되지 않습니다.",
- heroBack:"← 홈",
- s1Title:"목표 문장 세트", s1Ok:"불러옴",
- s1Help:"아래에 목표 문장을 붙여넣거나 CSV로 저장한 파일을 올리세요. 한 줄에 한 문항씩 “번호, 문장, 음절 수” 형식이며, “문장, 음절 수”로 적으면 번호가 순서대로 매겨집니다. 음절 수는 필수입니다. 시행 타이밍에서 응답창 길이를 결정하는 값이며, 참가자가 아무 응답도 하지 않은 문항의 경계를 분절 도구가 잡을 때 필요합니다.",
- btnPreset:"English EIT 불러오기 (Ortega et al., 2002)", btnTgtFile:"CSV 올리기", btnClearTgt:"비우기",
- btnApplyTgt:"목표 세트 적용",
- fmtTgtInfo:n=>n+"개 문항이 등록되었습니다.",
- tgtNone:"아직 목표 세트가 없습니다.",
- fmtTgtWarn:(n,ex)=>n+"개 줄을 건너뛰었습니다. 각 줄에 음절 수가 있는지 확인해 주십시오: "+ex,
- s2Title:"채점 규칙",
- s2Help:"아래 규칙은 목표 문장과 Whisper 전사 양쪽에 똑같이 적용된 뒤 비교됩니다. 소문자화와 구두점 제거는 항상 적용되며, 소유격 ’s는 항상 보존됩니다.",
- optNum:"숫자 풀어쓰기 (3 → three, 11:30 → eleven thirty)",
- optContr:"축약형 확장 (I'm → I am, can't → cannot)",
- optRep:"자기수정은 마지막 시도만 채점 (다시 시작한 앞부분 제거)",
- repHelp:"기본값은 해제입니다. 목표 문장에는 적용되지 않고 Whisper 전사에만 적용됩니다. “the boy was the boy is late”처럼 같은 구간을 다시 시작한 경우 앞선 시도를 제거하고 수정된 발화만 채점합니다. 제거된 단어는 결과표에 취소선으로 그대로 표시되며 두 내보내기 파일에도 기록됩니다. 목표 문장에 실제로 존재하는 연쇄는 제거되지 않습니다. 다만 자기수정과 단순 반복을 항상 구분할 수는 없으므로, 이 규칙이 적용된 문항은 확인이 필요합니다.",
- repTitle:"자기수정 — 채점에서 제외됨",
- ruleSummary:"추가 치환 규칙과 설정 내보내기",
- ruleHelp:"한 줄에 하나씩 “원래 => 바꿀 것” 형식으로 적습니다. 구두점 제거 후에 긴 표현부터 적용됩니다. 같은 단어로 취급해야 하는 표기 변이형에 사용하세요.",
- btnApplyRules:"규칙 적용", btnExpCfg:"설정 내보내기", btnImpCfg:"설정 가져오기",
- fmtNormPrev:(a,b)=>"미리보기 — 목표: “"+a+"”  →  “"+b+"”",
- normPrevNone:"목표 세트를 불러오면 규칙 적용 결과를 미리 볼 수 있습니다.",
- s3Title:"녹음 파일",
- s3Help:"한 파일에 한 문항씩. 참가자ID_item번호 형식이면 여러 참가자를 한꺼번에 올려도 자동으로 배정되며, 그 외의 파일은 아래 표에서 직접 지정할 수 있습니다. 음성은 컴퓨터 밖으로 나가지 않습니다.",
- speedShort:"30문항 기준 5~10분. 첫 실행은 모델을 준비하는 데 몇 분이 더 걸립니다.",
- moreSum:"처리 시간과 묶음 나누기",
- tabStart:"시작", tabAdm:"시행", tabScore:"채점", tabSeg:"분절",
- hoTitle:"방금 시행한 세션의 녹음이 기다리고 있습니다.",
- hoTitleP:"완료되지 않은 세션의 녹음이 남아 있습니다.",
- fmtHoP:(n,p,t)=>"세션이 중단되기 전 "+p+"의 응답 "+t+"개 중 "+n+"개가 녹음되었습니다. "+
-   "그대로 채점할 수 있으며, 제시되지 않은 문항은 빠진 상태로 남습니다.",
- hoLoad:"불러오기", hoDrop:"버리기",
- fmtHo:(n,p)=>p+"의 응답 "+n+"개와 사용된 목표 문장 세트입니다. 불러오면 아래의 목표 문장과 녹음 파일이 채워집니다. 업로드되는 것은 없습니다.",
- hoDone:"세션에서 불러왔습니다.",
- segLink:"참가자별로 긴 녹음 파일 하나만 있으신가요? 먼저 문항별로 나누기 →",
- modelLbl:"모델:",
- speedNote:"모든 처리가 사용자의 컴퓨터에서 이루어지므로 속도는 하드웨어에 따라 달라집니다. 모델은 최초 1회만 내려받아(약 1.5 GB) 브라우저에 저장되며, 이후에는 페이지를 열 때마다 메모리에 올리는 과정이 필요해 첫 파일이 전사되기까지 2~3분이 걸립니다. 그 다음부터는 파일당 수 초 정도이므로, 30문항 기준으로는 WebGPU를 지원하는 최신 노트북에서 대략 5~10분이 소요되며 지원하지 않는 환경에서는 더 오래 걸립니다.",
- optTurbo:"large-v3-turbo (권장 · 첫 로드 시 대용량 다운로드)",
- optSmall:"small (빠른 동작 확인용 · 정확도 낮음)",
- batchNote:"결과 표에는 참가자마다 요약 행이 하나씩 생깁니다. 한 번에 돌리기에 시간이 너무 길면 다섯 명 정도씩(한 묶음에 대략 25~50분) 나누어 올리시고, 묶음마다 결과를 반드시 내보내십시오. 새로 실행하면 이전 실행의 결과가 대체됩니다.",
- dropIdle:"여기에 오디오 파일을 끌어다 놓거나 클릭해서 선택",
- fmtPicked:(n,names,more)=>n+"개 파일 선택됨 — "+names+(more?" …":""),
- fmtMapSum:(ok,bad)=>bad? "파일 매칭 — "+ok+"개 인식, "+bad+"개 지정 필요"
-                        : "파일 매칭 — "+ok+"개 모두 인식됨",
- thFile:"파일", thPid:"참가자", thItem:"문항",
- btnRun:"전사 및 채점 시작", btnReset:"새 파일 업로드",
- resTitle:"채점 결과",
- sortItem:"참가자 · 문항 순", sortAcc:"정확도 낮은 순", sortConf:"확신도 낮은 순",
- thNItems:"문항 수", thMAcc:"평균 정확도", thMWer:"평균 WER", thMConf:"평균 확신도",
- thTarget:"Target", thWhisper:"Whisper", thAcc:"정확도", thConf:"확신도", thAudio:"오디오",
- readGuide:"결과표 읽는 법 →",
- wgpuWarn:"이 브라우저는 WebGPU를 지원하지 않아 CPU(WASM)로 실행됩니다 — 매우 느릴 수 있습니다. 최신 Chrome/Edge 사용을 권장합니다.",
- dlWarn:"모델 다운로드 중 네트워크 오류가 발생해 자동으로 재시도하고 있습니다. 이미 받은 파일은 브라우저에 남아 있으므로 처음부터 다시 받지 않습니다.",
- confWarn:"이 환경에서는 Whisper의 토큰 확률을 읽을 수 없어 확신도가 표시되지 않습니다. 전사와 채점은 정상적으로 수행됩니다.",
- stPick:"목표 세트를 불러오고 채점할 녹음 파일을 선택하세요.",
- stReady:"준비 완료. 시작 버튼을 누르세요.",
- stReadyCached:"채점할 녹음 파일을 선택하세요. (모델이 이미 로드되어 있습니다.)",
- stNoTarget:"먼저 목표 세트를 불러오세요 (1단계).",
- stNoAudio:"오디오 파일이 없습니다.",
- fmtRun:(k,n,f)=>"전사 중 ("+k+"/"+n+"): "+f,
- fmtRetry:(k,n,f)=>"재시도 ("+k+"/"+n+"): "+f,
- fmtDone:(n,s,m,d)=>"완료 — "+n+"개 파일, "+s+"초 ("+m+", "+d+")",
- stLoad:(t,max)=>"모델 로드 중"+(t>1?" (재시도 "+t+"/"+max+")":"")+"… 첫 사용 시 다운로드 후 브라우저에 캐시됩니다.",
- fmtDl:(t,max,file,pct)=>"모델 다운로드"+(t>1?" (재시도 "+t+"/"+max+")":"")+": "+file+" "+pct+"%",
- fmtWait:s=>"다운로드 실패 — "+s+"초 후 재시도합니다. 이미 받은 파일은 유지됩니다.",
- stLibRetry:(t,max)=>"라이브러리 로드 실패 — 재시도 "+t+"/"+max+"…",
- errOffline:"인터넷 연결이 끊어졌습니다.",
- errModel:(max,msg)=>"모델을 "+max+"회 시도했으나 불러오지 못했습니다. 네트워크를 확인하고 다시 시도해 주세요. ("+msg+")",
- errLib:msg=>"Whisper 라이브러리를 불러오지 못했습니다: "+msg,
- errPrefix:"오류: ", noSpeech:"(음성이 감지되지 않음)", unassigned:"미지정"
-}};
-let LANG=(()=>{ try{ return localStorage.getItem("eitLang")||"en"; }catch(e){ return "en"; } })();
+}
+};
+const LANG="en";
 const T=k=>I18N[LANG][k];
 let STATUS={k:"stPick",a:[]}, DROP={k:"dropIdle",a:[]};
 function setStatus(k,...a){ STATUS={k,a}; paintStatus(); }
@@ -545,13 +500,8 @@ function applyLang(){
     const v=T(el.getAttribute("data-i18n"));
     if(typeof v==="string") el.textContent=v;
   });
-  $("langEn").classList.toggle("on",LANG==="en");
-  $("langKo").classList.toggle("on",LANG==="ko");
   paintDrop(); paintStatus(); paintTargetInfo(); paintNormPreview(); paintMap(); render();
 }
-$("langEn").onclick=()=>setLang("en");
-$("langKo").onclick=()=>setLang("ko");
-function setLang(l){ LANG=l; try{ localStorage.setItem("eitLang",l); }catch(e){} applyLang(); }
 
 /* ---------- ASR target language ---------- */
 /* Whisper large-v3-turbo is multilingual. WER is a whitespace-delimited

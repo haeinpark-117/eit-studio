@@ -25,12 +25,12 @@
   .hd{position:fixed; top:0; left:0; right:0; z-index:20; height:50px;
     background:rgba(255,255,255,.92); backdrop-filter:blur(10px);
     border-bottom:1px solid var(--line); display:flex; align-items:center;
-    justify-content:space-between; padding:0 22px}
+    justify-content:flex-start; gap:14px; padding:0 22px}
   .hd .t{font-weight:800; font-size:18.2px; letter-spacing:-.3px}
   .hd .t a{text-decoration:none; color:inherit}
   .hd .t span{font-weight:400; color:var(--muted); font-size:13.3px; margin-left:9px;
     letter-spacing:.08em; text-transform:uppercase; font-family:var(--mono)}
-  .tabs2{display:flex; gap:6px; margin-left:auto; margin-right:14px}
+  .tabs2{display:flex; gap:6px}
   .tabs2 a{font-size:15.2px; font-weight:600; text-decoration:none; color:var(--muted);
     padding:5px 12px; border-radius:8px; border:1px solid transparent; white-space:nowrap}
   .tabs2 a:hover{color:var(--ink); background:#f0f0f5}
@@ -247,12 +247,19 @@
     .tabs2 a{padding:5px 8px; font-size:14px}
   }
 
+  /* ---- links out to the documentation ---------------------------------------
+     The tool pages used to link only to one another, so a question that came up
+     mid-run ("what does the normalizer do", "how do I cite this") had no exit. */
+  .hsep{width:1px; height:22px; background:var(--line); margin-left:auto; flex:none}
+  .docs2{display:flex; gap:19px; font-size:14.6px; white-space:nowrap}
+  .docs2 a{text-decoration:none; color:var(--muted)}
+  .docs2 a:hover{color:var(--ink)}
+
   /* ---- narrow screens: the tool header becomes two rows -------------------
      Four tabs plus the language switch do not fit one 50 px row on a phone,
      and the overflow put the Segment tab and the switch out of reach. */
   @media(max-width:760px){
-    body{padding-top:94px}
-    body.running{padding-top:94px}
+    body,body.running{padding-top:175px}
     .hd{height:auto; flex-wrap:wrap; padding:9px 14px 0; align-items:center}
     .hd .t{font-size:16.9px}
     .hd .t span{display:none}
@@ -273,6 +280,18 @@
     table.pw td{white-space:normal; padding-right:8px}
     table.pw td:last-child{text-align:right}
   }
+  /* on a narrow screen the documentation links drop to their own row, so the
+     body has to clear a taller fixed header */
+  @media(max-width:1100px){
+    .hsep{display:none}
+    .docs2{order:4; width:100%; margin:0 -14px; padding:8px 14px 9px;
+      border-top:1px solid var(--line); gap:16px; font-size:14px;
+      overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none}
+    .docs2::-webkit-scrollbar{display:none}
+    .hd{height:auto; flex-wrap:wrap; padding:9px 14px 0; align-items:center}
+  }
+  @media(max-width:1100px) and (min-width:761px){ body,body.running{padding-top:117px} }
+  @media(max-width:760px){ body,body.running{padding-top:175px} }
 </style>
 </head>
 <body>
@@ -285,8 +304,12 @@
     <a href="app.html" data-i18n="tabScore"></a>
     <a href="segment.html" data-i18n="tabSeg"></a>
   </div>
-  <div class="rt">
-    <span class="lang"><button id="langEn">English</button><button id="langKo">한국어</button></span>
+  <span class="hsep"></span>
+  <div class="docs2">
+    <a href="how.html">How it works</a>
+    <a href="asr.html">Speech recognition</a>
+    <a href="cite.html">How to cite</a>
+    <a href="about.html">About</a>
   </div>
 </div>
 
@@ -608,93 +631,9 @@ const STR={
   dNext:"Next participant",
   dNextLocked:"Download the responses first",
   dNextReady:"Score at the end, from the downloaded files",
- },
- ko:{
-  heroT:"시행",
-  heroSub:"영어 elicited imitation task를 정해진 시간 설계에 따라 제시하고 문항별로 응답을 녹음합니다. 모든 처리는 브라우저 안에서 이루어지며, 음성 파일은 외부로 전송되지 않습니다.",
-  heroBack:"← 홈",
-  tabStart:"시작", tabAdm:"시행", tabScore:"채점", tabSeg:"분절",
-  gBadge:"먼저 읽기", gTitle:"녹음 전에 확인할 사항",
-  g1b:"시크릿·프라이빗 창을 사용하지 마십시오.",
-  g1:"응답은 저장하기 전까지 브라우저에 보관되는데, 그런 창은 닫는 순간 저장소를 폐기합니다. 5번 패널의 저장소 점검이 이를 감지하면 진행을 막습니다.",
-  g2b:"참가자에게 헤드폰을 씌우십시오.",
-  g2:"헤드폰이 없으면 자극 음성이 마이크에 잡혀 마치 응답인 것처럼 전사에 나타납니다.",
-  g3b:"이 창을 계속 화면 앞에 두십시오.",
-  g3:"브라우저는 백그라운드 탭의 타이머를 조절하므로, 응답이 맞춰지는 일정이 흐트러질 수 있습니다.",
-  p1t:"세션",
-  p1h:"참가자 식별자는 파일명 접두사가 되므로 데이터 파일에서 쓰시는 것과 같게 하십시오. 문항은 항상 입력된 순서대로 제시되며, 이 도구에서는 가장 짧은 문장에서 가장 긴 문장으로 나아갑니다. 이 점증적 배열은 설계의 일부이므로 설정으로 제공하지 않습니다.",
-  lblPid:"참가자 ID",
-  p2t:"문장 세트",
-  p2h:"두 가지가 들어갑니다. 참가자가 듣는 것과, 응답을 대조할 목표 문장입니다. 문항 수는 불러온 자료에서 정해지며 30개를 가정하지 않습니다.",
-  btnEitA:"EIT A (Ortega et al., 2002) 불러오기", btnTgtFile:"CSV 올리기", btnClear:"지우기",
-  recTitle:"완료되지 않은 세션이 저장소에 남아 있습니다.",
-  recGo:"복구하기 →", recDrop:"버리기",
-  fmtRec:(n,p)=>"세션이 중단되기 전 "+p+"의 응답 "+n+"개가 녹음되어 있습니다. "+
-    "그대로 채점할 수 있습니다. 새 세션을 시작하면 삭제됩니다.",
-  fmtDiscard:(n)=>"완료되지 않은 세션의 녹음 "+n+"개가 삭제되며 복구할 수 없습니다. 계속하시겠습니까?",
-  p2src:"기본 제공 EIT A — 문항: Ortega, L., Iwashita, N., Norris, J. M., &amp; Rabie, S. (2002). <em>An investigation of elicited imitation tasks in crosslinguistic SLA research</em> [Paper presentation]. Second Language Research Forum, Toronto, Canada.<br>자극 녹음: Park, H. I. (under 2nd review). <em>Revisiting parallel form equivalence for the English Elicited Imitation Task: A conceptual replication</em>.",
-  s2at:"참가자가 듣는 것", s2ad:"문항당 자극 녹음 하나씩. 파일명이 문항 순서대로 정렬되도록 하십시오.",
-  zoneIdle:"음성 파일을 끌어다 놓거나 클릭해 선택",
-  s2bt:"대조할 목표 문장", s2bd:"각 문항의 목표 문장과 음절 수입니다.",
-  fmtN:"번호", fmtS:"문장", fmtY:"음절",
-  s2bd2:"한 줄에 한 문항씩, 세 필드를 탭이나 쉼표로 구분합니다. 스프레드시트에서 붙여넣거나 CSV로 저장한 파일을 올리시면 됩니다. 번호는 생략할 수 있지만 음절 수는 생략할 수 없습니다. 응답창 길이를 정하는 값이기 때문입니다.",
-  p3t:"지시문과 연습",
-  p3h:"원 설계에서 지시문과 연습 문항은 참가자의 L1으로 제시되며, 자극과는 다른 화자가 녹음합니다. 연습 문항은 영어와 한국어로 세 개씩 제공됩니다. 다른 L1이라면 직접 녹음하셔야 합니다.",
-  lblPrac:"연습 문항", optNone:"사용 안 함",
-  p4t:"일정",
-  p4h:"모든 문항이 같은 주기로 진행됩니다. 자극이 재생되고, 고정된 무음 휴지가 이어지고, 링톤이 휴지의 끝을 알리며, 응답창이 열립니다. 휴지는 모든 문항이 같지만 응답창은 다릅니다. 긴 문장일수록 되말하는 데 시간이 더 걸리기 때문입니다.",
-  lblPause:"자극 후 휴지(초)", lblTone:"링톤(초)", lblHz:"링톤 주파수(Hz)",
-  lblBase:"응답창 기준(초)", lblPer:"기준 초과 음절당(초)", lblThr:"기준 음절 수",
-  formula:"응답창 = 자극 + 기준 + 음절당 × (음절 수 − 기준 음절 수)",
-  p4d:"기준 음절 수는 기준 시간 외에 추가 시간이 붙지 않는 길이입니다. 이를 넘는 음절마다 음절당 시간이 더해지고, 이에 못 미치는 음절마다 그만큼 차감됩니다.",
-  p4src:"Ortega, L., Iwashita, N., Norris, J. M., &amp; Rabie, S. (2002). <em>An investigation of elicited imitation tasks in crosslinguistic SLA research</em> [Paper presentation]. Second Language Research Forum, Toronto, Canada.<br>Wu, S.-L., Tio, Y. P., &amp; Ortega, L. (2022). Elicited imitation as a measure of L2 proficiency. <em>Studies in Second Language Acquisition, 44</em>(1), 271–300.",
-  p5t:"녹음",
-  p5h:"두 점검 모두 참가자가 오기 전에 진행합니다. 세션이 시작된 뒤에는 어느 쪽도 되돌릴 수 없기 때문입니다.",
-  s5at:"마이크", s5ad:"브라우저 권한을 세션 중이 아니라 지금 요청합니다.",
-  s5ad2:"레벨 미터는 신호가 들어온다는 것만 보여줍니다. 녹음하고 재생해서 들어 보십시오. 음소거된 헤드셋 마이크나 무음을 기록하는 브라우저는 이 단계에서만 걸립니다.",
-  lblInput:"입력", btnRec:"● 5초 녹음", btnRecing:"● 녹음 중…", btnPlay:"▶ 재생",
-  s5bt:"저장소", s5bd:"응답은 녹음되는 즉시 브라우저에 기록되므로, 중단되더라도 잃는 것은 한 문항뿐입니다.",
-  s5bd2:"지금 테스트 레코드를 하나 쓰고 지웁니다. 프라이빗 창이나 차단된 데이터베이스, 꽉 찬 디스크가 세션 뒤가 아니라 앞에서 드러납니다.",
-  btnStore:"저장소 점검",
-  btnStart:"세션 시작 →", btnEnd:"✕ 세션 종료",
-  stNeed:"필요", stSet:"설정됨", stNotChecked:"미점검", stOk:"준비됨", stFail:"실패",
-  dTitle:"세션 완료",
-  dZip:"전체 다운로드 (ZIP)", dZipS:"응답 음성과 세션 로그",
-  dChoose:"저장한 뒤 하나를 고르십시오",
-  dScore:"바로 채점하기 →", dScoreS:"참가자 1명으로 마쳤을 때",
-  dScoreM:"채점 페이지 열기 →", dScoreMS:"내려받은 파일을 올려 채점하십시오",
-  iLabel:"안내", iHead:"문장을 듣게 됩니다.",
-  iSub:"문장을 끝까지 들으십시오. 링톤이 울린 뒤에 기억나는 만큼 따라 말하십시오.",
-  iBtn:"연습 시작 →",
-  tLabel:"시험 시작", tHeadA:"지금부터", tHeadB:"개의 영어 문장을 듣게 됩니다.",
-  tSub:"문장은 갈수록 길어집니다. 링톤이 울린 뒤에 기억나는 만큼 따라 말하십시오. 시작하면 중간에 멈추지 않습니다.",
-  tBtn:"시작 →",
-  phListen:"♪ 듣기", phRepeat:"● 녹음 중",
-  hListen:"들으십시오.", sListen:"문장이 재생되고 있습니다. 링톤 전에는 말하지 마십시오.",
-  hRepeat:"따라 말하십시오.", sRepeat:"막대가 끝날 때까지 말하십시오.",
-  fPractice:"연습 응답도 녹음되지만 내보내기에서는 제외됩니다.",
-  fTest:"녹음은 문항 단위로 저장됩니다.",
-  cPractice:n=>"연습 · "+n[0]+" / "+n[1], cItem:n=>"문항 "+n[0]+" / "+n[1],
-  secs:s=>s.toFixed(1)+"초 남음",
-  confirmEnd:"지금 세션을 종료할까요? 이미 녹음된 응답은 유지됩니다.",
-  fmtTally:(a,b,c,d)=>"자극 "+a+"개 · 목표 문장 "+b+"개 · "+c+"–"+d+"음절 · 개수 일치",
-  fmtTallyBad:(a,b)=>"자극 "+a+"개인데 목표 문장은 "+b+"개입니다 — 두 수가 일치해야 합니다",
-  fmtStart:(n,s)=>n+"문항 · 자극과 응답창 합계 약 "+s,
-  fmtPrac:n=>"연습 문항 "+n+"개 불러옴",
-  pracMissing:"이 언어의 연습 녹음을 불러오지 못했습니다 — 연습 없이 세션이 시작됩니다",
-  fmtMic:(s,r)=>"test.wav · "+s.toFixed(1)+"초 · "+Math.round(r/1000)+" kHz",
-  storeOk:"저장소가 정상입니다. 저장하실 때까지 응답이 안전하게 보관됩니다.",
-  storeOkNP:"저장소가 정상입니다. 브라우저가 보호 대상으로 표시하지는 않았으나 이는 일반적인 상태이며, 이 창을 열어 두는 한 저장하실 때까지 응답은 안전하게 보관됩니다.",
-  storeBad:"사용할 수 없습니다 — 프라이빗 창이거나 브라우저가 저장소를 차단했습니다",
-  micBad:"마이크를 사용할 수 없습니다. 이 페이지의 마이크 권한이 거부되었거나 입력 장치가 연결되어 있지 않습니다. 권한은 주소창 왼쪽 아이콘에서 설정한 뒤 페이지를 새로고침해야 적용됩니다.",
-  fmtDone:(n,p)=>p+"의 응답 "+n+"개가 녹음되었습니다. 이 컴퓨터를 벗어난 자료는 없습니다. 무엇보다 먼저 디스크에 저장하십시오 — 참가자 세션은 다시 찍을 수 없습니다.",
-  fmtEnded:(n,p,at,tot)=>tot+"문항 중 "+at+"번에서 종료했습니다. "+p+"의 응답 "+n+"개가 녹음되었습니다. 무엇보다 먼저 디스크에 저장하십시오.",
-  dNext:"다음 참가자",
-  dNextLocked:"응답을 먼저 내려받으십시오",
-  dNextReady:"채점은 모든 참가자를 마친 뒤 내려받은 파일로",
  }
 };
-let LANG=localStorage.getItem("eitLang")==="ko"?"ko":"en";
+const LANG="en";
 const T=k=>STR[LANG][k];
 function applyLang(){
   document.documentElement.lang=LANG;
@@ -702,12 +641,8 @@ function applyLang(){
     const v=STR[LANG][el.dataset.i18n];
     if(typeof v==="string") el.innerHTML=v;
   });
-  $("langEn").classList.toggle("on",LANG==="en");
-  $("langKo").classList.toggle("on",LANG==="ko");
   paintTally(); paintPractice(); paintSchedule(); paintStart(); paintNext();
 }
-$("langEn").onclick=()=>{LANG="en"; localStorage.setItem("eitLang","en"); applyLang();};
-$("langKo").onclick=()=>{LANG="ko"; localStorage.setItem("eitLang","ko"); applyLang();};
 
 /* ------------------------------------------------------------ sentence set */
 let STIM=[];      /* [{name, dur, buf|null, src:File|url}] */
@@ -854,11 +789,11 @@ function windowFor(dur,syl){
 }
 function paintSchedule(){
   const c=consts(), rows=[];
-  const mk=(y,note)=>"<tr><td>"+y+" "+(LANG==="ko"?"음절":"syllables")+"</td><td>"+note+
-      "</td><td>"+(LANG==="ko"?"자극":"stimulus")+" + "+(c.base+c.per*(y-c.thr)).toFixed(1)+" s</td></tr>";
+  const mk=(y,note)=>"<tr><td>"+y+" "+"syllables"+"</td><td>"+note+
+      "</td><td>"+"stimulus"+" + "+(c.base+c.per*(y-c.thr)).toFixed(1)+" s</td></tr>";
   const ys=TGT.length?[...new Set(TGT.map(r=>r[2]))].sort((a,b)=>a-b):[7,13,19];
   const pick=[ys[0],ys[Math.floor(ys.length/2)],ys[ys.length-1]];
-  pick.forEach((y,i)=>rows.push(mk(y,i===0?"= "+(LANG==="ko"?"기준 음절 수":"base syllables")
+  pick.forEach((y,i)=>rows.push(mk(y,i===0?"= "+"base syllables"
       :"+ "+(y-c.thr)+" × "+c.per+" s")));
   $("pwRows").innerHTML=rows.join("");
 }
@@ -1287,7 +1222,7 @@ function finish(){
   $("dRows").innerHTML=RESULTS.map(r=>
       "<tr><td>"+r.name+"</td><td>“"+r.target+"”</td><td>"+r.window_s.toFixed(1)+" s</td></tr>")
       .join("")+"<tr><td>"+SESSION.pid+"_session.json</td><td>"+
-      (LANG==="ko"?"일정, 문항 순서, 시각":"schedule, item order, timestamps")+"</td><td>—</td></tr>";
+      "schedule, item order, timestamps"+"</td><td>—</td></tr>";
 }
 
 $("btnZip").onclick=async()=>{
