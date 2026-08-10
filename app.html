@@ -124,6 +124,30 @@
   .sumtab td{font-variant-numeric:tabular-nums}
   .sumtab .pid{font-weight:700}
   .itemtab thead th{position:sticky; top:50px; z-index:5}
+  /* ---- correcting a transcription -------------------------------------------
+     Whisper's output is never overwritten: a correction is a second field, and
+     the score is recomputed from it while the raw line stays in both exports. */
+  .itemtab tbody tr.item{cursor:pointer}
+  .itemtab tbody tr.item.open td{background:#fbfbff}
+  .badge{display:inline-block; font-family:var(--mono); font-size:11.4px; letter-spacing:.08em;
+    text-transform:uppercase; border-radius:999px; padding:2px 8px; margin-left:6px;
+    background:var(--pink-soft); color:var(--sev); border:1px solid #fbcfe8; vertical-align:2px}
+  .badge.rev{background:var(--cy-soft); color:var(--cy-ink); border-color:var(--cy-line)}
+  .wasline{display:block; font-family:var(--mono); font-size:13.4px; color:#8a4a6d; margin-top:4px}
+  .werold{color:#b98aa4; text-decoration:line-through; margin-right:6px; font-size:14px}
+  tr.drawer td{background:#fbfbff; border-bottom:2px solid var(--accent-line)}
+  .dr{display:grid; grid-template-columns:minmax(0,1fr) 250px; gap:22px; padding:4px 2px 8px}
+  .dr .k{font-family:var(--mono); font-size:11.6px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--muted); margin:0 0 5px}
+  .dr .val{font-family:var(--mono); font-size:15.4px; line-height:1.7; margin:0 0 14px}
+  .dr textarea{width:100%; font-family:var(--mono); font-size:15.4px; line-height:1.7;
+    padding:9px 11px; border:1px solid var(--accent); border-radius:9px; resize:vertical}
+  .dr .acts{display:flex; gap:9px; margin-top:11px; flex-wrap:wrap}
+  .dr .box{border:1px solid var(--line); border-radius:10px; padding:12px 14px; background:#fff;
+    font-size:14.6px; color:var(--muted); line-height:1.6}
+  .dr .box b{color:var(--ink)}
+  .dr .box .num{font-family:var(--mono); font-size:20px; font-weight:700; color:var(--accent)}
+  @media(max-width:900px){ .dr{grid-template-columns:1fr} }
   .c-pid{font-weight:600; white-space:nowrap}
   .c-it{font-family:var(--mono); font-size:15.2px; color:var(--muted); white-space:nowrap}
   .c-tgt{font-family:var(--mono); font-size:15.2px; color:var(--muted); line-height:1.7}
@@ -464,6 +488,12 @@ en:{
  thNItems:"Items", thMAcc:"Mean accuracy", thMWer:"Mean WER", thMConf:"Mean confidence",
  thTarget:"Target", thWhisper:"Whisper", thAcc:"Accuracy", thConf:"Confidence", thAudio:"Audio",
  readGuide:"How to read the output table →",
+ bEdited:"edited", bReviewed:"reviewed", whisperWas:"Whisper:",
+ drTarget:"Target", drHeard:"Whisper heard", drCorrected:"Corrected transcription",
+ drSave:"Save the correction", drOk:"Whisper was right — mark reviewed",
+ drUndo:"Remove the correction", drCancel:"Cancel",
+ drListen:"Listen", drEffect:"If you save this",
+ drKept:"Whisper's output is kept in both exports; the score is recomputed from the line above.",
  wgpuWarn:"WebGPU is not available here, so the model runs on the CPU (WASM) and will be very slow. Either the browser does not support it, or it does but no graphics adapter could be obtained on this machine. Support depends on the browser version and the operating system rather than on the browser alone.",
  dlWarn:"A network error occurred while downloading the model; retrying automatically. Files already downloaded stay in the browser cache, so the download resumes rather than restarting.",
  confWarn:"Whisper's token probabilities could not be read in this environment, so no confidence values are shown. Transcription and scoring are unaffected.",
@@ -676,6 +706,15 @@ function scorePair(target,hyp){
   return {wer:+wer.toFixed(4),acc:+((1-wer)*100).toFixed(1),ops,gt,tr,gaps,rep};
 }
 
+/* The line that is scored is the correction where one was entered, and Whisper's
+   own output otherwise. Both scores are kept so that the effect of the
+   corrections on the results can be reported. */
+function effectiveText(r){ return r.corrected!=null ? r.corrected : r.text; }
+function rescoreRow(r){
+  r.scRaw = r.target ? scorePair(r.target,r.text) : null;
+  r.sc    = r.target ? scorePair(r.target,effectiveText(r)) : null;
+}
+
 /* ============================================================
    STEP 1 — target set
    ============================================================ */
@@ -779,7 +818,7 @@ function readCfgFromUI(){
    transcriptions themselves are untouched. */
 function rescore(){
   if(!RESULTS.length) return;
-  RESULTS.forEach(r=>{ r.sc = r.target ? scorePair(r.target,r.text) : null; });
+  RESULTS.forEach(r=>{ rescoreRow(r); });
   render();
 }
 ["optNum","optContr","optRep"].forEach(id=>{
@@ -1039,9 +1078,11 @@ $("runBtn").onclick=async()=>{
         }
       }
       const target=(m.item!=null&&TARGETS[m.item])?TARGETS[m.item]:"";
-      RESULTS.push({file:m.file,name:m.name,pid:m.pid||T("unassigned"),item:m.item,
+      const rec={file:m.file,name:m.name,pid:m.pid||T("unassigned"),item:m.item,
         target,text:r.text,dur,err,conf:r.conf,avgLogprob:r.avgLogprob,
-        sc: target?scorePair(target,r.text):null});
+        corrected:null,reviewed:false,sc:null,scRaw:null};
+      rescoreRow(rec);
+      RESULTS.push(rec);
       render();
     }
     $("progFill").style.width="100%";
@@ -1109,26 +1150,100 @@ function render(){
   $("rows").innerHTML=list.map(r=>{
     const acc=r.sc?r.sc.acc:null, wer=r.sc?r.sc.wer:null;
     const pill=wer==null?"p1":wer===0?"p0":wer>=0.3?"p2":"p1";
-    return "<tr>"+
+    const edited=r.corrected!=null;
+    const werRaw=r.scRaw?r.scRaw.wer:null;
+    const open=OPEN===r.name;
+    return "<tr class='item"+(open?" open":"")+"' data-f='"+esc(r.name)+"'>"+
       "<td class='c-pid'>"+esc(r.pid)+"</td>"+
       "<td class='c-it'>"+(r.item!=null?String(r.item).padStart(2,"0"):"—")+"</td>"+
       "<td class='c-tgt'>"+esc(r.sc?r.sc.gt:"")+"</td>"+
       "<td class='c-hyp'><span class='tgt-inline'>"+esc(r.sc?r.sc.gt:"")+"</span>"+
-        (r.err?"<span class='errcell'>"+esc(r.err)+"</span>":diffHtml(r.sc,r.text))+"</td>"+
+        (r.err?"<span class='errcell'>"+esc(r.err)+"</span>":diffHtml(r.sc,effectiveText(r)))+
+        (edited?"<span class='badge'>"+T("bEdited")+"</span>":
+          (r.reviewed?"<span class='badge rev'>"+T("bReviewed")+"</span>":""))+
+        (edited?"<span class='wasline'>"+T("whisperWas")+" "+esc(r.text)+"</span>":"")+
+      "</td>"+
       "<td class='c-n'><span class='acc"+(acc!=null&&acc<50?" low":"")+"'>"+
         (acc==null?"—":acc.toFixed(1)+"%")+"</span></td>"+
-      "<td class='c-n'><span class='pill "+pill+"'>"+
+      "<td class='c-n'>"+
+        (edited&&werRaw!=null&&werRaw!==wer
+          ? "<span class='werold'>"+werRaw.toFixed(3).replace(/^0/,"")+"</span>":"")+
+        "<span class='pill "+pill+"'>"+
         (wer==null?"—":wer.toFixed(3).replace(/^0/,""))+"</span></td>"+
       "<td class='conf'>"+(r.conf==null?"—":"<b>"+(r.conf*100).toFixed(1)+"%</b><br>"+r.avgLogprob)+"</td>"+
-      "<td style='text-align:center'><button class='mini' data-f='"+esc(r.name)+"'>&#9654;</button></td></tr>";
+      "<td style='text-align:center'><button class='mini' data-f='"+esc(r.name)+"'>&#9654;</button></td></tr>"+
+      (open?drawerHtml(r):"");
   }).join("");
   $("rows").querySelectorAll(".mini").forEach(b=>{
-    b.onclick=()=>{ const r=RESULTS.find(x=>x.name===b.getAttribute("data-f"));
+    b.onclick=e=>{ e.stopPropagation();
+      const r=RESULTS.find(x=>x.name===b.getAttribute("data-f"));
       if(r) new Audio(URL.createObjectURL(r.file)).play(); };
   });
+  $("rows").querySelectorAll("tr.item").forEach(tr=>{
+    tr.onclick=()=>{ const n=tr.getAttribute("data-f"); OPEN = OPEN===n ? null : n; render(); };
+  });
+  wireDrawer();
   $("foot").textContent=loadedModel||"";
 }
-$("sortSel").onchange=render;
+$("sortSel").onchange=()=>{ OPEN=null; render(); };
+
+/* ---------- correcting one transcription ---------- */
+let OPEN=null;
+function drawerHtml(r){
+  const cur=effectiveText(r);
+  const werNow=r.sc?r.sc.wer.toFixed(3).replace(/^0/,""):"—";
+  const werRaw=r.scRaw?r.scRaw.wer.toFixed(3).replace(/^0/,""):"—";
+  return "<tr class='drawer'><td colspan='8'><div class='dr'>"+
+    "<div>"+
+      "<p class='k'>"+T("drTarget")+"</p><p class='val'>"+esc(r.sc?r.sc.gt:r.target)+"</p>"+
+      "<p class='k'>"+T("drHeard")+"</p><p class='val'>"+esc(r.text)+"</p>"+
+      "<p class='k'>"+T("drCorrected")+"</p>"+
+      "<textarea id='drText' rows='2'>"+esc(cur)+"</textarea>"+
+      "<div class='acts'>"+
+        "<button class='btn-g btn-p' id='drSave'>"+T("drSave")+"</button>"+
+        "<button class='btn-g' id='drOk'>"+T("drOk")+"</button>"+
+        (r.corrected!=null?"<button class='btn-g' id='drUndo'>"+T("drUndo")+"</button>":"")+
+        "<button class='btn-g' id='drCancel'>"+T("drCancel")+"</button>"+
+      "</div>"+
+    "</div>"+
+    "<div>"+
+      "<div class='box' style='margin-bottom:10px'><b>"+T("drListen")+"</b><br>"+
+        "<button class='mini' style='margin-top:7px' data-f='"+esc(r.name)+"'>&#9654; "+
+        esc(r.name)+"</button></div>"+
+      "<div class='box'><b>"+T("drEffect")+"</b>"+
+        "<div style='margin-top:6px'>WER <span class='num' id='drWer'>"+werRaw+" → "+werNow+"</span></div>"+
+        "<div style='margin-top:4px'>"+T("drKept")+"</div></div>"+
+    "</div>"+
+  "</div></td></tr>";
+}
+function wireDrawer(){
+  const r=RESULTS.find(x=>x.name===OPEN); if(!r) return;
+  const close=()=>{ OPEN=null; render(); };
+  const ta=$("drText");
+  if(ta){
+    ta.onclick=e=>e.stopPropagation();
+    /* the box on the right answers "what would saving this do", so it follows
+       the field rather than the stored value */
+    const live=()=>{
+      const el=$("drWer"); if(!el||!r.target) return;
+      const v=(ta.value||"").trim();
+      const sc=scorePair(r.target, v||r.text);
+      const raw=r.scRaw?r.scRaw.wer.toFixed(3).replace(/^0/,""):"—";
+      el.textContent=raw+" → "+sc.wer.toFixed(3).replace(/^0/,"");
+    };
+    ta.oninput=live; live();
+  }
+  const on=(id,fn)=>{ const b=$(id); if(b) b.onclick=e=>{ e.stopPropagation(); fn(); }; };
+  on("drSave",()=>{
+    const v=($("drText").value||"").trim();
+    /* a correction identical to what Whisper produced is a review, not an edit */
+    r.corrected = (v && v!==r.text) ? v : null;
+    r.reviewed=true; rescoreRow(r); close();
+  });
+  on("drOk",()=>{ r.reviewed=true; close(); });
+  on("drUndo",()=>{ r.corrected=null; r.reviewed=true; rescoreRow(r); close(); });
+  on("drCancel",close);
+}
 
 /* ---------- export ---------- */
 function rulesSummary(){
@@ -1137,12 +1252,14 @@ function rulesSummary(){
     "; extra="+CFG.rules.map(r=>r.from+">"+r.to).join("|");
 }
 $("csvBtn").onclick=()=>{
-  const cols=["participant","item","target","whisper","wer","accuracy_pct",
+  const cols=["participant","item","target","transcription_raw","transcription_final",
+              "reviewed","wer_raw","wer_final","accuracy_pct",
               "confidence","avg_logprob","duration_s","file","model","rules",
               "self_corrections_removed"];
   const rows=[cols.join(",")];
-  RESULTS.forEach(r=>rows.push([r.pid,r.item??"",r.target,r.text,
-    r.sc?r.sc.wer:"",r.sc?r.sc.acc:"",r.conf??"",r.avgLogprob??"",
+  RESULTS.forEach(r=>rows.push([r.pid,r.item??"",r.target,r.text,effectiveText(r),
+    r.reviewed?"yes":"no",
+    r.scRaw?r.scRaw.wer:"",r.sc?r.sc.wer:"",r.sc?r.sc.acc:"",r.conf??"",r.avgLogprob??"",
     r.dur?r.dur.toFixed(2):"",r.name,loadedModel,rulesSummary(),
     r.sc&&r.sc.rep?r.sc.rep.join(" "):""].map(v=>{
       v=String(v??""); return (v.includes(",")||v.includes('"'))?'"'+v.replace(/"/g,'""')+'"':v;
@@ -1157,14 +1274,18 @@ $("jsonBtn").onclick=()=>{
       scoring_rules:{lowercase:true,strip_punctuation:true,keep_possessives:true,
         spell_out_numbers:CFG.numbers,expand_contractions:CFG.contractions,
         score_self_corrections_as_final:CFG.repairs,extra_rules:CFG.rules},
-      n_target_items:TGT_N, scored_at:new Date().toISOString()},
+      n_target_items:TGT_N, scored_at:new Date().toISOString(),
+      n_items_reviewed:RESULTS.filter(r=>r.reviewed).length,
+      n_items_corrected:RESULTS.filter(r=>r.corrected!=null).length},
     items:RESULTS.map(r=>({participant:r.pid,item:r.item,target:r.target,
-      transcription_raw:r.text,transcription_corrected:null,
-      wer:r.sc?r.sc.wer:null,accuracy_pct:r.sc?r.sc.acc:null,
+      transcription_raw:r.text,transcription_corrected:r.corrected,
+      wer:r.sc?r.sc.wer:null,wer_raw:r.scRaw?r.scRaw.wer:null,
+      accuracy_pct:r.sc?r.sc.acc:null,
       confidence:r.conf,avg_logprob:r.avgLogprob,ops:r.sc?r.sc.ops:null,
       transcription_scored:r.sc?r.sc.tr:null,
       self_corrections_removed:r.sc?r.sc.rep:null,
-      duration_s:r.dur?+r.dur.toFixed(2):null,flag:"",file:r.name,reviewed:false}))},null,1)],
+      duration_s:r.dur?+r.dur.toFixed(2):null,flag:"",file:r.name,
+      reviewed:!!r.reviewed}))},null,1)],
     {type:"application/json"}), (pids.length===1?pids[0]:"eit")+"_results.json");
 };
 function dl(blob,name){
