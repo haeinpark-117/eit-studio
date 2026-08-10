@@ -44,6 +44,17 @@
     overflow:hidden}
   .pad{padding:32px 34px 34px}
 
+  /* ---- shown only where the browser has no WebGPU ---------------------------
+     Scoring is the only part that needs it; administration and segmentation do
+     not touch navigator.gpu at all, so the notice says exactly that. */
+  .gpubar{display:flex; gap:12px; align-items:baseline; margin:0 0 20px;
+    background:var(--pink-soft); border:1px solid var(--pink-line);
+    border-left:3px solid var(--pink); border-radius:4px 13px 13px 4px; padding:13px 18px}
+  .gpubar[hidden]{display:none}
+  .gpubar .ico{color:#be185d; font-weight:800; flex:none; font-size:16px}
+  .gpubar p{margin:0; font-size:15.8px; line-height:1.6; color:#7a1149}
+  .gpubar b{color:#be185d; font-weight:750}
+
   /* ---------- hero ---------- */
   .hero{display:flex; align-items:flex-end; gap:40px; flex-wrap:wrap;
     padding:14px 4px 30px}
@@ -203,6 +214,11 @@
 </div>
 
 <div class="stage">
+  <div class="gpubar" id="gpuBar" hidden>
+    <span class="ico">!</span>
+    <p><b data-i18n="gpuT"></b> <span data-i18n="gpuD"></span></p>
+  </div>
+
   <div class="hero">
     <div class="lt">
       <p class="eyebrow" data-i18n="eyebrow"></p>
@@ -270,6 +286,8 @@ const $=id=>document.getElementById(id);
 const I18N={
 en:{
  eyebrow:"Start here",
+ gpuT:"Scoring will be slow in this browser.",
+ gpuD:"Transcription needs WebGPU, which this browser does not provide, so the model runs on the CPU instead. Administering a session and splitting recordings are unaffected — you can score later in a browser that supports it.",
  h1a:"Administer an elicited imitation task, and score it,",
  h1b:"in the browser.",
  f1k:"2 steps", f1v:"prepare the sentences, then administer or score",
@@ -304,6 +322,10 @@ function applyLang(){
   document.documentElement.lang=LANG;
 }
 applyLang();
+
+/* WebGPU is used by the scoring page only. Warn here rather than after the
+   materials have been prepared, and stay silent where it is supported. */
+if(!navigator.gpu) $("gpuBar").hidden=false;
 </script>
 </body>
 </html>
