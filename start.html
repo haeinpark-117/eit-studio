@@ -22,7 +22,9 @@
       "Apple SD Gothic Neo","Noto Sans KR",sans-serif;
     display:flex; justify-content:center; -webkit-font-smoothing:antialiased}
   .hd{position:fixed; top:0; left:0; right:0; z-index:20; height:50px;
-    background:rgba(255,255,255,.92); backdrop-filter:blur(10px);
+    /* opaque: the page scrolls underneath, and at 92–95 % the text below
+       showed through the bar */
+    background:#fff; backdrop-filter:blur(10px);
     border-bottom:1px solid var(--line); display:flex; align-items:center;
     justify-content:flex-start; gap:14px; padding:0 22px}
   .hd .t{font-weight:800; font-size:18.2px; letter-spacing:-.3px}
