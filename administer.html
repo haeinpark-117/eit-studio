@@ -79,7 +79,7 @@
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:46ch}
   .panel.fold .ph .sum ~ .st{margin-left:15px}
   .panel:not(.fold) .ph .sum{display:none}
-  .chevp{flex:none; color:#b9b9c6; font-size:18px; line-height:1; margin-left:14px;
+  .chevp{flex:none; color:#8b8b9e; font-size:18px; line-height:1; margin-left:14px;
     transition:transform .15s}
   .panel:not(.fold) .chevp{transform:rotate(90deg); color:var(--accent)}
 
@@ -369,17 +369,17 @@
 
   <div class="panel"><div class="pad">
     <div class="ph"><span class="n">1</span><h3 data-i18n="p1t"></h3>
-      <span class="sum" id="sum1"></span><span class="st wait" id="st1" data-i18n="stNeed"></span><span class="chevp">›</span></div>
+      <span class="sum" id="sum1"></span><span class="st wait" id="st1" data-i18n="stNeed"></span><span class="chevp" aria-hidden="true">›</span></div>
     <p class="hint" data-i18n="p1h"></p>
     <div class="row">
-      <span class="fl" data-i18n="lblPid"></span>
+      <label class="fl" for="pid" data-i18n="lblPid"></label>
       <input class="inp sm" id="pid" value="P01" spellcheck="false">
     </div>
   </div></div>
 
   <div class="panel"><div class="pad">
     <div class="ph"><span class="n">2</span><h3 data-i18n="p2t"></h3>
-      <span class="sum" id="sum2"></span><span class="st wait" id="st2" data-i18n="stNeed"></span><span class="chevp">›</span></div>
+      <span class="sum" id="sum2"></span><span class="st wait" id="st2" data-i18n="stNeed"></span><span class="chevp" aria-hidden="true">›</span></div>
     <p class="hint" data-i18n="p2h"></p>
     <div class="row" style="margin-bottom:14px">
       <button class="btn-g" id="loadEitA" data-i18n="btnEitA"></button>
@@ -391,7 +391,7 @@
       <div class="sub">
         <p class="k" data-i18n="s2at"></p>
         <p class="d" data-i18n="s2ad"></p>
-        <div class="zone" id="zone"><span data-i18n="zoneIdle"></span></div>
+        <div class="zone" id="zone" role="button" tabindex="0" aria-label="Choose the stimulus audio files"><span data-i18n="zoneIdle"></span></div>
         <input type="file" id="stimIn" multiple accept="audio/*" class="hidden">
         <div class="mono" id="stimList" style="margin-top:9px"></div>
       </div>
@@ -400,7 +400,7 @@
         <p class="d" data-i18n="s2bd"></p>
         <div class="fmt"><s>01<i data-i18n="fmtN"></i></s><s>I have to get a haircut<i data-i18n="fmtS"></i></s><s>7<i data-i18n="fmtY"></i></s></div>
         <p class="d" style="margin:9px 0 10px" data-i18n="s2bd2"></p>
-        <textarea id="tgtBox" spellcheck="false"></textarea>
+        <textarea id="tgtBox" spellcheck="false" aria-label="Target sentences"></textarea>
       </div>
     </div>
     <div class="tally hidden" id="tally"></div>
@@ -409,10 +409,10 @@
 
   <div class="panel"><div class="pad">
     <div class="ph"><span class="n">3</span><h3 data-i18n="p3t"></h3>
-      <span class="sum" id="sum3"></span><span class="st" id="st3"></span><span class="chevp">›</span></div>
+      <span class="sum" id="sum3"></span><span class="st" id="st3"></span><span class="chevp" aria-hidden="true">›</span></div>
     <p class="hint" data-i18n="p3h"></p>
     <div class="row">
-      <span class="fl" data-i18n="lblPrac"></span>
+      <label class="fl" for="pracLang" data-i18n="lblPrac"></label>
       <select class="inp" id="pracLang">
         <option value="en">English</option>
         <option value="ko">한국어</option>
@@ -424,17 +424,17 @@
 
   <div class="panel"><div class="pad">
     <div class="ph"><span class="n">4</span><h3 data-i18n="p4t"></h3>
-      <span class="sum" id="sum4"></span><span class="st" data-i18n="stSet"></span><span class="chevp">›</span></div>
+      <span class="sum" id="sum4"></span><span class="st" data-i18n="stSet"></span><span class="chevp" aria-hidden="true">›</span></div>
     <p class="hint" data-i18n="p4h"></p>
     <div class="row">
-      <span class="fl" data-i18n="lblPause"></span><input class="inp sm" type="number" id="cPause" step="0.001" value="2.5">
-      <span class="fl" data-i18n="lblTone"></span><input class="inp sm" type="number" id="cTone" step="0.001" value="0.25">
-      <span class="fl" data-i18n="lblHz"></span><input class="inp sm" type="number" id="cHz" step="10" value="1000">
+      <label class="fl" for="cPause" data-i18n="lblPause"></label><input class="inp sm" type="number" id="cPause" step="0.001" value="2.5">
+      <label class="fl" for="cTone" data-i18n="lblTone"></label><input class="inp sm" type="number" id="cTone" step="0.001" value="0.25">
+      <label class="fl" for="cHz" data-i18n="lblHz"></label><input class="inp sm" type="number" id="cHz" step="10" value="1000">
     </div>
     <div class="row">
-      <span class="fl" data-i18n="lblBase"></span><input class="inp sm" type="number" id="cBase" step="0.1" value="2">
-      <span class="fl" data-i18n="lblPer"></span><input class="inp sm" type="number" id="cPer" step="0.1" value="0.5">
-      <span class="fl" data-i18n="lblThr"></span><input class="inp sm" type="number" id="cThr" step="1" value="7">
+      <label class="fl" for="cBase" data-i18n="lblBase"></label><input class="inp sm" type="number" id="cBase" step="0.1" value="2">
+      <label class="fl" for="cPer" data-i18n="lblPer"></label><input class="inp sm" type="number" id="cPer" step="0.1" value="0.5">
+      <label class="fl" for="cThr" data-i18n="lblThr"></label><input class="inp sm" type="number" id="cThr" step="1" value="7">
     </div>
     <div class="box">
       <div class="mono" style="color:var(--ink)" data-i18n="formula"></div>
@@ -446,13 +446,13 @@
 
   <div class="panel"><div class="pad">
     <div class="ph"><span class="n">5</span><h3 data-i18n="p5t"></h3>
-      <span class="sum" id="sum5"></span><span class="st wait" id="st5" data-i18n="stNotChecked"></span><span class="chevp">›</span></div>
+      <span class="sum" id="sum5"></span><span class="st wait" id="st5" data-i18n="stNotChecked"></span><span class="chevp" aria-hidden="true">›</span></div>
     <p class="hint" data-i18n="p5h"></p>
     <div class="two three">
       <div class="sub">
         <p class="k" data-i18n="s5at"></p>
         <p class="d" data-i18n="s5ad"></p>
-        <div class="ln"><span class="fl" data-i18n="lblInput"></span>
+        <div class="ln"><label class="fl" for="mic" data-i18n="lblInput"></label>
           <select class="inp" id="mic" style="flex:1"></select></div>
         <div class="ln"><span class="meter"><i id="lvl"></i></span></div>
         <p class="d" style="margin:0 0 11px" data-i18n="s5ad2"></p>
@@ -734,6 +734,7 @@ $("tgtFile").onchange=async e=>{
 /* stimulus intake ---------------------------------------------------------- */
 const zone=$("zone");
 zone.onclick=()=>$("stimIn").click();
+zone.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); $("stimIn").click(); } };
 zone.ondragover=e=>{e.preventDefault(); zone.classList.add("on");};
 zone.ondragleave=()=>zone.classList.remove("on");
 zone.ondrop=e=>{e.preventDefault(); zone.classList.remove("on"); takeStim(e.dataTransfer.files);};

@@ -81,7 +81,7 @@
   .panel.fold .step .sum ~ .ok{margin-left:15px}
   .panel:not(.fold) .step .sum{display:none}
   .panel.fold .step a{display:none}
-  .chevp{flex:none; color:#b9b9c6; font-size:20px; line-height:1; margin-left:14px;
+  .chevp{flex:none; color:#8b8b9e; font-size:20px; line-height:1; margin-left:14px;
     transition:transform .15s}
   .panel:not(.fold) .chevp{transform:rotate(90deg); color:var(--accent)}
   .meta{font-size:16px; color:var(--muted); margin:0 0 12px}
@@ -313,7 +313,7 @@
   <div class="panel"><div class="pad">
     <div class="step"><span class="n">1</span><h2 data-i18n="s1Title"></h2>
       <span class="sum" id="sum1"></span><span class="ok" id="s1Ok"></span>
-      <span class="chevp">›</span></div>
+      <span class="chevp" aria-hidden="true">›</span></div>
     <p class="meta" data-i18n="s1Help"></p>
     <div class="row">
       <button class="btn-g btn-s" id="loadPreset" data-i18n="btnPreset"></button>
@@ -321,7 +321,7 @@
       <input type="file" id="tgtFile" accept=".csv,.txt" style="display:none">
       <button class="btn-g btn-s" id="clearTgt" data-i18n="btnClearTgt"></button>
     </div>
-    <textarea id="tgtBox" spellcheck="false"></textarea>
+    <textarea id="tgtBox" spellcheck="false" aria-label="Target sentences"></textarea>
     <div class="row">
       <button class="btn-p btn-s" id="applyTgt" data-i18n="btnApplyTgt"></button>
       <span class="meta" id="tgtInfo" style="margin:0"></span>
@@ -332,7 +332,7 @@
   <!-- ============ STEP 2 : normalizer ============ -->
   <div class="panel"><div class="pad">
     <div class="step"><span class="n">2</span><h2 data-i18n="s2Title"></h2>
-      <span class="sum" id="sum2"></span><span class="chevp">›</span></div>
+      <span class="sum" id="sum2"></span><span class="chevp" aria-hidden="true">›</span></div>
     <p class="meta" data-i18n="s2Help"></p>
     <div class="row">
       <label class="chk"><input type="checkbox" id="optNum" checked><span data-i18n="optNum"></span></label>
@@ -345,7 +345,7 @@
     <details id="ruleDetails">
       <summary data-i18n="ruleSummary"></summary>
       <p class="meta" style="margin-top:8px" data-i18n="ruleHelp"></p>
-      <textarea id="ruleBox" spellcheck="false" style="min-height:90px"></textarea>
+      <textarea id="ruleBox" spellcheck="false" style="min-height:90px" aria-label="Lexical variant rules"></textarea>
       <div class="row">
         <button class="btn-g btn-s" id="applyRules" data-i18n="btnApplyRules"></button>
         <button class="btn-g btn-s" id="expCfg" data-i18n="btnExpCfg"></button>
@@ -361,10 +361,10 @@
     <div class="step"><span class="n">3</span><h2 data-i18n="s3Title"></h2>
       <a href="segment.html" style="font-size:15.2px; font-weight:600; margin-left:14px;
          color:var(--accent); text-decoration:none" data-i18n="segLink"></a>
-      <span class="sum" id="sum3"></span><span class="chevp">›</span></div>
+      <span class="sum" id="sum3"></span><span class="chevp" aria-hidden="true">›</span></div>
     <p class="meta" data-i18n="s3Help"></p>
     <div class="row">
-      <label class="meta" style="margin:0" data-i18n="modelLbl"></label>
+      <label for="modelSel" class="meta" style="margin:0" data-i18n="modelLbl"></label>
       <select id="modelSel">
         <option value="onnx-community/whisper-large-v3-turbo" data-i18n="optTurbo"></option>
         <option value="Xenova/whisper-small" data-i18n="optSmall"></option>
@@ -382,7 +382,7 @@
         <p data-i18n="batchNote"></p>
       </div>
     </details>
-    <div class="drop" id="drop"><span id="dropMsg"></span>
+    <div class="drop" id="drop" role="button" tabindex="0" aria-label="Choose the recordings to score"><span id="dropMsg"></span>
       <input type="file" id="fileIn" multiple accept="audio/*" style="display:none">
     </div>
     <div id="mapWrap" class="hidden">
@@ -418,7 +418,7 @@
          style="font-size:15.2px; font-weight:600; color:var(--accent);
          text-decoration:none; margin-left:12px" data-i18n="readGuide"></a>
       <span class="right">
-        <select id="sortSel">
+        <select id="sortSel" aria-label="Sort the results">
           <option value="item" data-i18n="sortItem"></option>
           <option value="acc" data-i18n="sortAcc"></option>
           <option value="conf" data-i18n="sortConf"></option>
@@ -1042,6 +1042,8 @@ const FNAME_RE=/^(.+?)[_-]item[_-]?(\d{1,3})(?:[_-]v\d+)?\.[A-Za-z0-9]+$/i;
 let FILES=[], MAP=[], RESULTS=[];
 const drop=$("drop");
 drop.onclick=()=>$("fileIn").click();
+/* the drop zone is a control, so it answers to the keyboard as well */
+drop.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); $("fileIn").click(); } };
 drop.ondragover=e=>{e.preventDefault(); drop.classList.add("on");};
 drop.ondragleave=()=>drop.classList.remove("on");
 drop.ondrop=e=>{e.preventDefault(); drop.classList.remove("on"); takeFiles(e.dataTransfer.files);};

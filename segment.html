@@ -277,14 +277,14 @@
     <div class="step"><span class="n">1</span><h2 data-i18n="s1Title"></h2></div>
     <p class="meta" data-i18n="s1Help"></p>
     <div class="row">
-      <label class="fl" data-i18n="lblPid"></label>
+      <label for="pid" class="fl" data-i18n="lblPid"></label>
       <input type="text" id="pid" placeholder="P01">
-      <label class="fl" data-i18n="lblCount"></label>
+      <label for="expected" class="fl" data-i18n="lblCount"></label>
       <input type="number" id="expected" min="1" max="200" value="30">
-      <label class="fl" data-i18n="lblStart"></label>
+      <label for="startNo" class="fl" data-i18n="lblStart"></label>
       <input type="number" id="startNo" min="1" max="200" value="1">
     </div>
-    <div class="drop" id="drop"><span id="dropMsg"></span>
+    <div class="drop" id="drop" role="button" tabindex="0" aria-label="Choose one recording to split"><span id="dropMsg"></span>
       <input type="file" id="fileIn" accept="audio/*" style="display:none">
     </div>
   </div></div>
@@ -316,7 +316,7 @@
     <p class="meta" style="margin:-4px 0 14px" data-i18n="modeHint"></p>
 
     <div id="gridStim" class="hidden">
-      <div class="drop" id="stimDrop" style="padding:20px"><span id="stimMsg"></span>
+      <div class="drop" id="stimDrop" style="padding:20px" role="button" tabindex="0" aria-label="Choose the stimulus audio files"><span id="stimMsg"></span>
         <input type="file" id="stimIn" multiple accept="audio/*" style="display:none">
       </div>
     </div>
@@ -329,38 +329,38 @@
         <button class="btn-g btn-s" id="clearTgt" data-i18n="btnClearTgt"></button>
         <span class="meta" id="tgtCount" style="margin:0"></span>
       </div>
-      <textarea id="tgtBox" spellcheck="false" style="width:100%; height:110px; font:15.2px/1.5
+      <textarea id="tgtBox" spellcheck="false" aria-label="Target sentences" style="width:100%; height:110px; font:15.2px/1.5
         var(--mono); padding:9px 11px; border:1px solid var(--line); border-radius:9px"></textarea>
     </div>
     <div class="row hidden" id="gridConst">
-      <label class="fl" data-i18n="lblPause"></label>
+      <label for="cPause" class="fl" data-i18n="lblPause"></label>
       <input type="number" id="cPause" step="0.001" value="2.505">
-      <label class="fl" data-i18n="lblTone"></label>
+      <label for="cTone" class="fl" data-i18n="lblTone"></label>
       <input type="number" id="cTone" step="0.001" value="0.251">
-      <label class="fl" data-i18n="lblBase"></label>
+      <label for="cBase" class="fl" data-i18n="lblBase"></label>
       <input type="number" id="cBase" step="0.1" value="2">
-      <label class="fl" data-i18n="lblPer"></label>
+      <label for="cPer" class="fl" data-i18n="lblPer"></label>
       <input type="number" id="cPer" step="0.1" value="0.5">
-      <label class="fl" data-i18n="lblThr"></label>
+      <label for="cThr" class="fl" data-i18n="lblThr"></label>
       <input type="number" id="cThr" step="1" value="7">
-      <label class="fl" data-i18n="lblToneHz"></label>
+      <label for="cToneHz" class="fl" data-i18n="lblToneHz"></label>
       <input type="number" id="cToneHz" step="10" value="1000" style="width:88px">
       <button class="btn-g btn-s" id="fitGrid" data-i18n="btnFitGrid"></button>
     </div>
 
     <div class="row" id="skipRow">
-      <label class="fl" data-i18n="lblSkip"></label>
+      <label for="skipS" class="fl" data-i18n="lblSkip"></label>
       <input type="number" id="skipS" min="0" step="1" value="0">
       <button class="btn-g btn-s" id="skipAuto" data-i18n="btnSkipAuto"></button>
-      <label class="fl" data-i18n="lblMaxLen"></label>
+      <label for="maxLen" class="fl" data-i18n="lblMaxLen"></label>
       <input type="number" id="maxLen" min="1" max="60" step="0.5" value="15">
     </div>
     <div class="row" id="silRow">
-      <label class="fl" data-i18n="lblSil"></label>
+      <label for="minSil" class="fl" data-i18n="lblSil"></label>
       <input type="number" id="minSil" min="0.1" max="5" step="0.1" value="0.8">
-      <label class="fl" data-i18n="lblMinLen"></label>
+      <label for="minLen" class="fl" data-i18n="lblMinLen"></label>
       <input type="number" id="minLen" min="0.2" max="10" step="0.1" value="0.8">
-      <label class="fl" data-i18n="lblPad"></label>
+      <label for="pad" class="fl" data-i18n="lblPad"></label>
       <input type="number" id="pad" min="0" max="1" step="0.05" value="0.2">
       <button class="btn-g btn-s" id="redetect" data-i18n="btnRedetect"></button>
       <button class="btn-g btn-s" id="autoFit" data-i18n="btnAutoFit"></button>
@@ -551,6 +551,8 @@ function paintDetect(){
 /* ---------- file input ---------- */
 const drop=$("drop");
 drop.onclick=()=>$("fileIn").click();
+/* the drop zone is a control, so it answers to the keyboard as well */
+drop.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); $("fileIn").click(); } };
 drop.ondragover=e=>{ e.preventDefault(); drop.classList.add("over"); };
 drop.ondragleave=()=>drop.classList.remove("over");
 drop.ondrop=e=>{ e.preventDefault(); drop.classList.remove("over");
@@ -976,6 +978,7 @@ function parseTargetLines(text){
 /* stimulus files -> durations */
 const stimDrop=$("stimDrop");
 stimDrop.onclick=()=>$("stimIn").click();
+stimDrop.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); $("stimIn").click(); } };
 stimDrop.ondragover=e=>{ e.preventDefault(); stimDrop.classList.add("over"); };
 stimDrop.ondragleave=()=>stimDrop.classList.remove("over");
 stimDrop.ondrop=e=>{ e.preventDefault(); stimDrop.classList.remove("over"); loadStim(e.dataTransfer.files); };
