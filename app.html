@@ -1545,13 +1545,21 @@ function rulesSummary(){
     "; self_corrections="+(CFG.repairs?"final attempt":"verbatim")+
     "; extra="+CFG.rules.map(r=>r.from+">"+r.to).join("|");
 }
+/* The word error rate is not computed on any of the strings the export used to
+   carry. It is computed on the normalized forms — lower-cased, punctuation
+   dropped, the configured rules applied, and self-corrections removed — so a row
+   could log a repair as removed while every transcript column still contained
+   it. The scored forms of both sides are therefore exported as well, and the
+   final WER can be recomputed from the file alone. */
 $("csvBtn").onclick=()=>{
-  const cols=["participant","item","target","transcription_raw","transcription_final",
+  const cols=["participant","item","target","target_scored",
+              "transcription_raw","transcription_corrected","transcription_final",
               "reviewed","wer_raw","wer_final","accuracy_pct",
               "confidence","avg_logprob","duration_s","status","error","file","model","rules",
               "self_corrections_removed"];
   const rows=[cols.join(",")];
-  RESULTS.forEach(r=>rows.push([r.pid,r.item??"",r.target,r.text,effectiveText(r),
+  RESULTS.forEach(r=>rows.push([r.pid,r.item??"",r.target,r.sc?r.sc.gt:"",
+    r.text, r.corrected??"", r.sc?r.sc.tr:"",
     r.reviewed?"yes":"no",
     r.scRaw?r.scRaw.wer:"",r.sc?r.sc.wer:"",r.sc?r.sc.acc:"",r.conf??"",r.avgLogprob??"",
     r.dur?r.dur.toFixed(2):"",r.status||"scored",r.err||"",r.name,loadedModel,rulesSummary(),
@@ -1578,7 +1586,9 @@ $("jsonBtn").onclick=()=>{
       accuracy_pct:r.sc?r.sc.acc:null,
       confidence:r.conf,avg_logprob:r.avgLogprob,status:r.status||"scored",error:r.err||null,
       ops:r.sc?r.sc.ops:null,
+      target_scored:r.sc?r.sc.gt:null,
       transcription_scored:r.sc?r.sc.tr:null,
+      transcription_raw_scored:r.scRaw?r.scRaw.tr:null,
       self_corrections_removed:r.sc?r.sc.rep:null,
       duration_s:r.dur?+r.dur.toFixed(2):null,flag:"",file:r.name,
       reviewed:!!r.reviewed}))},null,1)],

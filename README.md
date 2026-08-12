@@ -41,6 +41,15 @@ error rate (WER), accuracy, and the model's mean token confidence (reported both
 and as the raw average log probability). Per-participant means are summarized separately. Results
 export as CSV and JSON.
 
+The export separates what was said from what was scored, because WER is not computed on the
+transcription as it is displayed. Every item carries `transcription_raw` (what the recognizer
+returned, untouched), `transcription_corrected` (a hand correction, empty where none was made),
+and `transcription_final` — the normalized string the rate was actually computed on, after the
+scoring rules and after any self-correction listed in `self_corrections_removed` has been dropped.
+`target_scored` is the target in the same normalized form, so `wer_final` can be recomputed from
+the file alone. A `status` column distinguishes `scored`, `no_speech`, `failed`, and
+`not_attempted`; a file that failed carries no score rather than a score of zero.
+
 ## How WER is computed
 
 WER is implemented directly in the page; there is no external dependency for it. Words are aligned
