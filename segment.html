@@ -123,9 +123,30 @@
     color:#3b3e73; line-height:1.65}
   .warn{background:#fff4f0; color:#7a3b28}
 
-  .wavewrap{position:relative; border:1px solid var(--line); border-radius:10px;
-    background:#fbfbfd; overflow:hidden; user-select:none}
-  canvas{display:block; width:100%; height:190px}
+  /* ---- the waveform scrolls sideways ---------------------------------------
+     Fitting a ten-minute recording into the width of the page left about two
+     pixels a second: thirty boundaries landed on top of one another and none of
+     them could be grasped. The waveform is now drawn at a readable scale and
+     the panel scrolls, with the canvas painting only what is on screen. */
+  .wavescroll{overflow-x:auto; overflow-y:hidden; border:1px solid var(--line);
+    border-radius:10px; background:#fbfbfd}
+  .wavewrap{position:relative; user-select:none; height:190px}
+  canvas{display:block; position:sticky; left:0; height:190px}
+  .zoombar{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:0 0 8px}
+  .zoombar .zk{font-family:var(--mono); font-size:11.6px; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--muted); margin-right:2px}
+  .zoombar button.on{background:var(--accent); border-color:var(--accent); color:#fff}
+
+  /* ---- controls in the segment table ---- */
+  .fileline{display:flex; align-items:center}
+  .play{background:none; border:1px solid var(--line); border-radius:6px; width:26px; height:26px;
+    cursor:pointer; color:var(--accent); font-size:11px; padding:0; margin-right:9px; flex:none}
+  .play:hover{border-color:var(--accent-line); background:var(--accent-soft)}
+  .nudge{display:inline-flex; align-items:center; gap:2px}
+  .nudge button{background:#fff; border:1px solid var(--line); border-radius:5px; width:22px;
+    height:22px; cursor:pointer; color:var(--accent); font-size:12px; padding:0; line-height:1}
+  .nudge button:hover{background:var(--accent-soft); border-color:var(--accent-line)}
+  .nudge .v{min-width:6.5ch; text-align:right; font-variant-numeric:tabular-nums}
   .marks{position:absolute; inset:0; pointer-events:none}
   .seg{position:absolute; top:0; bottom:22px; background:rgba(56,64,243,.07);
     border-left:2px solid var(--accent); border-right:2px solid var(--accent)}
@@ -137,10 +158,10 @@
     background:var(--accent); border-radius:2px}
   .hnd.end::after{background:var(--accent)}
   .ruler{position:absolute; left:0; right:0; bottom:0; height:22px; border-top:1px solid var(--line);
-    background:#fff}
-  .tick{position:absolute; bottom:2px; font-family:var(--mono); font-size:11.6px; color:var(--muted);
-    transform:translateX(-50%)}
-  .tick i{position:absolute; left:50%; bottom:13px; width:1px; height:5px; background:var(--line);
+    background:#fff; overflow:hidden}
+  .tick{position:absolute; bottom:2px; padding-left:5px; font-family:var(--mono); font-size:11.6px;
+    color:var(--muted); white-space:nowrap}
+  .tick i{position:absolute; left:0; bottom:13px; width:1px; height:5px; background:var(--line);
     display:block}
   .cursor{position:absolute; top:0; bottom:22px; width:1px; background:var(--coral)}
   .skip{position:absolute; left:0; top:0; bottom:22px; background:rgba(255,92,53,.10);
@@ -383,10 +404,19 @@
   <div class="panel hidden" id="pEdit"><div class="pad">
     <div class="step"><span class="n">3</span><h2 data-i18n="s3Title"></h2></div>
     <p class="meta" data-i18n="s3Help"></p>
-    <div class="wavewrap" id="wavewrap">
-      <canvas id="wave"></canvas>
-      <div class="marks" id="marks"></div>
-      <div class="ruler" id="ruler"></div>
+    <div class="zoombar">
+      <span class="zk" data-i18n="zoomLbl"></span>
+      <button class="btn-g btn-s" data-zoom="fit" data-i18n="zoomFit"></button>
+      <button class="btn-g btn-s" data-zoom="60">60 s</button>
+      <button class="btn-g btn-s" data-zoom="20">20 s</button>
+      <button class="btn-g btn-s" data-zoom="8">8 s</button>
+    </div>
+    <div class="wavescroll" id="wavescroll">
+      <div class="wavewrap" id="wavewrap">
+        <canvas id="wave"></canvas>
+        <div class="marks" id="marks"></div>
+        <div class="ruler" id="ruler"></div>
+      </div>
     </div>
     <div class="row" style="margin-top:12px">
       <button class="btn-g btn-s" id="playAll" data-i18n="btnPlayAll"></button>
@@ -491,7 +521,7 @@ en:{
  skipNone:"No obvious instruction section was found; the whole file is being used.",
  fmtIrregular:(mx,md)=>"The expected number of segments was found, but the spacing is uneven — the longest gap between responses is "+mx+" against a typical "+md+". Play through the boundaries before exporting: a stretch where the participant said nothing cannot be detected from silence, and would shift every item number after it.",
  s3Title:"Adjust",
- s3Help:"Drag a boundary to move it. Click an empty part of the waveform to add a boundary; use the delete button in the table to remove a segment. Rows shorter than one second are highlighted.",
+ s3Help:"Move a boundary with the ◀ ▶ buttons in the table, or drag it on the waveform. The waveform scrolls; the buttons above set how much of the recording is shown at once. Click an empty part of the waveform to add a boundary, and use ✕ to remove a segment. Rows shorter than one second are highlighted.",
  editHint:"Click a row to play that segment.",
  btnPlayAll:"▶ Play whole file", btnStop:"■ Stop",
  thConf:"Confidence",
@@ -512,6 +542,9 @@ en:{
      : " Note that these marks describe the boundaries only. Without a known schedule, an item the participant skipped in silence leaves no trace in the audio, so the item numbering itself cannot be confirmed here — check the first and last items against the sentence set.";
    return s+rest+"."+tail+caveat;
  },
+ zoomLbl:"Scale", zoomFit:"Fit",
+ aPlaySeg:"Play this segment", aNudgeBack:"Move 0.05 s earlier",
+ aNudgeFwd:"Move 0.05 s later",
  thNo:"Item", thFile:"Output file", thStart:"Start", thEnd:"End", thDur:"Length",
  toApp:"Then open the scoring tool to transcribe and score the segments →",
  s4Title:"Export",
@@ -578,6 +611,9 @@ async function load(f){
     BUF=await ac().decodeAudioData(ab);
   }catch(err){ setDrop("errDecode"); return; }
   setDrop("fmtLoaded", f.name, BUF.duration);
+  /* A short recording still fits; a long one opens at a scale where the
+     boundaries are far enough apart to be grasped, and scrolls. */
+  ZOOM = BUF.duration>75 ? "60" : "fit";
   buildEnvelope();
   $("pDetect").classList.remove("hidden");
   $("pEdit").classList.remove("hidden");
@@ -1114,27 +1150,50 @@ function findTones(f0){
 
 /* ---------- waveform ---------- */
 const cv=$("wave"), marks=$("marks"), ruler=$("ruler");
+/* seconds shown across the visible width; "fit" puts the whole recording in it */
+let ZOOM="fit", PPS=1;
+function viewW(){ return $("wavescroll").clientWidth || 1; }
+function setScale(){
+  if(!BUF) return;
+  PPS = ZOOM==="fit" ? viewW()/BUF.duration : viewW()/(+ZOOM);
+  $("wavewrap").style.width = Math.max(viewW(), BUF.duration*PPS) + "px";
+  document.querySelectorAll(".zoombar [data-zoom]").forEach(b=>
+    b.classList.toggle("on", b.dataset.zoom===String(ZOOM)));
+}
 function draw(){
   if(!BUF) return;
-  const wrap=$("wavewrap");
-  const W=wrap.clientWidth, H=190, dpr=window.devicePixelRatio||1;
-  cv.width=W*dpr; cv.height=H*dpr; cv.style.height=H+"px";
-  const g=cv.getContext("2d"); g.scale(dpr,dpr);
+  setScale();
+  const sc=$("wavescroll");
+  const W=viewW(), H=190, dpr=window.devicePixelRatio||1;
+  cv.width=W*dpr; cv.height=H*dpr; cv.style.width=W+"px"; cv.style.height=H+"px";
+  const g=cv.getContext("2d"); g.setTransform(dpr,0,0,dpr,0,0);
   g.clearRect(0,0,W,H);
   const usable=H-22, mid=usable/2;
-  const per=Math.max(1,Math.floor(ENV.length/W));
   const pk=peakLevel()||1;
+  /* only the visible window is painted, so the scale can be raised without
+     building a canvas tens of thousands of pixels wide */
+  const t0=sc.scrollLeft/PPS, spp=1/PPS;
   g.fillStyle="#c9cbe3";
   for(let x=0;x<W;x++){
+    const a=(t0+x*spp)/BUF.duration*ENV.length;
+    const b=(t0+(x+1)*spp)/BUF.duration*ENV.length;
     let m=0;
-    for(let i=x*per;i<Math.min(ENV.length,(x+1)*per);i++) if(ENV[i]>m) m=ENV[i];
+    for(let i=Math.max(0,Math.floor(a));i<Math.min(ENV.length,Math.max(Math.ceil(b),Math.floor(a)+1));i++)
+      if(ENV[i]>m) m=ENV[i];
     const h=Math.min(1,m/pk)*mid*0.94;
     g.fillRect(x,mid-h,1,h*2||1);
   }
   drawMarks(); drawRuler();
 }
-function pxOf(t){ return (t/BUF.duration)*$("wavewrap").clientWidth; }
-function timeOf(x){ return Math.max(0,Math.min(BUF.duration,(x/$("wavewrap").clientWidth)*BUF.duration)); }
+function pxOf(t){ return t*PPS; }
+function timeOf(x){ return Math.max(0,Math.min(BUF.duration,x/PPS)); }
+/* bring a moment into view, so a nudge that pushes a boundary off screen is
+   still visible */
+function ensureVisible(t){
+  const sc=$("wavescroll"), x=pxOf(t), pad=60;
+  if(x < sc.scrollLeft+pad) sc.scrollLeft = Math.max(0, x-pad);
+  else if(x > sc.scrollLeft+viewW()-pad) sc.scrollLeft = x-viewW()+pad;
+}
 function drawMarks(){
   marks.innerHTML="";
   const skip=+$("skipS").value||0;
@@ -1166,7 +1225,9 @@ function drawMarks(){
 function drawRuler(){
   ruler.innerHTML="";
   const d=BUF.duration;
-  const step=d>600?60:d>240?30:d>90?10:d>30?5:2;
+  /* a tick roughly every 90 px, whatever the scale */
+  const want=90/PPS;
+  const step=[1,2,5,10,15,30,60,120,300].find(s=>s>=want) || 600;
   for(let t=0;t<=d;t+=step){
     const e=document.createElement("span");
     e.className="tick"; e.style.left=pxOf(t)+"px";
@@ -1215,6 +1276,26 @@ $("wavewrap").onclick=ev=>{
   drawMarks(); renderTable();
 };
 window.addEventListener("resize",()=>{ if(BUF) draw(); });
+/* the canvas paints the visible window only, so it is repainted as it scrolls */
+(()=>{
+  let pending=false;
+  $("wavescroll").addEventListener("scroll",()=>{
+    if(pending||!BUF) return;
+    pending=true;
+    requestAnimationFrame(()=>{ pending=false; draw(); });
+  });
+  document.querySelectorAll(".zoombar [data-zoom]").forEach(b=>{
+    b.onclick=()=>{
+      if(!BUF) { ZOOM=b.dataset.zoom; setScale(); return; }
+      /* keep whatever is in the middle of the view in the middle after zooming */
+      const sc=$("wavescroll"), mid=(sc.scrollLeft+viewW()/2)/PPS;
+      ZOOM=b.dataset.zoom;
+      draw();
+      sc.scrollLeft=Math.max(0, pxOf(mid)-viewW()/2);
+      draw();
+    };
+  });
+})();
 
 /* ---------- table ---------- */
 function itemNo(i){ const n=(+$("startNo").value||1)+i; return String(n).padStart(2,"0"); }
@@ -1229,17 +1310,52 @@ function renderTable(){
     const why=(s.why||[]).map(k=>T(k)).filter(Boolean).join(", ");
     const note = why || (s.off!=null ? T("fmtNoteOff")(s.off) : "");
     if(s.level==="low") tr.className="short";
-    tr.innerHTML='<td>'+itemNo(i)+'</td><td class="nm">'+fileName(i)+'</td>'+
-      '<td>'+s.s.toFixed(2)+'</td><td>'+s.e.toFixed(2)+'</td><td>'+dur.toFixed(2)+'</td>'+
+    /* Both edges can be moved from the table. Dragging on the waveform is still
+       there, but a table control is reachable however many segments there are. */
+    const edge=(k,v)=>'<td><span class="nudge">'+
+      '<button class="nb" data-i="'+i+'" data-k="'+k+'" data-d="-1" '+
+        'aria-label="'+T("aNudgeBack")+'">◀</button>'+
+      '<span class="v">'+v.toFixed(2)+'</span>'+
+      '<button class="nb" data-i="'+i+'" data-k="'+k+'" data-d="1" '+
+        'aria-label="'+T("aNudgeFwd")+'">▶</button></span></td>';
+    tr.innerHTML='<td>'+itemNo(i)+'</td>'+
+      '<td><span class="fileline"><button class="play" data-play="'+i+'" '+
+        'aria-label="'+T("aPlaySeg")+'">▶</button>'+
+      '<span class="nm">'+fileName(i)+'</span></span></td>'+
+      edge("s",s.s)+edge("e",s.e)+'<td>'+dur.toFixed(2)+'</td>'+
       '<td><span class="chip '+(s.level||"ok")+'">'+T("lv_"+(s.level||"ok"))+'</span></td>'+
       '<td>'+note+'</td>'+
       '<td><button class="iconbtn" data-del="'+i+'">✕</button></td>';
-    tr.onclick=ev=>{ if(ev.target.dataset.del!=null) return; play(s.s,s.e); };
+    tr.onclick=ev=>{ if(ev.target.closest("button")) return; play(s.s,s.e); };
     tb.appendChild(tr);
   });
   paintConf();
   tb.querySelectorAll("[data-del]").forEach(b=>{
     b.onclick=ev=>{ ev.stopPropagation(); SEGS.splice(+b.dataset.del,1); drawMarks(); renderTable(); };
+  });
+  tb.querySelectorAll("[data-play]").forEach(b=>{
+    b.onclick=ev=>{ ev.stopPropagation(); const s=SEGS[+b.dataset.play]; if(s) play(s.s,s.e); };
+  });
+  /* one press moves a boundary by 50 ms; holding it repeats */
+  const NUDGE=0.05;
+  tb.querySelectorAll(".nb").forEach(b=>{
+    const step=()=>{
+      const i=+b.dataset.i, k=b.dataset.k, s=SEGS[i];
+      if(!s) return;
+      const dt=(+b.dataset.d)*NUDGE;
+      if(k==="s") s.s=Math.max(0,Math.min(s.s+dt, s.e-NUDGE));
+      else        s.e=Math.min(BUF?BUF.duration:1e9, Math.max(s.e+dt, s.s+NUDGE));
+      ensureVisible(k==="s"?s.s:s.e);
+      drawMarks(); renderTable();
+      const again=$("segBody").querySelector('.nb[data-i="'+i+'"][data-k="'+k+'"][data-d="'+b.dataset.d+'"]');
+      if(again) again.focus();
+    };
+    b.onclick=ev=>{ ev.stopPropagation(); step(); };
+    let hold=null;
+    const stop=()=>{ clearTimeout(hold); hold=null; };
+    b.onmousedown=ev=>{ ev.stopPropagation();
+      hold=setTimeout(function rep(){ step(); hold=setTimeout(rep,90); },400); };
+    b.onmouseup=stop; b.onmouseleave=stop; b.onblur=stop;
   });
 }
 
