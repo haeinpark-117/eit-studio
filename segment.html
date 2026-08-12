@@ -219,7 +219,15 @@
 
   .bar{flex:1; height:6px; background:#e9e9f0; border-radius:4px; overflow:hidden; min-width:120px}
   .bar i{display:block; height:100%; width:0; background:var(--accent); transition:width .2s}
-  @media(max-width:700px){ table.segs th:nth-child(4),table.segs td:nth-child(4){display:none} }
+  @media(max-width:700px){ table.segs .endc{display:none} }
+  /* the target sentence is prose, so it is set in the body face rather than the
+     mono face the timings use */
+  table.segs .tgtcol{width:32%}
+  /* on a narrow screen the sentence would wrap to one word a line, so the
+     column steps aside before the timings do */
+  @media(max-width:820px){ table.segs .tgtcol{display:none} }
+  table.segs td.tgtcol{font:15.6px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,
+    Roboto,sans-serif; color:var(--ink)}
 
   /* ---- links out to the documentation ---------------------------------------
      The tool pages used to link only to one another, so a question that came up
@@ -432,8 +440,9 @@
     </div>
     <div class="infobox" id="confBox" style="margin-top:14px"></div>
     <table class="segs"><thead><tr>
-      <th data-i18n="thNo"></th><th data-i18n="thFile"></th><th data-i18n="thStart"></th>
-      <th data-i18n="thEnd"></th><th data-i18n="thDur"></th><th data-i18n="thConf"></th><th data-i18n="thNote"></th><th></th>
+      <th data-i18n="thNo"></th><th data-i18n="thFile"></th>
+      <th data-i18n="thTarget" class="tgtcol hidden" id="thTgt"></th><th data-i18n="thStart"></th>
+      <th data-i18n="thEnd" class="endc"></th><th data-i18n="thDur"></th><th data-i18n="thConf"></th><th data-i18n="thNote"></th><th></th>
     </tr></thead><tbody id="segBody"></tbody></table>
   </div></div>
 
@@ -554,7 +563,7 @@ en:{
  aNudgeFwd:"Move 0.05 s later",
  aDragStart:"Drag to move the start", aDragEnd:"Drag to move the end",
  aMoveSeg:"Drag to move the whole segment",
- thNo:"Item", thFile:"Output file", thStart:"Start", thEnd:"End", thDur:"Length",
+ thNo:"Item", thFile:"Output file", thTarget:"Target sentence", thStart:"Start", thEnd:"End", thDur:"Length",
  toApp:"Then open the scoring tool to transcribe and score the segments →",
  s4Title:"Export",
  s4Help:"Files are written as 16-bit 16 kHz mono WAV named participantID_itemNN.wav, packaged in a ZIP that can be dropped straight into the scoring tool.",
@@ -825,6 +834,7 @@ $("pid").oninput=()=>renderTable();
    ============================================================ */
 let STIM=[];        /* measured stimulus durations, seconds  */
 let TGT=[];         /* [item, sentence, syllables]           */
+let TARGETS=[];     /* the same list, kept for the table     */
 let GRIDINFO=null;
 
 function constants(){
@@ -1093,8 +1103,11 @@ $("tgtFile").onchange=async e=>{
   $("tgtBox").value=await f.text(); countTargets();
 };
 function countTargets(){
-  const n=parseTargetLines($("tgtBox").value).length;
+  /* the parsed list also feeds the target-sentence column in step 3 */
+  TARGETS=parseTargetLines($("tgtBox").value);
+  const n=TARGETS.length;
   $("tgtCount").textContent=n?T("fmtTgtN")(n):"";
+  if(SEGS.length) renderTable();
 }
 $("tgtBox").addEventListener("input",countTargets);
 
@@ -1328,7 +1341,8 @@ function liveRow(i){
   const v=tr.querySelectorAll(".nudge .v");
   if(v[0]) v[0].textContent=s.s.toFixed(2);
   if(v[1]) v[1].textContent=s.e.toFixed(2);
-  if(tr.children[4]) tr.children[4].textContent=(s.e-s.s).toFixed(2);
+  const len=tr.querySelector(".lenc");
+  if(len) len.textContent=(s.e-s.s).toFixed(2);
 }
 /* dragging past the edge of the view scrolls the waveform along */
 function autoStart(){
@@ -1391,10 +1405,22 @@ window.addEventListener("resize",()=>{ if(BUF) draw(); });
 
 /* ---------- table ---------- */
 function itemNo(i){ const n=(+$("startNo").value||1)+i; return String(n).padStart(2,"0"); }
+/* the sentence is matched on the item number, so a start number other than 1
+   still lines the two lists up */
+function targetOf(i){
+  if(!TARGETS.length) return "";
+  const n=(+$("startNo").value||1)+i;
+  const hit=TARGETS.find(r=>r[0]===n) || TARGETS[i];
+  return hit ? hit[1] : "";
+}
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 function fileName(i){ return (($("pid").value||"P01").trim())+"_item"+itemNo(i)+".wav"; }
 function renderTable(){
   scoreSegments();
   const tb=$("segBody"); tb.innerHTML="";
+  /* the column appears only when a sentence list has been loaded */
+  const hasTgt=TARGETS.length>0;
+  $("thTgt").classList.toggle("hidden",!hasTgt);
   SEGS.forEach((s,i)=>{
     const tr=document.createElement("tr");
     const dur=s.e-s.s;
@@ -1404,7 +1430,7 @@ function renderTable(){
     if(s.level==="low") tr.className="short";
     /* Both edges can be moved from the table. Dragging on the waveform is still
        there, but a table control is reachable however many segments there are. */
-    const edge=(k,v)=>'<td><span class="nudge">'+
+    const edge=(k,v,cls)=>'<td'+(cls?' class="'+cls+'"':'')+'><span class="nudge">'+
       '<button class="nb" data-i="'+i+'" data-k="'+k+'" data-d="-1" '+
         'aria-label="'+T("aNudgeBack")+'">◀</button>'+
       '<span class="v">'+v.toFixed(2)+'</span>'+
@@ -1414,7 +1440,8 @@ function renderTable(){
       '<td><span class="fileline"><button class="play" data-play="'+i+'" '+
         'aria-label="'+T("aPlaySeg")+'">▶</button>'+
       '<span class="nm">'+fileName(i)+'</span></span></td>'+
-      edge("s",s.s)+edge("e",s.e)+'<td>'+dur.toFixed(2)+'</td>'+
+      (hasTgt?'<td class="tgtcol">'+esc(targetOf(i))+'</td>':'')+
+      edge("s",s.s)+edge("e",s.e,"endc")+'<td class="lenc">'+dur.toFixed(2)+'</td>'+
       '<td><span class="chip '+(s.level||"ok")+'">'+T("lv_"+(s.level||"ok"))+'</span></td>'+
       '<td>'+note+'</td>'+
       '<td><button class="iconbtn" data-del="'+i+'">✕</button></td>';
