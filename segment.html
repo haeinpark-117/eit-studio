@@ -23,6 +23,7 @@
     --bg:#f2f2f4; --panel:#fff; --ink:#08080f; --muted:#6a6a7d; --line:#e8e8ef;
     --accent:#3840f3; --accent-dark:#2a31d4; --accent-soft:#eef0ff; --accent-line:#d9dcff;
     --coral:#ff5c35; --ok:#0f9d58;
+    --pink:#ff1493; --pink-soft:#fff0f8; --pink-line:#ffcfe8;
     --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   }
   *{box-sizing:border-box}
@@ -132,6 +133,14 @@
     border-radius:10px; background:#fbfbfd}
   .wavewrap{position:relative; user-select:none; height:190px}
   canvas{display:block; position:sticky; left:0; height:190px}
+  /* The waveform stays put while the table scrolls, so a row and the sound it
+     refers to can be looked at together. */
+  #pEdit{overflow:visible}
+  .wavedock{position:sticky; top:50px; z-index:6; background:var(--panel);
+    margin:0 -24px; padding:10px 24px 8px}
+  .wavedock.stuck{border-bottom:1px solid var(--line);
+    box-shadow:0 8px 16px -12px rgba(20,20,60,.45)}
+  .dockhint{margin:0 0 0 auto; font-family:var(--mono); font-size:12.8px}
   .zoombar{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:0 0 8px}
   .zoombar .zk{font-family:var(--mono); font-size:11.6px; letter-spacing:.1em;
     text-transform:uppercase; color:var(--muted); margin-right:2px}
@@ -153,6 +162,11 @@
     pointer-events:auto; cursor:grab; z-index:1}
   .seg:hover{background:rgba(56,64,243,.13)}
   .seg.on{background:rgba(56,64,243,.18); cursor:grabbing}
+  /* the row picked in the table and the stretch it refers to are marked together */
+  .seg.focus{background:rgba(255,20,147,.14); border-left-color:var(--pink);
+    border-right-color:var(--pink)}
+  .seg.focus .lab{background:var(--pink)}
+  table.segs tr.focus td{background:var(--pink-soft)}
   .seg .lab{position:absolute; top:4px; left:4px; font-family:var(--mono); font-size:12.1px;
     color:#fff; background:var(--accent); border-radius:4px; padding:1px 5px;
     pointer-events:none}
@@ -419,12 +433,14 @@
   <div class="panel hidden" id="pEdit"><div class="pad">
     <div class="step"><span class="n">3</span><h2 data-i18n="s3Title"></h2></div>
     <p class="meta" data-i18n="s3Help"></p>
+    <div class="wavedock" id="wavedock">
     <div class="zoombar">
       <span class="zk" data-i18n="zoomLbl"></span>
       <button class="btn-g btn-s" data-zoom="fit" data-i18n="zoomFit"></button>
       <button class="btn-g btn-s" data-zoom="60">60 s</button>
       <button class="btn-g btn-s" data-zoom="20">20 s</button>
       <button class="btn-g btn-s" data-zoom="8">8 s</button>
+      <span class="dockhint meta" id="dockNow"></span>
     </div>
     <div class="wavescroll" id="wavescroll">
       <div class="wavewrap" id="wavewrap">
@@ -432,6 +448,7 @@
         <div class="marks" id="marks"></div>
         <div class="ruler" id="ruler"></div>
       </div>
+    </div>
     </div>
     <div class="row" style="margin-top:12px">
       <button class="btn-g btn-s" id="playAll" data-i18n="btnPlayAll"></button>
@@ -537,7 +554,7 @@ en:{
  skipNone:"No obvious instruction section was found; the whole file is being used.",
  fmtIrregular:(mx,md)=>"The expected number of segments was found, but the spacing is uneven — the longest gap between responses is "+mx+" against a typical "+md+". Play through the boundaries before exporting: a stretch where the participant said nothing cannot be detected from silence, and would shift every item number after it.",
  s3Title:"Adjust",
- s3Help:"Drag a blue bar on the waveform to move that boundary, or drag the shaded band between two bars to move a whole segment without changing its length. The ◀ ▶ buttons in the table do the same in 0.05 s steps. The waveform scrolls, and the buttons above set how much of the recording is shown at once. Click an empty part of the waveform to add a boundary, and use ✕ to remove a segment. Rows shorter than one second are highlighted.",
+ s3Help:"The waveform stays in view while the table scrolls, and clicking a row brings that stretch into the middle of it. Drag a blue bar on the waveform to move that boundary, or drag the shaded band between two bars to move a whole segment without changing its length. The ◀ ▶ buttons in the table do the same in 0.05 s steps. The buttons above set how much of the recording is shown at once. Click an empty part of the waveform to add a boundary, and use ✕ to remove a segment. Rows shorter than one second are highlighted.",
  editHint:"Click a row to play that segment.",
  btnPlayAll:"▶ Play whole file", btnStop:"■ Stop",
  thConf:"Confidence",
@@ -561,6 +578,7 @@ en:{
  zoomLbl:"Scale", zoomFit:"Fit",
  aPlaySeg:"Play this segment", aNudgeBack:"Move 0.05 s earlier",
  aNudgeFwd:"Move 0.05 s later",
+ fmtDockNow:(n,a,b)=>"Item "+n+" · "+a+"–"+b+" s",
  aDragStart:"Drag to move the start", aDragEnd:"Drag to move the end",
  aMoveSeg:"Drag to move the whole segment",
  thNo:"Item", thFile:"Output file", thTarget:"Target sentence", thStart:"Start", thEnd:"End", thDur:"Length",
@@ -1216,6 +1234,38 @@ function ensureVisible(t){
   if(x < sc.scrollLeft+pad) sc.scrollLeft = Math.max(0, x-pad);
   else if(x > sc.scrollLeft+viewW()-pad) sc.scrollLeft = x-viewW()+pad;
 }
+/* Put a segment in the middle of the view, or at its left edge when the segment
+   is wider than the view. */
+function centerOn(s){
+  const sc=$("wavescroll"), W=viewW(), w=pxOf(s.e)-pxOf(s.s);
+  const x = w>=W-40 ? pxOf(s.s)-20 : pxOf((s.s+s.e)/2)-W/2;
+  sc.scrollLeft=Math.max(0,Math.min(sc.scrollWidth-W,x));
+}
+/* A row in the table and the stretch of sound it names are linked: picking one
+   marks the other, so the two can be read together. */
+let FOCUS=-1;
+function focusRow(i){
+  FOCUS=i;
+  const s=SEGS[i];
+  if(s) centerOn(s);
+  draw(); paintFocus();
+}
+function paintFocus(){
+  const rows=$("segBody").children;
+  for(let i=0;i<rows.length;i++) rows[i].classList.toggle("focus",i===FOCUS);
+  const s=SEGS[FOCUS];
+  $("dockNow").textContent = s ? T("fmtDockNow")(itemNo(FOCUS),s.s.toFixed(2),s.e.toFixed(2)) : "";
+}
+/* a shadow appears once the waveform has parked under the header */
+(()=>{
+  const d=$("wavedock");
+  if(!d) return;
+  let on=false;
+  addEventListener("scroll",()=>{
+    const stuck=d.getBoundingClientRect().top<=51;
+    if(stuck!==on){ on=stuck; d.classList.toggle("stuck",stuck); }
+  },{passive:true});
+})();
 function drawMarks(){
   marks.innerHTML="";
   const skip=+$("skipS").value||0;
@@ -1231,7 +1281,8 @@ function drawMarks(){
   }
   SEGS.forEach((s,i)=>{
     const d=document.createElement("div");
-    d.className="seg"+(DRAG&&DRAG.moved&&DRAG.mode==="move"&&DRAG.i===i?" on":"");
+    d.className="seg"+(DRAG&&DRAG.moved&&DRAG.mode==="move"&&DRAG.i===i?" on":"")
+      +(i===FOCUS?" focus":"");
     d.style.left=pxOf(s.s)+"px"; d.style.width=Math.max(2,pxOf(s.e)-pxOf(s.s))+"px";
     d.innerHTML='<span class="lab">'+itemNo(i)+'</span>';
     d.title=T("aMoveSeg");
@@ -1445,15 +1496,18 @@ function renderTable(){
       '<td><span class="chip '+(s.level||"ok")+'">'+T("lv_"+(s.level||"ok"))+'</span></td>'+
       '<td>'+note+'</td>'+
       '<td><button class="iconbtn" data-del="'+i+'">✕</button></td>';
-    tr.onclick=ev=>{ if(ev.target.closest("button")) return; play(s.s,s.e); };
+    tr.onclick=ev=>{ if(ev.target.closest("button")) return; focusRow(i); play(s.s,s.e); };
     tb.appendChild(tr);
   });
+  if(FOCUS>=SEGS.length) FOCUS=-1;
+  paintFocus();
   paintConf();
   tb.querySelectorAll("[data-del]").forEach(b=>{
     b.onclick=ev=>{ ev.stopPropagation(); SEGS.splice(+b.dataset.del,1); drawMarks(); renderTable(); };
   });
   tb.querySelectorAll("[data-play]").forEach(b=>{
-    b.onclick=ev=>{ ev.stopPropagation(); const s=SEGS[+b.dataset.play]; if(s) play(s.s,s.e); };
+    b.onclick=ev=>{ ev.stopPropagation(); const i=+b.dataset.play, s=SEGS[i];
+      if(s){ focusRow(i); play(s.s,s.e); } };
   });
   /* one press moves a boundary by 50 ms; holding it repeats */
   const NUDGE=0.05;
