@@ -149,14 +149,21 @@
   .nudge .v{min-width:6.5ch; text-align:right; font-variant-numeric:tabular-nums}
   .marks{position:absolute; inset:0; pointer-events:none}
   .seg{position:absolute; top:0; bottom:22px; background:rgba(56,64,243,.07);
-    border-left:2px solid var(--accent); border-right:2px solid var(--accent)}
+    border-left:2px solid var(--accent); border-right:2px solid var(--accent);
+    pointer-events:auto; cursor:grab; z-index:1}
+  .seg:hover{background:rgba(56,64,243,.13)}
+  .seg.on{background:rgba(56,64,243,.18); cursor:grabbing}
   .seg .lab{position:absolute; top:4px; left:4px; font-family:var(--mono); font-size:12.1px;
-    color:#fff; background:var(--accent); border-radius:4px; padding:1px 5px}
-  .hnd{position:absolute; top:0; bottom:22px; width:9px; margin-left:-4px; cursor:col-resize;
-    pointer-events:auto}
-  .hnd::after{content:""; position:absolute; left:3px; top:0; bottom:0; width:3px;
+    color:#fff; background:var(--accent); border-radius:4px; padding:1px 5px;
+    pointer-events:none}
+  .hnd{position:absolute; top:0; bottom:22px; width:15px; margin-left:-7px; cursor:col-resize;
+    pointer-events:auto; z-index:3}
+  .hnd::after{content:""; position:absolute; left:6px; top:0; bottom:0; width:3px;
     background:var(--accent); border-radius:2px}
-  .hnd.end::after{background:var(--accent)}
+  .hnd:hover::after,.hnd.on::after{left:5px; width:5px; background:var(--accent-dark)}
+  .dragtip{position:absolute; bottom:28px; transform:translateX(-50%); z-index:6;
+    font-family:var(--mono); font-size:12.1px; color:#fff; background:var(--accent-dark);
+    border-radius:4px; padding:2px 7px; white-space:nowrap; pointer-events:none}
   .ruler{position:absolute; left:0; right:0; bottom:0; height:22px; border-top:1px solid var(--line);
     background:#fff; overflow:hidden}
   .tick{position:absolute; bottom:2px; padding-left:5px; font-family:var(--mono); font-size:11.6px;
@@ -521,7 +528,7 @@ en:{
  skipNone:"No obvious instruction section was found; the whole file is being used.",
  fmtIrregular:(mx,md)=>"The expected number of segments was found, but the spacing is uneven — the longest gap between responses is "+mx+" against a typical "+md+". Play through the boundaries before exporting: a stretch where the participant said nothing cannot be detected from silence, and would shift every item number after it.",
  s3Title:"Adjust",
- s3Help:"Move a boundary with the ◀ ▶ buttons in the table, or drag it on the waveform. The waveform scrolls; the buttons above set how much of the recording is shown at once. Click an empty part of the waveform to add a boundary, and use ✕ to remove a segment. Rows shorter than one second are highlighted.",
+ s3Help:"Drag a blue bar on the waveform to move that boundary, or drag the shaded band between two bars to move a whole segment without changing its length. The ◀ ▶ buttons in the table do the same in 0.05 s steps. The waveform scrolls, and the buttons above set how much of the recording is shown at once. Click an empty part of the waveform to add a boundary, and use ✕ to remove a segment. Rows shorter than one second are highlighted.",
  editHint:"Click a row to play that segment.",
  btnPlayAll:"▶ Play whole file", btnStop:"■ Stop",
  thConf:"Confidence",
@@ -545,6 +552,8 @@ en:{
  zoomLbl:"Scale", zoomFit:"Fit",
  aPlaySeg:"Play this segment", aNudgeBack:"Move 0.05 s earlier",
  aNudgeFwd:"Move 0.05 s later",
+ aDragStart:"Drag to move the start", aDragEnd:"Drag to move the end",
+ aMoveSeg:"Drag to move the whole segment",
  thNo:"Item", thFile:"Output file", thStart:"Start", thEnd:"End", thDur:"Length",
  toApp:"Then open the scoring tool to transcribe and score the segments →",
  s4Title:"Export",
@@ -1209,18 +1218,36 @@ function drawMarks(){
   }
   SEGS.forEach((s,i)=>{
     const d=document.createElement("div");
-    d.className="seg";
+    d.className="seg"+(DRAG&&DRAG.moved&&DRAG.mode==="move"&&DRAG.i===i?" on":"");
     d.style.left=pxOf(s.s)+"px"; d.style.width=Math.max(2,pxOf(s.e)-pxOf(s.s))+"px";
     d.innerHTML='<span class="lab">'+itemNo(i)+'</span>';
+    d.title=T("aMoveSeg");
+    d.onmousedown=ev=>startMove(ev,i);
     marks.appendChild(d);
     ["s","e"].forEach(k=>{
       const h=document.createElement("div");
-      h.className="hnd"+(k==="e"?" end":"");
+      h.className="hnd"+(k==="e"?" end":"")
+        +(DRAG&&DRAG.mode==="edge"&&DRAG.i===i&&DRAG.k===k?" on":"");
       h.style.left=pxOf(s[k])+"px";
+      h.title=T(k==="s"?"aDragStart":"aDragEnd");
       h.onmousedown=ev=>startDrag(ev,i,k);
       marks.appendChild(h);
     });
   });
+  /* a readout follows the boundary being dragged, so the value is visible
+     without looking away from the waveform */
+  if(DRAG&&DRAG.moved){
+    const s=SEGS[DRAG.i];
+    if(s){
+      const at=DRAG.mode==="edge" ? (DRAG.k==="s"?s.s:s.e) : (s.s+s.e)/2;
+      const tip=document.createElement("div");
+      tip.className="dragtip"; tip.style.left=pxOf(at)+"px";
+      tip.textContent = DRAG.mode==="edge"
+        ? (DRAG.k==="s"?s.s:s.e).toFixed(2)+" s"
+        : s.s.toFixed(2)+" – "+s.e.toFixed(2)+" s";
+      marks.appendChild(tip);
+    }
+  }
 }
 function drawRuler(){
   ruler.innerHTML="";
@@ -1247,24 +1274,89 @@ function startSkipDrag(ev){
   document.onmouseup=()=>{ SKIPDRAG=false; document.onmousemove=null; document.onmouseup=null;
     detect(); };
 }
-let DRAG=null;
+/* DRAG.mode "edge" moves one boundary; "move" shifts a whole segment while
+   keeping its length. */
+let DRAG=null, DRAGX=0, AUTO=null, NOCLICK=false;
+function tAt(clientX){
+  const r=$("wavewrap").getBoundingClientRect();
+  return timeOf(clientX-r.left);
+}
 function startDrag(ev,i,k){
-  ev.preventDefault();
-  DRAG={i,k};
+  if(ev.button!==0) return;
+  ev.preventDefault(); ev.stopPropagation();
+  DRAG={mode:"edge",i,k,moved:true}; DRAGX=ev.clientX;
+  document.onmousemove=onDrag; document.onmouseup=endDrag;
+  drawMarks(); autoStart();
+}
+function startMove(ev,i){
+  if(ev.button!==0||!BUF) return;
+  ev.preventDefault(); ev.stopPropagation();
+  const s=SEGS[i];
+  DRAG={mode:"move",i,moved:false,x0:ev.clientX,t0:tAt(ev.clientX),s0:s.s,e0:s.e};
+  DRAGX=ev.clientX;
   document.onmousemove=onDrag; document.onmouseup=endDrag;
 }
 function onDrag(ev){
   if(!DRAG) return;
-  const r=$("wavewrap").getBoundingClientRect();
-  const t=timeOf(ev.clientX-r.left);
-  const s=SEGS[DRAG.i];
-  if(DRAG.k==="s") s.s=Math.min(t,s.e-0.05);
-  else s.e=Math.max(t,s.s+0.05);
-  drawMarks(); renderTable();
+  DRAGX=ev.clientX;
+  if(!DRAG.moved){
+    /* a plain click must not shift a segment by a pixel or two */
+    if(Math.abs(ev.clientX-DRAG.x0)<3) return;
+    DRAG.moved=true; autoStart();
+  }
+  applyDrag();
 }
-function endDrag(){ DRAG=null; document.onmousemove=null; document.onmouseup=null;
-  SEGS.sort((a,b)=>a.s-b.s); drawMarks(); renderTable(); }
+function applyDrag(){
+  if(!DRAG||!DRAG.moved) return;
+  const t=tAt(DRAGX), s=SEGS[DRAG.i];
+  if(!s) return;
+  if(DRAG.mode==="edge"){
+    if(DRAG.k==="s") s.s=Math.min(t,s.e-0.05);
+    else s.e=Math.max(t,s.s+0.05);
+  }else{
+    const len=DRAG.e0-DRAG.s0;
+    const ns=Math.max(0,Math.min(BUF.duration-len,DRAG.s0+(t-DRAG.t0)));
+    s.s=ns; s.e=ns+len;
+  }
+  /* only the row being dragged is refreshed; the full table, which rescores
+     every segment, is rebuilt once the drag ends */
+  drawMarks(); liveRow(DRAG.i);
+}
+function liveRow(i){
+  const tr=$("segBody").children[i], s=SEGS[i];
+  if(!tr||!s) return;
+  const v=tr.querySelectorAll(".nudge .v");
+  if(v[0]) v[0].textContent=s.s.toFixed(2);
+  if(v[1]) v[1].textContent=s.e.toFixed(2);
+  if(tr.children[4]) tr.children[4].textContent=(s.e-s.s).toFixed(2);
+}
+/* dragging past the edge of the view scrolls the waveform along */
+function autoStart(){
+  if(AUTO) return;
+  const tick=()=>{
+    if(!DRAG||!DRAG.moved){ AUTO=null; return; }
+    const sc=$("wavescroll"), r=sc.getBoundingClientRect(), pad=44;
+    let dx=0;
+    if(DRAGX<r.left+pad) dx=-Math.min(26,(r.left+pad-DRAGX)/2);
+    else if(DRAGX>r.right-pad) dx=Math.min(26,(DRAGX-(r.right-pad))/2);
+    if(dx){
+      const was=sc.scrollLeft;
+      sc.scrollLeft=Math.max(0,Math.min(sc.scrollWidth-sc.clientWidth,was+dx));
+      if(sc.scrollLeft!==was) applyDrag();
+    }
+    AUTO=requestAnimationFrame(tick);
+  };
+  AUTO=requestAnimationFrame(tick);
+}
+function endDrag(){
+  const moved=!!(DRAG&&DRAG.moved);
+  DRAG=null; document.onmousemove=null; document.onmouseup=null;
+  if(AUTO){ cancelAnimationFrame(AUTO); AUTO=null; }
+  if(moved) NOCLICK=true;          /* the mouseup must not also add a boundary */
+  SEGS.sort((a,b)=>a.s-b.s); drawMarks(); renderTable();
+}
 $("wavewrap").onclick=ev=>{
+  if(NOCLICK){ NOCLICK=false; return; }
   if(DRAG||SKIPDRAG||!BUF) return;
   if(ev.target.classList.contains("hnd")||ev.target.classList.contains("skiphnd")) return;
   const r=$("wavewrap").getBoundingClientRect();
