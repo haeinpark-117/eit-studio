@@ -25,11 +25,20 @@ files are never uploaded to a server.
    order. Tab-separated input is accepted when pasted. The 30-item English EIT of
    Ortega et al. (2002) is included as a preset.
 4. **Scoring rules.** Configure text normalization before comparison: number-to-word expansion,
-   contraction expansion (possessive `'s` is preserved), scoring a self-correction on its final
-   attempt, and a user-editable list of lexical variants in `from => to` form. The self-correction
+   contraction expansion (possessive `'s` is preserved), collapsing an immediately repeated stretch
+   of words to its final attempt, and a user-editable list of lexical variants in `from => to` form. The self-correction
    rule fires only where a stretch of two or more words is repeated *immediately* — a phrase that
    recurs later in the sentence is left alone, since at a distance that is ordinarily syntax rather
-   than a disfluency — and never where the repeated stretch also occurs in the target sentence. Rule sets can be
+   than a disfluency — and never where the repeated stretch also occurs in the target sentence.
+   The same step holds an optional filter for the stock phrases Whisper returns when it is given
+   audio without speech — `Thank you.`, `you`, `Thanks for watching` — which is how a recording
+   containing only a cough, a chair, or a bump against the microphone is commonly transcribed. The
+   filter fires only where the *whole* output matches a listed phrase and its confidence is below a
+   threshold, never on a phrase occurring inside a longer transcription; the matching item is then
+   scored as no response. The phrase list and the threshold are editable, a hand correction or a
+   review of the item overrides the filter, and nothing is discarded: the original output remains in
+   the results table and in `transcription_raw`, and the affected rows carry
+   `no_speech_artifact_filtered`. Rule sets can be
    exported and imported as JSON so that the exact scoring configuration can be archived with a
    study or shared with collaborators.
 5. **Recording files.** Drop in the response audio. Files named `participantID_itemNN.ext` are
@@ -54,7 +63,9 @@ the file alone. Every row also carries `tool_version` and `scoring_version`; the
 the scoring code itself and is incremented whenever a change alters how a score is arrived at, so
 two files produced under different behaviour can be told apart even when the settings read the
 same. A `status` column distinguishes `scored`, `no_speech`, `failed`, and
-`not_attempted`; a file that failed carries no score rather than a score of zero.
+`not_attempted`; a file that failed carries no score rather than a score of zero. A separate
+`no_speech_artifact_filtered` column marks the items the artifact filter emptied, so the decision
+the tool made on its own can be reported, reversed, or audited against the recordings.
 
 ## How WER is computed
 

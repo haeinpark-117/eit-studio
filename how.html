@@ -321,6 +321,18 @@
           spelling out numbers, expanding contractions, and whether a self-correction is scored on
           its final attempt. Whatever is chosen here is written into both exports, so the exact
           configuration can be deposited with the study materials.</p>
+        <p>The same panel holds the one judgement the tool makes on its own. Given audio that
+          contains no speech, Whisper does not return nothing — it returns a stock phrase from the
+          subtitle tracks it was trained on, most often <span class="mono2">Thank you.</span> or
+          <span class="mono2">you</span>, so a recording holding only a cough or a bump against the
+          microphone comes back looking like an attempt. Where the whole output is one of the listed
+          phrases and its confidence is below the threshold, the item is scored as no response. The
+          match is on the whole output and never on a phrase inside a longer one, the list and the
+          threshold are yours to set, and a correction or a review of the item overrides the filter.
+          Nothing is discarded: the original output stays in the table and in
+          <span class="mono2">transcription_raw</span>, the affected rows are marked in the export,
+          and the results panel reports how many items were filtered. Listen to those items before
+          reporting them.</p>
         <figure><img src="score-rules.png" alt="The scoring-rules panel, with checkboxes for spelling out numbers, expanding contractions, and scoring a self-correction as the final attempt">
           <figcaption>The rules apply identically to both strings, so a difference in the score is
             never a difference in how the two were treated.</figcaption></figure>

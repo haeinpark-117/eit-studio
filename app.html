@@ -356,6 +356,21 @@
       <label class="chk"><input type="checkbox" id="optRep" checked><span data-i18n="optRep"></span></label>
     </div>
     <p class="meta" data-i18n="repHelp" style="margin:-4px 0 12px"></p>
+    <div class="row" style="margin-top:2px">
+      <label class="chk"><input type="checkbox" id="optHallu" checked><span data-i18n="optHallu"></span></label>
+    </div>
+    <p class="meta" data-i18n="halluHelp" style="margin:-4px 0 12px"></p>
+    <details id="halluDetails">
+      <summary data-i18n="halluListSum"></summary>
+      <p class="meta" style="margin-top:8px" data-i18n="halluListHelp"></p>
+      <textarea id="halluBox" spellcheck="false" style="min-height:90px" aria-label="Phrases filtered as no-speech artifacts"></textarea>
+      <div class="row">
+        <label for="halluConf" class="meta" style="margin:0" data-i18n="halluConfLbl"></label>
+        <input type="number" id="halluConf" min="0" max="100" step="1" style="width:88px">
+        <span class="meta" style="margin:0">%</span>
+        <button class="btn-g btn-s" id="applyHallu" data-i18n="btnApplyHallu"></button>
+      </div>
+    </details>
     <details id="ruleDetails">
       <summary data-i18n="ruleSummary"></summary>
       <p class="meta" style="margin-top:8px" data-i18n="ruleHelp"></p>
@@ -443,6 +458,7 @@
         <button class="btn-g btn-s" id="jsonBtn">JSON</button>
       </span>
     </div>
+    <div class="infobox hidden" id="halluNote"></div>
     <div class="citebar">
       <span class="k" data-i18n="citeK"></span>
       <span class="v"><span data-i18n="citeA"></span> <i data-i18n="citeT"></i>
@@ -532,6 +548,11 @@ en:{
  optRep:"Score a self-correction as the final attempt (drop the immediately restarted stretch)",
  repHelp:"On by default. Applied to Whisper's output only, never to the target sentence: where a stretch of words is restarted immediately — “the boy was the boy is late” — the first attempt is removed and only the repair is scored. The restart has to be immediate; a phrase that recurs later in the sentence is left alone, because at a distance that is usually how English is built (“it is possible that it is raining”) rather than a disfluency. A stretch that also occurs in the target sentence is never removed either. Removed words stay visible in the output table, struck through, and are listed in both exports. The rule still cannot distinguish every self-correction from a genuine repetition, so items scored under it warrant review.",
  repTitle:"self-correction, not scored",
+ optHallu:"Treat a known no-speech artifact as no response",
+ halluHelp:"On by default. Whisper returns a small set of stock phrases — “Thank you.”, “you”, “Thanks for watching” — when it is given audio that contains no speech, and a recording that holds only a cough, a chair, or a microphone bump is often transcribed this way. Where the whole output is one of the listed phrases and its confidence is below the threshold, the item is scored as no response. Nothing is discarded: the original output stays in the table and in the transcription_raw column of both exports, and the row is marked, so every filtered item can be checked. The rule is deliberately narrow — it fires only on an exact whole-output match, never on a phrase inside a longer transcription — but a participant who genuinely produced nothing but one of these phrases would also be filtered, so the list and the threshold are yours to set.",
+ halluListSum:"Filtered phrases and confidence threshold",
+ halluListHelp:"One phrase per line, matched against the whole transcription after lower-casing and removing punctuation. The threshold is the confidence below which a matching output is filtered; an output above it is kept. Items with no confidence value available are filtered on the phrase match alone.",
+ halluConfLbl:"Filter only below confidence", btnApplyHallu:"Apply filter",
  ruleSummary:"Additional replacements and export",
  ruleHelp:"One rule per line, written as “from => to”. Applied after punctuation is removed, longest phrase first. Use this for spelling variants that should count as the same word.",
  btnApplyRules:"Apply rules", btnExpCfg:"Export settings", btnImpCfg:"Import settings",
@@ -578,8 +599,10 @@ en:{
  fmtStoppedWarn:(rest,failed)=>"The run stopped early. "+failed+" files could not be transcribed and "+rest+" were never attempted; none of them carry a score, and their rows say so. Re-run those files on their own — a run that stops this way is almost always the machine sleeping or the tab being put in the background, not a problem with the audio.",
  fmtFailed:(k,n)=>k+" of "+n+" files could not be transcribed. Those rows carry no score — they are not zeros. Re-run them on their own before using the results.",
  runCaution:"A long run needs the tab to stay in front: browsers slow or suspend background tabs, and a suspended run can stop part-way. The screen is kept awake while a run is going.",
- bNoSpeech:"no speech",
+ bNoSpeech:"no speech", bHallu:"filtered as hallucination", halluWas:"Whisper produced:",
+ fmtHallu:(n,t)=>n+" of "+t+" items were scored as no response because Whisper's whole output was one of the phrases it returns for audio without speech. The original output is kept in the table and in the transcription_raw column. Listen to those items before reporting them: the filter is a heuristic, and it is the one decision here the tool makes on its own.",
  drTarget:"Target", drHeard:"Whisper heard", drCorrected:"Corrected transcription",
+ drHalluNote:"This output is one of the phrases Whisper returns for audio without speech, so the item is being scored as no response. Listen to the recording: if a response was in fact produced, type it below, and if Whisper's line was right after all, mark the item reviewed — either overrides the filter for this item.",
  drSave:"Save the correction", drOk:"Whisper was right — mark reviewed",
  drUndo:"Remove the correction", drCancel:"Cancel",
  fmtRestored:(v,c)=>v+" item"+(v===1?"":"s")+" carried over from earlier work in this browser"+
@@ -678,7 +701,57 @@ const CONTR={
  "ain't":"is not","shan't":"shall not"
 };
 const DEFAULT_RULES="town house => townhouse\ntown houses => townhouses";
-let CFG={ numbers:true, contractions:true, repairs:true, rulesText:DEFAULT_RULES, rules:[] };
+
+/* ---- known no-speech artifacts -------------------------------------------
+   Whisper was trained on subtitle tracks, and a stretch of audio that carries
+   no speech is decoded as one of the phrases those tracks end on. A response
+   recording that holds only a cough, a chair or a bump against the microphone
+   therefore comes back as "Thank you." rather than as nothing, which reads as
+   an attempt where none was made. The default list holds only phrases that
+   are documented artifacts and that no elicited imitation response could
+   plausibly consist of on its own; it is editable, and what was used is
+   written into both exports so that a filtered item can always be traced.
+   The match is on the whole output, never on a phrase inside a longer one. */
+const DEFAULT_HALLU=[
+ "thank you","thank you very much","thank you so much","thanks","thanks a lot",
+ "thanks for watching","thanks for watching!","thank you for watching",
+ "please subscribe","subscribe to my channel",
+ "you","bye","bye bye","goodbye",
+ "시청해주셔서 감사합니다","감사합니다"
+].join("\n");
+const DEFAULT_HALLU_CONF=90;   /* percent; an output at or above this is kept */
+
+let CFG={ numbers:true, contractions:true, repairs:true, rulesText:DEFAULT_RULES, rules:[],
+          hallu:true, halluText:DEFAULT_HALLU, halluSet:new Set(), halluConf:DEFAULT_HALLU_CONF };
+
+/* the comparison form: lower-cased, punctuation dropped, spacing collapsed.
+   Unicode letters are kept so that a non-English artifact can be listed. */
+function halluKey(s){
+  return String(s||"").toLowerCase().normalize("NFKC")
+    .replace(/[^\p{L}\p{N}'\s]/gu," ").replace(/\s+/g," ").trim();
+}
+function compileHallu(text){
+  const set=new Set();
+  String(text||"").split(/\n+/).forEach(line=>{ const k=halluKey(line); if(k) set.add(k); });
+  return set;
+}
+/* a short stable digest of the list, so that two runs cannot report the same
+   filter label while having filtered different phrases */
+function halluHash(){
+  const s=[...CFG.halluSet].sort().join("|");
+  let h=0x811c9dc5;
+  for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,0x01000193)>>>0; }
+  return h.toString(16).padStart(8,"0");
+}
+/* A correction or a review by a person always wins: the filter is a stand-in
+   for a judgement nobody has made yet, not a correction of one that has. */
+function halluHit(r){
+  if(!CFG.hallu || !r || r.corrected!=null || r.reviewed) return false;
+  const k=halluKey(r.text);
+  if(!k || !CFG.halluSet.has(k)) return false;
+  if(r.avgLogprob==null) return true;          /* no confidence to weigh */
+  return Math.exp(r.avgLogprob) < CFG.halluConf/100;
+}
 
 function compileRules(text){
   const out=[];
@@ -810,8 +883,12 @@ function scorePair(target,hyp){
 /* The line that is scored is the correction where one was entered, and Whisper's
    own output otherwise. Both scores are kept so that the effect of the
    corrections on the results can be reported. */
-function effectiveText(r){ return r.corrected!=null ? r.corrected : r.text; }
+function effectiveText(r){
+  if(r.corrected!=null) return r.corrected;
+  return halluHit(r) ? "" : r.text;
+}
 function rescoreRow(r){
+  r.hallu = halluHit(r);
   r.scRaw = r.target ? scorePair(r.target,r.text) : null;
   r.sc    = r.target ? scorePair(r.target,effectiveText(r)) : null;
 }
@@ -903,9 +980,16 @@ function readCfgFromUI(){
   CFG.repairs=$("optRep").checked;
   CFG.rulesText=$("ruleBox").value;
   CFG.rules=compileRules(CFG.rulesText);
+  CFG.hallu=$("optHallu").checked;
+  CFG.halluText=$("halluBox").value;
+  CFG.halluSet=compileHallu(CFG.halluText);
+  const hc=parseFloat($("halluConf").value);
+  CFG.halluConf=(isFinite(hc)&&hc>=0&&hc<=100)?hc:DEFAULT_HALLU_CONF;
+  $("halluConf").value=CFG.halluConf;
   try{ localStorage.setItem("eitCfg",JSON.stringify({
     numbers:CFG.numbers, contractions:CFG.contractions, repairs:CFG.repairs,
-    rulesText:CFG.rulesText})); }catch(e){}
+    rulesText:CFG.rulesText, hallu:CFG.hallu, halluText:CFG.halluText,
+    halluConf:CFG.halluConf})); }catch(e){}
   rescore();
 }
 /* Changing a rule after a run re-scores what is already on screen; the
@@ -915,18 +999,23 @@ function rescore(){
   RESULTS.forEach(r=>{ rescoreRow(r); });
   render();
 }
-["optNum","optContr","optRep"].forEach(id=>{
+["optNum","optContr","optRep","optHallu"].forEach(id=>{
   const e=$(id); if(e) e.addEventListener("change",paintSums);
 });
 $("applyRules").onclick=readCfgFromUI;
+$("applyHallu").onclick=readCfgFromUI;
 $("optNum").onchange=readCfgFromUI;
 $("optContr").onchange=readCfgFromUI;
 $("optRep").onchange=readCfgFromUI;
+$("optHallu").onchange=readCfgFromUI;
 $("expCfg").onclick=()=>{
   dl(new Blob([JSON.stringify({scoring_version:SCORING_VERSION,
     lowercase:true, strip_punctuation:true, keep_possessives:true,
     spell_out_numbers:CFG.numbers, expand_contractions:CFG.contractions,
     collapse_adjacent_self_repetitions:CFG.repairs,
+    filter_no_speech_artifacts:CFG.hallu,
+    no_speech_artifact_phrases:[...CFG.halluSet].sort(),
+    no_speech_artifact_max_confidence:CFG.halluConf/100,
     extra_rules:CFG.rules},null,1)],{type:"application/json"}),"scoring_rules.json");
 };
 $("impCfgBtn").onclick=()=>$("impCfg").click();
@@ -943,6 +1032,13 @@ $("impCfg").onchange=async e=>{
       ? !!j.collapse_adjacent_self_repetitions
       : !!j.score_self_corrections_as_final;
     $("ruleBox").value=(j.extra_rules||[]).map(r=>r.from+" => "+r.to).join("\n");
+    /* a settings file written before this rule existed leaves the filter at its
+       default rather than silently turning it off */
+    if(j.filter_no_speech_artifacts!=null) $("optHallu").checked=!!j.filter_no_speech_artifacts;
+    if(Array.isArray(j.no_speech_artifact_phrases))
+      $("halluBox").value=j.no_speech_artifact_phrases.join("\n");
+    if(j.no_speech_artifact_max_confidence!=null)
+      $("halluConf").value=+(j.no_speech_artifact_max_confidence*100).toFixed(1);
     readCfgFromUI();
     $("ruleDetails").open=true;
   }catch(err){ alert(String(err&&err.message||err)); }
@@ -1158,6 +1254,7 @@ function paintSums(){
   if($("optNum")&&$("optNum").checked) on.push("numbers");
   if($("optContr")&&$("optContr").checked) on.push("contractions");
   if($("optRep")&&$("optRep").checked) on.push("self-correction");
+  if($("optHallu")&&$("optHallu").checked) on.push("artifact filter");
   set("sum2", on.length?on.join(" · "):"lowercase · no punctuation");
   set("sum3", FILES.length ? FILES.length+" files · "+
       ($("modelSel")?$("modelSel").options[$("modelSel").selectedIndex].text:"") : "");
@@ -1360,9 +1457,11 @@ function render(){
         (r.status==="failed"?"<span class='badge sev'>"+T("bFailed")+"</span>":"")+
         (r.status==="not_attempted"?"<span class='badge quiet'>"+T("bSkipped")+"</span>":"")+
         (r.no_speech?"<span class='badge quiet'>"+T("bNoSpeech")+"</span>":"")+
+        (r.hallu?"<span class='badge sev'>"+T("bHallu")+"</span>":"")+
         (edited?"<span class='badge'>"+T("bEdited")+"</span>":
           (r.reviewed?"<span class='badge rev'>"+T("bReviewed")+"</span>":""))+
         (edited?"<span class='wasline'>"+T("whisperWas")+" "+esc(r.text)+"</span>":"")+
+        (r.hallu&&!edited?"<span class='wasline'>"+T("halluWas")+" "+esc(r.text)+"</span>":"")+
       "</td>"+
       "<td class='c-n'><span class='acc"+(acc!=null&&acc<50?" low":"")+"'>"+
         (acc==null?"—":acc.toFixed(1)+"%")+"</span></td>"+
@@ -1386,6 +1485,7 @@ function render(){
   wireDrawer();
   $("foot").textContent=(loadedModel?TOOL_VER+" · "+loadedModel:TOOL_VER);
   paintRestored();
+  paintHallu();
   paintTip();
 }
 
@@ -1402,8 +1502,9 @@ const TOOL_VERSION="1.0", TOOL_VER="v1.0";
    score is arrived at — this rule, the normalizer, the alignment — increments
    this number, so two files that disagree can always be told apart.
      1  first release
-     2  self-correction collapse restricted to an immediately repeated phrase */
-const SCORING_VERSION=2;
+     2  self-correction collapse restricted to an immediately repeated phrase
+     3  known no-speech artifacts ("Thank you.", "you") scored as no response */
+const SCORING_VERSION=3;
 /* the version is visible before a run as well, since it is what a methods
    section has to report */
 $("foot").textContent=TOOL_VER;
@@ -1494,6 +1595,16 @@ function applySaved(r){
   rescoreRow(r);
   return true;
 }
+/* An item scored as no response on the tool's own judgement is worth counting
+   out loud: the number belongs in the write-up, and a count far above what the
+   session would lead one to expect is the sign that the list is too wide. */
+function paintHallu(){
+  const box=$("halluNote"); if(!box) return;
+  const n=RESULTS.filter(r=>r.hallu).length;
+  if(!n){ box.classList.add("hidden"); box.textContent=""; return; }
+  box.textContent=T("fmtHallu")(n,RESULTS.length);
+  box.classList.remove("hidden");
+}
 function paintRestored(){
   const box=$("revNote"); if(!box) return;
   const c=RESULTS.filter(r=>r.restored&&r.corrected!=null).length;
@@ -1513,6 +1624,7 @@ function drawerHtml(r){
     "<div>"+
       "<p class='k'>"+T("drTarget")+"</p><p class='val'>"+esc(r.sc?r.sc.gt:r.target)+"</p>"+
       "<p class='k'>"+T("drHeard")+"</p><p class='val'>"+esc(r.text)+"</p>"+
+      (r.hallu?"<p class='meta' style='margin:-4px 0 10px'>"+T("drHalluNote")+"</p>":"")+
       "<p class='k'>"+T("drCorrected")+"</p>"+
       "<textarea id='drText' rows='2'>"+esc(cur)+"</textarea>"+
       "<div class='acts'>"+
@@ -1552,11 +1664,17 @@ function wireDrawer(){
   const on=(id,fn)=>{ const b=$(id); if(b) b.onclick=e=>{ e.stopPropagation(); fn(); }; };
   on("drSave",()=>{
     const v=($("drText").value||"").trim();
-    /* a correction identical to what Whisper produced is a review, not an edit */
-    r.corrected = (v && v!==r.text) ? v : null;
+    /* a correction identical to what Whisper produced is a review, not an edit.
+       On a row the artifact filter has emptied, saving the empty box is a
+       decision — the blank is pinned as the person's own, rather than falling
+       back on Whisper's line the moment the review turns the filter off. */
+    const filtered=!!r.hallu;
+    r.corrected = v ? (v!==r.text ? v : null) : (filtered ? "" : null);
     r.reviewed=true; rescoreRow(r); revPut(r); close();
   });
-  on("drOk",()=>{ r.reviewed=true; revPut(r); close(); });
+  /* a review is a judgement about this item and outranks the filter, so the row
+     has to be scored again once it is recorded */
+  on("drOk",()=>{ r.reviewed=true; rescoreRow(r); revPut(r); close(); });
   on("drUndo",()=>{ r.corrected=null; r.reviewed=true; rescoreRow(r); revPut(r); close(); });
   on("drCancel",close);
 }
@@ -1565,6 +1683,8 @@ function wireDrawer(){
 function rulesSummary(){
   return "numbers="+(CFG.numbers?"on":"off")+"; contractions="+(CFG.contractions?"on":"off")+
     "; self_corrections="+(CFG.repairs?"collapse_adjacent_repeats":"off")+
+    "; no_speech_artifacts="+(CFG.hallu
+      ? "list:"+halluHash()+"@conf<"+(CFG.halluConf/100).toFixed(2) : "off")+
     "; extra="+CFG.rules.map(r=>r.from+">"+r.to).join("|");
 }
 /* The word error rate is not computed on any of the strings the export used to
@@ -1577,14 +1697,16 @@ $("csvBtn").onclick=()=>{
   const cols=["participant","item","target","target_scored",
               "transcription_raw","transcription_corrected","transcription_final",
               "reviewed","wer_raw","wer_final","accuracy_pct",
-              "confidence","avg_logprob","duration_s","status","error","file","model","rules",
+              "confidence","avg_logprob","duration_s","status","no_speech_artifact_filtered",
+              "error","file","model","rules",
               "self_corrections_removed","tool_version","scoring_version"];
   const rows=[cols.join(",")];
   RESULTS.forEach(r=>rows.push([r.pid,r.item??"",r.target,r.sc?r.sc.gt:"",
     r.text, r.corrected??"", r.sc?r.sc.tr:"",
     r.reviewed?"yes":"no",
     r.scRaw?r.scRaw.wer:"",r.sc?r.sc.wer:"",r.sc?r.sc.acc:"",r.conf??"",r.avgLogprob??"",
-    r.dur?r.dur.toFixed(2):"",r.status||"scored",r.err||"",r.name,loadedModel,rulesSummary(),
+    r.dur?r.dur.toFixed(2):"",r.status||"scored",r.hallu?"yes":"no",
+    r.err||"",r.name,loadedModel,rulesSummary(),
     r.sc&&r.sc.rep?r.sc.rep.join(" "):"",TOOL_VERSION,SCORING_VERSION].map(v=>{
       v=String(v??""); return (v.includes(",")||v.includes('"'))?'"'+v.replace(/"/g,'""')+'"':v;
     }).join(",")));
@@ -1599,7 +1721,11 @@ $("jsonBtn").onclick=()=>{
       confidence:"mean probability of the tokens Whisper selected; avg_logprob is the raw value",
       scoring_rules:{lowercase:true,strip_punctuation:true,keep_possessives:true,
         spell_out_numbers:CFG.numbers,expand_contractions:CFG.contractions,
-        collapse_adjacent_self_repetitions:CFG.repairs,extra_rules:CFG.rules},
+        collapse_adjacent_self_repetitions:CFG.repairs,
+        filter_no_speech_artifacts:CFG.hallu,
+        no_speech_artifact_phrases:CFG.hallu?[...CFG.halluSet].sort():null,
+        no_speech_artifact_max_confidence:CFG.hallu?CFG.halluConf/100:null,
+        extra_rules:CFG.rules},
       n_target_items:TGT_N, scored_at:new Date().toISOString(),
       n_items_reviewed:RESULTS.filter(r=>r.reviewed).length,
       n_items_corrected:RESULTS.filter(r=>r.corrected!=null).length},
@@ -1607,7 +1733,8 @@ $("jsonBtn").onclick=()=>{
       transcription_raw:r.text,transcription_corrected:r.corrected,
       wer:r.sc?r.sc.wer:null,wer_raw:r.scRaw?r.scRaw.wer:null,
       accuracy_pct:r.sc?r.sc.acc:null,
-      confidence:r.conf,avg_logprob:r.avgLogprob,status:r.status||"scored",error:r.err||null,
+      confidence:r.conf,avg_logprob:r.avgLogprob,status:r.status||"scored",
+      no_speech_artifact_filtered:!!r.hallu,error:r.err||null,
       ops:r.sc?r.sc.ops:null,
       target_scored:r.sc?r.sc.gt:null,
       transcription_scored:r.sc?r.sc.tr:null,
@@ -1632,9 +1759,14 @@ function dl(blob,name){
   $("optContr").checked = savedCfg ? !!savedCfg.contractions : true;
   $("optRep").checked = savedCfg ? !!savedCfg.repairs : true;
   $("ruleBox").value = savedCfg && savedCfg.rulesText!=null ? savedCfg.rulesText : DEFAULT_RULES;
+  $("optHallu").checked = savedCfg && savedCfg.hallu!=null ? !!savedCfg.hallu : true;
+  $("halluBox").value = savedCfg && savedCfg.halluText!=null ? savedCfg.halluText : DEFAULT_HALLU;
+  $("halluConf").value = savedCfg && savedCfg.halluConf!=null ? savedCfg.halluConf : DEFAULT_HALLU_CONF;
   CFG.numbers=$("optNum").checked; CFG.contractions=$("optContr").checked;
   CFG.repairs=$("optRep").checked;
   CFG.rulesText=$("ruleBox").value; CFG.rules=compileRules(CFG.rulesText);
+  CFG.hallu=$("optHallu").checked; CFG.halluText=$("halluBox").value;
+  CFG.halluSet=compileHallu(CFG.halluText); CFG.halluConf=+$("halluConf").value;
   applyLang();
   updateRunState();
 })();
