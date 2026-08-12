@@ -538,7 +538,7 @@ en:{
  noteEmpty:"no speech", 
  fmtNoteOff:d=>(d>0?"+":"")+d.toFixed(2)+" s",
  fmtGridOk:(n,rms)=>n+" windows placed from the timing grid. Mean alignment error "+rms.toFixed(2)+" s against the responses that were detected.",
- fmtGridDrift:(n,mx)=>n+" windows placed, but alignment drifts up to "+mx.toFixed(1)+" s. The recording may have been paused, or the timing constants may not match this administration. Check the later items before exporting.",
+ fmtGridDrift:(n,sp)=>n+" windows placed, but the delay before each response varies by "+sp.toFixed(1)+" s across the task, which is more than a fixed schedule should produce. The recording may have been paused, or the timing constants may not match this administration. Check the later items before exporting.",
  gridNeedText:"Load the sentence set first — each line needs a syllable count.",
  gridNeedStim:"Add the stimulus audio files first.",
  fmtGridCount:(g,e)=>"The timing source has "+g+" items but "+e+" are expected. Set the expected count to match, or check the source.",
@@ -886,74 +886,72 @@ function gridAt(cyc,t0,rate){
 function onsets(){
   return segment(0.5,0.4,0,3,{from:0,maxLen:1e9}).map(x=>({s:x.s,e:x.e}));
 }
-/* Fit the start time — and, when stimulus durations were estimated from text, a
-   global rate that absorbs a different speaking speed — by maximising how well
-   the grid windows cover the detected onsets. Two passes: coarse, then refined
-   around the winner. */
+/* Anchor the schedule on the responses that were actually detected.
+
+   The earlier version slid the whole schedule forward from the start of the
+   recording and required it to fit inside what was left, which fails on a real
+   session: a recording that opens with instructions and practice items leaves
+   the true start well beyond the range that search could reach, and a score
+   that only counted onsets falling inside a window could be satisfied by an
+   alignment displaced by a whole item.
+
+   The schedule is instead mapped onto the detected onsets by a start time and a
+   single tempo factor. A candidate is scored by how many items find an onset of
+   their own: one onset may serve only one item and the order must be kept, so a
+   fit displaced by one item cannot borrow its neighbour's response, and the
+   uneven spacing of the schedule — the cycle grows with the syllable count —
+   tells the two apart. */
 function firstAfter(obs,t){
   let lo=0,hi=obs.length;
   while(lo<hi){ const m=(lo+hi)>>1; if(obs[m].s<t) lo=m+1; else hi=m; }
   return lo;
 }
-/* Score a candidate alignment. Two kinds of evidence are used: an onset inside a
-   predicted response window, and — when the stimulus itself was recorded — an
-   onset at the predicted stimulus start. Counting both keeps the fit from
-   sliding by one item when several participants' responses are missing. */
-function scoreFit(cyc,obs,t0,rate,useStim){
-  let hit=0,err=0,stimHit=0,t=t0;
-  for(const k of cyc){
-    const lead=k.lead*rate, win=k.win*rate;
-    const ws=t+lead, we=ws+win;
-    if(useStim){
-      const j=firstAfter(obs,t-0.4);
-      if(j<obs.length&&obs[j].s<=t+0.6) stimHit++;
+/* A response begins at or just after the window opens, never long before it. */
+const ANCH_EARLY=0.75, ANCH_LATE=2.5;
+function scoreAnchor(x,win,obs,t0,rate){
+  let hits=0,err=0,used=-1;
+  for(let i=0;i<x.length;i++){
+    const p=t0+rate*x[i];
+    let j=firstAfter(obs,p-ANCH_EARLY);
+    if(j<=used) j=used+1;
+    if(j<obs.length && obs[j].s<=p+Math.min(ANCH_LATE,rate*win[i])){
+      hits++; err+=Math.abs(obs[j].s-p); used=j;
     }
-    let i;
-    i=firstAfter(obs,ws-0.6);
-    if(i<obs.length&&obs[i].s<=we-0.2){ hit++; err+=Math.abs(obs[i].s-ws); }
-    t=we;
   }
-  return {hit,stimHit,err:hit?err/hit:0,
-          score:(hit+stimHit)-(hit?err/hit:0)/100};
+  const mean=hits?err/hits:0;
+  return {hit:hits, err:mean, score:hits-mean/20-Math.abs(rate-1)*1.5};
 }
-function fitOnce(cyc,fitRate,useStim){
+function fitGrid(cyc,fitRate){
   const obs=onsets().sort((a,b)=>a.s-b.s);
   if(!obs.length) return null;
-  const dur=BUF.duration;
-  const span=r=>cyc.reduce((a,k)=>a+(k.lead+k.win)*r,0);
-  const coarse=[]; 
-  if(fitRate){ for(let r=0.45;r<=1.45;r+=0.05) coarse.push(+r.toFixed(2)); }
-  else coarse.push(1);
+  /* nominal start of each response window, measured from the start of item 1 */
+  const x=[],win=[]; let t=0;
+  for(const k of cyc){ x.push(t+k.lead); win.push(k.win); t+=k.lead+k.win; }
+  const last=x[x.length-1], dur=BUF.duration;
+  /* Only the last window's start has to fall inside the recording; a response
+     cut off at the very end is common and must not rule the alignment out. */
+  const lo=fitRate?0.75:0.82, hi=fitRate?1.35:1.22;
   let best=null;
-  for(const rate of coarse){
-    const hi=Math.max(0,dur-span(rate)*0.98);
-    for(let t0=0;t0<=hi+0.001;t0+=0.25){
-      const r=scoreFit(cyc,obs,t0,rate,useStim);
+  for(let rate=lo; rate<=hi+1e-9; rate=+(rate+0.01).toFixed(3)){
+    const t0max=dur-rate*last;
+    if(t0max<0) continue;
+    for(let t0=0; t0<=t0max+1e-9; t0+=0.1){
+      const r=scoreAnchor(x,win,obs,t0,rate);
       if(!best||r.score>best.score) best={...r,t0,rate};
     }
   }
   if(!best) return null;
-  const rs=fitRate?[-0.04,-0.03,-0.02,-0.01,0,0.01,0.02,0.03,0.04]:[0];
   let fine=best;
-  for(const dr of rs){
-    const rate=+(best.rate+dr).toFixed(3);
+  for(let dr=-0.02; dr<=0.02+1e-9; dr=+(dr+0.005).toFixed(3)){
+    const rate=+(best.rate+dr).toFixed(4);
     if(rate<=0) continue;
-    for(let t0=best.t0-0.5;t0<=best.t0+0.5;t0+=0.02){
-      if(t0<0) continue;
-      const r=scoreFit(cyc,obs,t0,rate,useStim);
+    const t0max=dur-rate*last;
+    for(let t0=Math.max(0,best.t0-0.6); t0<=Math.min(t0max,best.t0+0.6); t0+=0.02){
+      const r=scoreAnchor(x,win,obs,t0,rate);
       if(r.score>fine.score) fine={...r,t0,rate};
     }
   }
   return fine;
-}
-/* Whether the stimulus playback was captured in the recording is not knowable in
-   advance, so both readings are fitted and the one that actually explains the
-   responses is kept. */
-function fitGrid(cyc,fitRate){
-  const a=fitOnce(cyc,fitRate,false), b=fitOnce(cyc,fitRate,true);
-  if(!a) return b; if(!b) return a;
-  if(b.hit>a.hit || (b.hit===a.hit && b.err<a.err-0.05)) return b;
-  return a;
 }
 function applyGrid(){
   const exp=+$("expected").value, mode=$("mode").value;
@@ -1018,10 +1016,16 @@ function applyGrid(){
   $("skipS").value=Math.max(0,g[0].s-2).toFixed(1);
   GRIDINFO={estimated,rate:fit?fit.rate:1,viaTone};
   drawMarks(); renderTable();
-  const mx=errs.length?Math.max.apply(null,errs.map(Math.abs)):0;
+  /* How long a participant takes to begin is not a fault in the alignment, so
+     the warning is raised on the spread of those delays rather than on the
+     largest one: a grid that drifts makes them creep, whereas a slow speaker
+     merely makes them all larger. */
+  const srt=errs.slice().sort((a,b)=>a-b);
+  const q=p=>srt.length?srt[Math.min(srt.length-1,Math.floor(srt.length*p))]:0;
+  const spread=srt.length?q(0.9)-q(0.1):0;
   const rms=errs.length?Math.sqrt(errs.reduce((a,b)=>a+b*b,0)/errs.length):0;
   if(viaTone) setDetect("fmtGridTone",SEGS.length,rms);
-  else if(mx>2) setDetect("fmtGridDrift",SEGS.length,mx);
+  else if(spread>3) setDetect("fmtGridDrift",SEGS.length,spread);
   else if(estimated) setDetect("fmtEstRate",fit.rate);
   else setDetect("fmtGridOk",SEGS.length,rms);
 }
