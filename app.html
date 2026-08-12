@@ -364,7 +364,6 @@
         <input type="file" id="impCfg" accept=".json" style="display:none">
       </div>
     </details>
-    <div class="infobox" id="normPreview"></div>
   </div></div>
 
   <!-- ============ STEP 3 : audio ============ -->
@@ -529,8 +528,6 @@ en:{
  ruleSummary:"Additional replacements and export",
  ruleHelp:"One rule per line, written as “from => to”. Applied after punctuation is removed, longest phrase first. Use this for spelling variants that should count as the same word.",
  btnApplyRules:"Apply rules", btnExpCfg:"Export settings", btnImpCfg:"Import settings",
- fmtNormPrev:(n,a,b)=>"Preview — item "+n+": “"+a+"”  →  “"+b+"”",
- normPrevNone:"Load a target set to preview the effect of these rules.",
  s3Title:"Recordings",
  s3Help:"One file per item. Files named participantID_itemNN are assigned automatically, so several participants can go in at once; anything else can be assigned by hand in the table below. Audio never leaves your computer.",
  speedShort:"About 5 to 10 minutes per 30 items. The first run needs a few minutes more to prepare the model.",
@@ -616,7 +613,7 @@ function applyLang(){
     const v=T(el.getAttribute("data-i18n"));
     if(typeof v==="string") el.textContent=v;
   });
-  paintDrop(); paintStatus(); paintTargetInfo(); paintNormPreview(); paintMap(); render();
+  paintDrop(); paintStatus(); paintTargetInfo(); paintMap(); render();
 }
 
 /* ---------- ASR target language ---------- */
@@ -855,7 +852,7 @@ function applyTargets(text,quiet){
     $("tgtWarn").classList.remove("hidden");
     $("tgtWarn").textContent=T("fmtTgtWarn")(bad.length, bad.slice(0,2).join(" | "));
   } else { $("tgtWarn").classList.add("hidden"); $("tgtWarn").textContent=""; }
-  paintTargetInfo(); paintNormPreview();
+  paintTargetInfo();
   if(!quiet) setStatus(TGT_N ? (MODEL?"stReadyCached":"stPick") : "stNoTarget");
 }
 function paintTargetInfo(){
@@ -879,28 +876,6 @@ $("tgtFile").onchange=async e=>{
 /* ============================================================
    STEP 2 — rules
    ============================================================ */
-/* Normalization with the optional rules switched off, which is what the fixed
-   part of the pipeline does on its own: lowercase, strip punctuation, collapse
-   whitespace. Used only to decide which item makes a useful preview. */
-function normalizeBase(s){
-  const keep=CFG;
-  CFG={numbers:false, contractions:false, repairs:keep.repairs,
-       rulesText:keep.rulesText, rules:[]};
-  try{ return normalize(s); }
-  finally{ CFG=keep; }
-}
-function paintNormPreview(){
-  const nums=Object.keys(TARGETS).map(Number).sort((a,b)=>a-b);
-  if(!nums.length){ $("normPreview").textContent=T("normPrevNone"); return; }
-  /* The first item of a set often contains no number, no contraction and no
-     configured variant, so a preview of it would look the same whatever the
-     rules are set to. Show the first item the current rules actually change,
-     and fall back to the first item when they change nothing. */
-  const hit=nums.find(k=>normalize(TARGETS[k])!==normalizeBase(TARGETS[k]));
-  const n=hit!==undefined?hit:nums[0];
-  const s=TARGETS[n];
-  $("normPreview").textContent=T("fmtNormPrev")(n, s, normalize(s));
-}
 function readCfgFromUI(){
   CFG.numbers=$("optNum").checked;
   CFG.contractions=$("optContr").checked;
@@ -910,7 +885,6 @@ function readCfgFromUI(){
   try{ localStorage.setItem("eitCfg",JSON.stringify({
     numbers:CFG.numbers, contractions:CFG.contractions, repairs:CFG.repairs,
     rulesText:CFG.rulesText})); }catch(e){}
-  paintNormPreview();
   rescore();
 }
 /* Changing a rule after a run re-scores what is already on screen; the
