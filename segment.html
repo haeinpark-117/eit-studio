@@ -81,7 +81,7 @@
   /* ---- boundary-mode chooser ---------------------------------------------
      All three options stay on screen: the choice matters for accuracy, and a
      dropdown hides the two the researcher is not currently looking at. */
-  .modes{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:6px 0 16px}
+  .modes{display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin:6px 0 16px}
   .modes label{position:relative; display:block; cursor:pointer; background:#fff;
     border:1px solid var(--line); border-radius:14px; padding:16px 18px 17px;
     transition:border-color .15s, background .15s, box-shadow .15s}
@@ -355,7 +355,11 @@
     <p class="meta" data-i18n="s2Help"></p>
     <p class="fl" style="margin:14px 0 2px" data-i18n="lblMode"></p>
     <div class="modes">
-      <label><input type="radio" name="modeR" value="stim" checked>
+      <label><input type="radio" name="modeR" value="source" checked>
+        <span class="rk" data-i18n="rkSrc"></span>
+        <span class="mt" data-i18n="mtSrc"></span>
+        <span class="md" data-i18n="mdSrc"></span></label>
+      <label><input type="radio" name="modeR" value="stim">
         <span class="rk" data-i18n="rkStim"></span>
         <span class="mt" data-i18n="mtStim"></span>
         <span class="md" data-i18n="mdStim"></span></label>
@@ -370,11 +374,23 @@
     </div>
     <!-- kept so the detection code can go on reading a single value -->
     <select id="mode" style="display:none">
-      <option value="stim"></option><option value="text"></option>
-      <option value="silence"></option>
+      <option value="source"></option><option value="stim"></option>
+      <option value="text"></option><option value="silence"></option>
     </select>
     <p class="meta" style="margin:-4px 0 14px" data-i18n="modeHint"></p>
 
+    <div id="gridSrc" class="hidden">
+      <div class="drop" id="srcDrop" style="padding:20px" role="button" tabindex="0"
+        aria-label="Choose the recording that was played to the participants"><span id="srcMsg" data-i18n="srcIdle"></span>
+        <input type="file" id="srcIn" accept="audio/*" style="display:none">
+      </div>
+      <div id="srcTableWrap" class="hidden" style="margin-top:12px">
+        <table class="segs" id="srcTable"><thead><tr>
+          <th data-i18n="thNo"></th><th data-i18n="thSrcStim"></th><th data-i18n="thSrcTone"></th>
+          <th data-i18n="thSrcWin"></th><th data-i18n="thSrcCycle"></th>
+        </tr></thead><tbody id="srcBody"></tbody></table>
+      </div>
+    </div>
     <div id="gridStim" class="hidden">
       <div class="drop" id="stimDrop" style="padding:20px" role="button" tabindex="0" aria-label="Choose the stimulus audio files"><span id="stimMsg" data-i18n="stimIdle"></span>
         <input type="file" id="stimIn" multiple accept="audio/*" style="display:none">
@@ -519,7 +535,19 @@ en:{
  btnPreset:"Load English EIT (Ortega et al., 2002)", btnTgtFile:"Upload CSV", btnClearTgt:"Clear",
  fmtTgtN:n=>n+" items loaded.",
  modeHint:"Prefer a timing grid whenever the schedule of the session is known.",
- rkStim:"Most accurate", mtStim:"Timing grid — sentence set + stimulus audio",
+ rkSrc:"Most accurate", mtSrc:"The recording that was played",
+ mdSrc:"Load the audio the participants heard. Every quantity the schedule needs — how long each sentence took to play, where the tone fell, how long the response window stayed open — is measured from that file rather than assumed, so nothing is estimated from syllable counts.",
+ srcIdle:"Drop the recording that was played, or click to choose it. One file containing the whole session.",
+ fmtSrcLoaded:(n,d)=>n+" — "+fmtT(d),
+ fmtSrcTones:(k,n)=>k+" tones found; the last "+n+" were taken as the task, the earlier ones as practice.",
+ fmtSrcOk:(n,w0,w1)=>"Schedule measured from "+n+" items. Response windows run from "+w0.toFixed(2)+" to "+w1.toFixed(2)+" s.",
+ fmtSrcFew:(k,n)=>"Only "+k+" tones were found and "+n+" items are expected. Check the tone frequency, or use a mode that does not need the source recording.",
+ srcNoTone:"No tone was found in that file, and the stimulus sentences could not be separated either. Check the tone frequency, or use a mode that does not need the source recording.",
+ fmtSrcNoToneStim:(k,n)=>"No tone was found, so the moment each response window opens cannot be read from the file. The "+n+" stimulus lengths were measured, though, which is the part the other modes have to estimate; they are read from the audible speech, so they run a little shorter than the stimulus files themselves. Choose \u201cTiming grid \u2014 sentence set + stimulus audio\u201d to use them together with your sentence list.",
+ fmtSrcFewStim:(k,n)=>"Only "+k+" tones were found and "+n+" items are expected, so the tones were not used. The "+n+" stimulus lengths were measured from the file; choose \u201cTiming grid \u2014 sentence set + stimulus audio\u201d to use them with your sentence list.",
+ srcNeedCount:"Set the expected number of items first.",
+ thSrcStim:"Stimulus", thSrcTone:"Tone", thSrcWin:"Window", thSrcCycle:"Cycle",
+ rkStim:"Measured stimuli", mtStim:"Timing grid — sentence set + stimulus audio",
  mdStim:"Each stimulus is measured from the audio itself rather than estimated, and every item is given a window, including items the participant left silent.",
  rkText:"Less accurate", mtText:"Timing grid — sentence set only",
  mdText:"Every item still gets a window, but stimulus lengths are estimated from syllable counts instead of measured.",
@@ -531,6 +559,8 @@ en:{
  textHelp:"Load the target sentence set: one item per line as “number, sentence, syllables”. Paste the rows in, or upload a sheet saved as CSV. This is the same list you load in the scoring tool.",
  lblToneHz:"Beep (Hz):",
  fmtTailLeft:(n,k,t)=>n+" segments found, but "+k+" further stretches of speech, "+t.toFixed(1)+" s in all, come after the last of them. If the session ran on a fixed schedule, use one of the timing-grid modes instead: those place every item from the schedule, including items the participant did not answer.",
+ gridNeedSrc:"Load the recording that was played first.",
+ fmtSrcPlaced:(n,rms,e)=>n+" windows placed from the schedule measured in the source recording. Mean response delay "+rms.toFixed(2)+" s"+(e?"; "+e+" items have no response in them.":", every item answered."),
  fmtGridTone:(n,rms)=>n+" windows placed, anchored on the beep that starts each response window. Mean offset of the detected responses is "+rms.toFixed(2)+" s.",
  lblPause:"Pause (s):", lblTone:"Tone (s):", lblBase:"Window base (s):",
  lblPer:"Per syllable (s):", lblThr:"Base syllables:",
@@ -935,7 +965,7 @@ function firstAfter(obs,t){
 }
 /* A response begins at or just after the window opens, never long before it. */
 const ANCH_EARLY=0.75, ANCH_LATE=2.5;
-function scoreAnchor(x,win,obs,t0,rate){
+function scoreAnchor(x,win,obs,t0,rate,pen){
   let hits=0,err=0,used=-1;
   for(let i=0;i<x.length;i++){
     const p=t0+rate*x[i];
@@ -946,9 +976,9 @@ function scoreAnchor(x,win,obs,t0,rate){
     }
   }
   const mean=hits?err/hits:0;
-  return {hit:hits, err:mean, score:hits-mean/20-Math.abs(rate-1)*1.5};
+  return {hit:hits, err:mean, score:hits-Math.abs(mean)/12-Math.abs(rate-1)*(pen||1.5)};
 }
-function fitGrid(cyc,fitRate){
+function fitGrid(cyc,fitRate,measured){
   const obs=onsets().sort((a,b)=>a.s-b.s);
   if(!obs.length) return null;
   /* nominal start of each response window, measured from the start of item 1 */
@@ -957,24 +987,28 @@ function fitGrid(cyc,fitRate){
   const last=x[x.length-1], dur=BUF.duration;
   /* Only the last window's start has to fall inside the recording; a response
      cut off at the very end is common and must not rule the alignment out. */
-  const lo=fitRate?0.75:0.82, hi=fitRate?1.35:1.22;
+  /* a measured schedule came from the very audio that was played, so the tempo
+     is not in question; only the moment the participant's recorder started is */
+  const lo=measured?0.99:(fitRate?0.75:0.82), hi=measured?1.01:(fitRate?1.35:1.22);
+  const step=measured?0.002:0.01, pen=measured?8:1.5;
   let best=null;
-  for(let rate=lo; rate<=hi+1e-9; rate=+(rate+0.01).toFixed(3)){
+  for(let rate=lo; rate<=hi+1e-9; rate=+(rate+step).toFixed(4)){
     const t0max=dur-rate*last;
     if(t0max<0) continue;
     for(let t0=0; t0<=t0max+1e-9; t0+=0.1){
-      const r=scoreAnchor(x,win,obs,t0,rate);
+      const r=scoreAnchor(x,win,obs,t0,rate,pen);
       if(!best||r.score>best.score) best={...r,t0,rate};
     }
   }
   if(!best) return null;
   let fine=best;
-  for(let dr=-0.02; dr<=0.02+1e-9; dr=+(dr+0.005).toFixed(3)){
+  const fs=measured?0.001:0.005, fr=measured?0.004:0.02;
+  for(let dr=-fr; dr<=fr+1e-9; dr=+(dr+fs).toFixed(4)){
     const rate=+(best.rate+dr).toFixed(4);
     if(rate<=0) continue;
     const t0max=dur-rate*last;
     for(let t0=Math.max(0,best.t0-0.6); t0<=Math.min(t0max,best.t0+0.6); t0+=0.02){
-      const r=scoreAnchor(x,win,obs,t0,rate);
+      const r=scoreAnchor(x,win,obs,t0,rate,pen);
       if(r.score>fine.score) fine={...r,t0,rate};
     }
   }
@@ -983,6 +1017,15 @@ function fitGrid(cyc,fitRate){
 function applyGrid(){
   const exp=+$("expected").value, mode=$("mode").value;
   let stims=null, syls=null, estimated=false;
+  /* When the schedule has been measured from the recording that was played,
+     none of it has to be inferred: no sentence list, no syllable counts, no
+     constants. */
+  if(mode==="source"){
+    if(!SRCCYC){ setDetect("gridNeedSrc"); return; }
+    if(SRCCYC.length!==exp){ setDetect("fmtGridCount",SRCCYC.length,exp); return; }
+    placeGrid(SRCCYC,false,true);
+    return;
+  }
   /* Both grid modes need the syllable counts, because they set the length of
      the response window. Stimulus audio, when supplied, additionally gives the
      exact playback duration instead of an estimate. */
@@ -1000,7 +1043,10 @@ function applyGrid(){
     estimated=true;
   }
   if(stims.length!==exp){ setDetect("fmtGridCount",stims.length,exp); return; }
-  const cyc=buildCycles(stims,syls);
+  placeGrid(buildCycles(stims,syls),estimated,false);
+}
+function placeGrid(cyc,estimated,measured){
+  const exp=cyc.length;
   const tones=findTones(+$("cToneHz").value||1000);
   let g=null, viaTone=false, fit=null;
   if(tones.length>=exp){
@@ -1018,7 +1064,7 @@ function applyGrid(){
     }
   }
   if(!g){
-    fit=fitGrid(cyc,estimated);
+    fit=fitGrid(cyc,estimated,measured);
     if(!fit){ setDetect("errNoSeg"); return; }
     g=gridAt(cyc,fit.t0,fit.rate);
   }
@@ -1041,7 +1087,7 @@ function applyGrid(){
     return {s:Math.max(lo,a-padS), e:Math.min(hi,b+padS), empty:false, off:a-w.s};
   });
   $("skipS").value=Math.max(0,g[0].s-2).toFixed(1);
-  GRIDINFO={estimated,rate:fit?fit.rate:1,viaTone};
+  GRIDINFO={estimated,measured:!!measured,rate:fit?fit.rate:1,viaTone};
   drawMarks(); renderTable();
   /* How long a participant takes to begin is not a fault in the alignment, so
      the warning is raised on the spread of those delays rather than on the
@@ -1053,6 +1099,8 @@ function applyGrid(){
   const rms=errs.length?Math.sqrt(errs.reduce((a,b)=>a+b*b,0)/errs.length):0;
   if(viaTone) setDetect("fmtGridTone",SEGS.length,rms);
   else if(spread>3) setDetect("fmtGridDrift",SEGS.length,spread);
+  else if(measured) setDetect("fmtSrcPlaced",SEGS.length,rms,
+    SEGS.filter(x=>x.empty).length);
   else if(estimated) setDetect("fmtEstRate",fit.rate);
   else setDetect("fmtGridOk",SEGS.length,rms);
 }
@@ -1107,10 +1155,160 @@ async function loadStim(files){
   paintStimMsg();
   if(BUF) applyGrid();
 }
+/* ------------------------------------------------------------------
+   The recording that was played
+   Given the audio the participants heard, nothing about the schedule has to be
+   assumed. Each sentence's playback length, the tone that opens the response
+   window and the length of the window itself are all read off that one file, so
+   the syllable-count estimate — the largest remaining source of error — drops
+   out of the procedure entirely, and the sentence list is not needed at all.
+   ------------------------------------------------------------------ */
+let SRCCYC=null, SRCINFO=null;
+function setSrc(k,...a){ SRCK={k,a}; paintSrc(); }
+let SRCK=null;
+function paintSrc(){
+  const el=$("srcMsg");
+  if(!SRCK){ el.textContent=T("srcIdle"); return; }
+  const v=T(SRCK.k);
+  el.textContent = typeof v==="function" ? v(...SRCK.a) : v;
+}
+const srcDrop=$("srcDrop");
+srcDrop.onclick=()=>$("srcIn").click();
+srcDrop.onkeydown=e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); $("srcIn").click(); } };
+srcDrop.ondragover=e=>{ e.preventDefault(); srcDrop.classList.add("over"); };
+srcDrop.ondragleave=()=>srcDrop.classList.remove("over");
+srcDrop.ondrop=e=>{ e.preventDefault(); srcDrop.classList.remove("over");
+  if(e.dataTransfer.files[0]) loadSource(e.dataTransfer.files[0]); };
+$("srcIn").onchange=e=>{ if(e.target.files[0]) loadSource(e.target.files[0]); e.target.value=""; };
+
+async function loadSource(file){
+  const exp=+$("expected").value;
+  if(!exp){ setSrc("srcNeedCount"); return; }
+  let bf;
+  try{
+    const ab=await file.arrayBuffer();
+    bf=await ac().decodeAudioData(ab);
+  }catch(e){ setSrc("errDecode"); return; }
+  /* the analysis reads the working buffer, so it is lent to the source file and
+     handed straight back */
+  const keepB=BUF, keepE=ENV;
+  BUF=bf; buildEnvelope();
+  let tones=[], runs=[];
+  try{
+    tones=findTones(+$("cToneHz").value||1000);
+    runs=segment(0.35,0.15,0,3,{from:0,maxLen:1e9});
+  }finally{ BUF=keepB; ENV=keepE; }
+  buildSchedule(file.name,bf.duration,tones,runs,exp);
+  if(BUF) applyGrid();
+}
+/* Group speech runs into utterances, then keep the last n. On a stimulus track
+   the silence between items is several seconds — the response window — while the
+   pauses inside one sentence are a fraction of a second, so a one-and-a-half
+   second gap separates items cleanly. Taking the last n rather than splitting the
+   whole file into n keeps instructions and practice items out of the count. */
+function splitInto(runs,n){
+  if(!runs.length) return null;
+  const g=[{s:runs[0].s,e:runs[0].e}];
+  for(let j=1;j<runs.length;j++){
+    const last=g[g.length-1];
+    if(runs[j].s-last.e<1.5) last.e=runs[j].e;
+    else g.push({s:runs[j].s,e:runs[j].e});
+  }
+  /* a quarter-second blip is a signal tone or a click, not a sentence */
+  const u=g.filter(x=>x.e-x.s>=0.5);
+  return u.length>=n ? u.slice(u.length-n) : null;
+}
+function buildSchedule(name,dur,tones,runs,exp){
+  /* the tones are speech-loud too, so they are taken out before what is left is
+     read as the stimulus sentences */
+  const isTone=r=>tones.some(t=>r.s<t.e+0.12&&r.e>t.s-0.12);
+  const speech=[];
+  runs.forEach(r=>{
+    if(isTone(r)) return;
+    const last=speech[speech.length-1];
+    if(last&&r.s-last.e<0.4) last.e=r.e; else speech.push({s:r.s,e:r.e});
+  });
+  SRCCYC=null; SRCINFO=null;
+  if(tones.length<exp){
+    /* Without a tone the moment the window opens cannot be read off the file,
+       but the stimulus lengths still can, and those are the part the other
+       modes have to guess at. They are handed to the stimulus-audio mode. */
+    const cl=splitInto(speech,exp);
+    $("srcTableWrap").classList.add("hidden");
+    if(cl){ STIM=cl.map(c=>c.e-c.s); paintStimMsg();
+      setSrc(tones.length?"fmtSrcFewStim":"fmtSrcNoToneStim",tones.length,exp); }
+    else setSrc(tones.length?"fmtSrcFew":"srcNoTone",tones.length,exp);
+    return;
+  }
+  /* practice items come first, so the task is the last run of tones */
+  const task=tones.slice(tones.length-exp);
+  const items=task.map((t,i)=>({
+    tone:t, ws:t.e,
+    we:(i<exp-1) ? (speech.find(r=>r.s>t.e+0.05)||{s:null}).s : null
+  }));
+  /* One item's cycle ends where the next stimulus begins, and that is the first
+     speech after the tone — a quantity the detector gets right. The start of the
+     stimulus itself is not: a sentence often registers as two or three runs with
+     a pause between them, and taking the last of those would shorten the cycle
+     and make the whole schedule creep. So each cycle is closed on the following
+     item's start rather than on its own detected stimulus, and the stimulus is
+     read as everything audible between the two. */
+  /* Item 1 has no preceding item to close on, and whatever came before it —
+     instructions, practice — is not part of its cycle, so its stimulus is read
+     backwards from the tone for as long as the speech stays contiguous. */
+  const backTo=t=>{
+    const before=speech.filter(r=>r.e<=t.s+0.05);
+    if(!before.length) return null;
+    let a=before.length-1;
+    while(a>0 && before[a].s-before[a-1].e<1.0) a--;
+    return {s:before[a].s, e:before[before.length-1].e};
+  };
+  items.forEach((x,i)=>{
+    if(i===0){ x.stim=backTo(x.tone); x.from=x.stim?x.stim.s:x.tone.s-4; return; }
+    const from=items[i-1].we;
+    const inside=speech.filter(r=>r.s>=from-0.05&&r.e<=x.tone.s+0.05);
+    x.stim = inside.length ? {s:inside[0].s, e:inside[inside.length-1].e} : null;
+    x.from = from;
+  });
+  const known=items.filter(x=>x.we!=null).map(x=>x.we-x.ws);
+  const lastWin=known.length?known[known.length-1]:2;
+  const tail=items[exp-1];
+  /* the source recording stops when the last window closes */
+  tail.we=Math.min(dur, tail.ws+lastWin);
+  const medLead=(()=>{
+    const v=items.filter(x=>x.from!=null).map(x=>x.ws-x.from).sort((a,b)=>a-b);
+    return v.length?v[v.length>>1]:3;
+  })();
+  SRCCYC=items.map((x,i)=>({
+    stim: x.stim?x.stim.e-x.stim.s:0,
+    lead: x.from!=null ? x.ws-x.from : medLead,
+    win : Math.max(0.5,x.we-x.ws)
+  }));
+  SRCINFO={file:name,dur,tones:tones.length,exp};
+  const w=SRCCYC.map(c=>c.win);
+  setSrc("fmtSrcOk",exp,Math.min.apply(null,w),Math.max.apply(null,w));
+  paintSrcTable(items);
+}
+function paintSrcTable(items){
+  const tb=$("srcBody");
+  tb.innerHTML=items.map((x,i)=>{
+    const c=SRCCYC[i];
+    const pause=x.stim?(x.tone.s-x.stim.e):null;
+    return "<tr><td>"+itemNo(i)+"</td>"+
+      "<td>"+(x.stim?(x.stim.e-x.stim.s).toFixed(2):"—")+"</td>"+
+      "<td>"+(x.tone.e-x.tone.s).toFixed(2)+(pause!=null?" <span class=\"meta\">+"+pause.toFixed(2)+"</span>":"")+"</td>"+
+      "<td>"+c.win.toFixed(2)+"</td>"+
+      "<td>"+(c.lead+c.win).toFixed(2)+"</td></tr>";
+  }).join("");
+  $("srcTableWrap").classList.remove("hidden");
+}
+$("expected").addEventListener("change",()=>{ if(SRCINFO) setSrc("srcIdle"); });
+
 function setMode(){
   const m=$("mode").value, grid=m!=="silence";
+  $("gridSrc").classList.toggle("hidden",m!=="source");
   $("gridStim").classList.toggle("hidden",m!=="stim");
-  $("gridText").classList.toggle("hidden",!grid);
+  $("gridText").classList.toggle("hidden",!(m==="stim"||m==="text"));
   $("gridConst").classList.toggle("hidden",!grid);
   $("silRow").classList.toggle("hidden",grid);
   $("skipRow").classList.toggle("hidden",grid);
