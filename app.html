@@ -6,7 +6,18 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<title>EIT Studio</title>
+<title>Score — EIT Studio</title>
+<meta name="description" content="Transcribe elicited imitation responses with Whisper and score them against your target sentences, entirely in the browser. Corrections are recorded alongside the automatic output.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="EIT Studio">
+<meta property="og:title" content="Score — EIT Studio">
+<meta property="og:description" content="Transcribe elicited imitation responses with Whisper and score them against your target sentences, entirely in the browser. Corrections are recorded alongside the automatic output.">
+<meta property="og:url" content="https://haeinpark-117.github.io/eit-studio/app.html">
+<meta property="og:image" content="https://haeinpark-117.github.io/eit-studio/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="EIT Studio — administer an elicited imitation task, and score it, in the browser.">
+<meta name="twitter:card" content="summary_large_image">
 <style>
   :root{
     --bg:#f2f2f4; --panel:#fff; --ink:#17171c; --muted:#6b6b76; --line:#e3e3e8;
@@ -550,7 +561,7 @@ en:{
  thTarget:"Target", thWhisper:"Whisper", thAcc:"Accuracy", thConf:"Confidence", thAudio:"Audio",
  readGuide:"How to read the output table →",
  citeK:"Cite as", citeA:"Park, H. I. (2026).", citeT:"EIT Studio",
- citeB:"[Computer software]. https://haeinpark-117.github.io/eit-studio/",
+ citeB:"(Version 1.0) [Computer software]. https://haeinpark-117.github.io/eit-studio/",
  citeCopy:"Copy", citeCopied:"Copied",
  tipCorrB:"Transcriptions can be corrected.",
  tipCorr:"Click a row to hear the recording, edit what Whisper produced, and the score is recomputed from your version. The automatic output is never overwritten — both lines appear in the export, with a",
@@ -1259,7 +1270,7 @@ function render(){
     tr.onclick=()=>{ const n=tr.getAttribute("data-f"); OPEN = OPEN===n ? null : n; render(); };
   });
   wireDrawer();
-  $("foot").textContent=loadedModel||"";
+  $("foot").textContent=(loadedModel?TOOL_VER+" · "+loadedModel:TOOL_VER);
   paintRestored();
   paintTip();
 }
@@ -1268,6 +1279,10 @@ function render(){
    The same string is offered on screen and written into the JSON meta block,
    so it travels with the file to wherever the methods section is written. */
 const TOOL_NAME="EIT Studio", TOOL_URL="https://haeinpark-117.github.io/eit-studio/";
+const TOOL_VERSION="1.0", TOOL_VER="v1.0";
+/* the version is visible before a run as well, since it is what a methods
+   section has to report */
+$("foot").textContent=TOOL_VER;
 function citePlain(){ return T("citeA")+" "+T("citeT")+" "+T("citeB"); }
 $("citeCopy").onclick=async()=>{
   const b=$("citeCopy");
@@ -1446,7 +1461,7 @@ $("csvBtn").onclick=()=>{
 $("jsonBtn").onclick=()=>{
   const pids=[...new Set(RESULTS.map(r=>r.pid))];
   dl(new Blob([JSON.stringify({participants:pids,
-    meta:{tool:TOOL_NAME, tool_url:TOOL_URL, cite_as:citePlain(),
+    meta:{tool:TOOL_NAME, tool_version:TOOL_VERSION, tool_url:TOOL_URL, cite_as:citePlain(),
       whisper_model:loadedModel,decoding:"greedy (transformers.js, in-browser)",
       confidence:"mean probability of the tokens Whisper selected; avg_logprob is the raw value",
       scoring_rules:{lowercase:true,strip_punctuation:true,keep_possessives:true,

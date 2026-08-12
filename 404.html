@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Page not found — EIT Studio</title>
+<meta name="description" content="That page does not exist on EIT Studio. Start here, or go to the administration, segmentation or scoring tool.">
+<meta name="robots" content="noindex">
+<style>
+  :root{
+    --ink:#08080f; --muted:#6a6a7d; --line:#e8e8ef;
+    --accent:#3840f3; --accent-dk:#2a31d4; --accent-soft:#eef0ff; --accent-line:#d9dcff;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; color:var(--ink); background:#fff;
+    font:17.6px/1.72 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased; min-height:100vh;
+    display:flex; flex-direction:column}
+  a{color:var(--accent)}
+  .wrap{max-width:1120px; margin:0 auto; padding:0 26px; width:100%}
+
+  .nav{border-bottom:1px solid var(--line)}
+  .nav .wrap{display:flex; align-items:center; justify-content:space-between; height:60px}
+  .logo{font-weight:800; letter-spacing:-.4px; font-size:17.6px; text-decoration:none; color:var(--ink)}
+  .navlinks{display:flex; gap:26px; font-size:14.9px}
+  .navlinks a{text-decoration:none; color:var(--muted)}
+  .navlinks a:hover{color:var(--ink)}
+  @media(max-width:700px){ .navlinks{display:none} }
+
+  main{flex:1 1 auto;
+    background:radial-gradient(900px 340px at 20% -160px,#e4e6ff 0%,rgba(255,255,255,0) 72%)}
+  main .wrap{padding:78px 26px 66px}
+  .kicker{font-family:var(--mono); font-size:12.7px; letter-spacing:.13em;
+    text-transform:uppercase; color:var(--accent); margin:0 0 14px}
+  h1{margin:0; font-size:44px; line-height:1.12; letter-spacing:-1.6px; font-weight:800;
+    max-width:760px}
+  h1 em{font-style:normal; color:var(--accent)}
+  .lead{margin:20px 0 0; max-width:640px; font-size:19.2px; color:var(--muted)}
+  .addr{display:inline-block; margin:18px 0 0; font-family:var(--mono); font-size:14.6px;
+    color:var(--muted); background:#f5f5f9; border:1px solid var(--line); border-radius:8px;
+    padding:7px 12px; max-width:100%; overflow-wrap:anywhere}
+
+  .cards{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin:38px 0 0}
+  .cards a{display:block; text-decoration:none; color:inherit; background:#fff;
+    border:1px solid var(--line); border-radius:14px; padding:20px 20px 18px; transition:.15s}
+  .cards a:hover{border-color:var(--accent-line); background:var(--accent-soft)}
+  .cards b{display:block; font-size:17.6px; letter-spacing:-.3px; margin-bottom:5px}
+  .cards span{display:block; font-size:14.9px; color:var(--muted); line-height:1.55}
+  @media(max-width:860px){ .cards{grid-template-columns:1fr 1fr} }
+  @media(max-width:520px){ .cards{grid-template-columns:1fr} h1{font-size:31px; letter-spacing:-1px} }
+
+  .more{margin:30px 0 0; font-size:15.6px; color:var(--muted)}
+  .more a{margin-right:18px}
+
+  footer{padding:26px 0; font-size:14.3px; color:var(--muted); border-top:1px solid var(--line)}
+  footer .wrap{display:flex; justify-content:space-between; gap:18px; flex-wrap:wrap}
+  footer .mono{font-family:var(--mono); font-size:12.7px}
+</style>
+</head>
+<body>
+
+<div class="nav"><div class="wrap">
+  <a class="logo" href="index.html">EIT Studio</a>
+  <div class="navlinks">
+    <a href="how.html">How it works</a>
+    <a href="asr.html">Speech recognition</a>
+    <a href="cite.html">How to cite</a>
+    <a href="about.html">About</a>
+  </div>
+</div></div>
+
+<main><div class="wrap">
+  <p class="kicker">404 · Page not found</p>
+  <h1>That page is not here, <em>but the tools are.</em></h1>
+  <p class="lead">The address may have been mistyped, or a link may point to a page that has since
+    been renamed. Nothing has been taken down.</p>
+  <p class="addr" id="addr"></p>
+
+  <div class="cards">
+    <a href="start.html"><b>Start here</b><span>Prepare your sentence set, then administer or score</span></a>
+    <a href="administer.html"><b>Administer</b><span>Run the task and record one file per item</span></a>
+    <a href="app.html"><b>Score</b><span>Transcribe the recordings and compute WER</span></a>
+    <a href="segment.html"><b>Segment</b><span>Split one long recording into items</span></a>
+  </div>
+
+  <p class="more">
+    <a href="how.html">How it works</a>
+    <a href="asr.html">Speech recognition</a>
+    <a href="cite.html">How to cite</a>
+    <a href="contact.html">Contact</a>
+  </p>
+</div></main>
+
+<footer><div class="wrap">
+  <div>EIT Studio · Hae In Park · Kyung Hee University, Seoul, South Korea</div>
+  <div class="mono">v1.0 · 2026-08-12 · whisper-large-v3-turbo · transformers.js</div>
+</div></footer>
+
+<script>
+/* Showing the address that failed makes a typo obvious at a glance. */
+(function(){
+  var p=location.pathname.replace(/^\/eit-studio/,"")+location.search;
+  document.getElementById("addr").textContent=p||"/";
+})();
+</script>
+</body></html>

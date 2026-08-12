@@ -8,6 +8,16 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>How to cite — EIT Studio</title>
 <meta name="description" content="How to cite EIT Studio, the recognition settings it uses, and what to report in a methods section.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="EIT Studio">
+<meta property="og:title" content="How to cite — EIT Studio">
+<meta property="og:description" content="How to cite EIT Studio, the recognition settings it uses, and what to report in a methods section.">
+<meta property="og:url" content="https://haeinpark-117.github.io/eit-studio/cite.html">
+<meta property="og:image" content="https://haeinpark-117.github.io/eit-studio/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="EIT Studio — administer an elicited imitation task, and score it, in the browser.">
+<meta name="twitter:card" content="summary_large_image">
 <style>
   :root{
     --ink:#08080f; --muted:#6a6a7d; --line:#e8e8ef;
@@ -142,18 +152,25 @@
   </div>
 
   <div class="tabs"><span class="tab">APA 7</span></div>
-  <pre class="cite">Park, H. I. (2026). <em>EIT Studio</em> [Computer software].
+  <pre class="cite">Park, H. I. (2026). <em>EIT Studio</em> (Version 1.0) [Computer software].
     https://haeinpark-117.github.io/eit-studio/</pre>
   <p style="font-size:15.4px; color:var(--muted)">The bracketed descriptor stays
     <span style="font-family:var(--mono); font-size:13.8px">[Computer software]</span> because
     that is the category APA 7 provides for programs of this kind; in prose the tool is described
     as a web-based tool, which is the more informative term for a methods section.</p>
 
+  <p style="font-size:15.4px; color:var(--muted)">Please report the version. It is shown in the
+    page footer and is written into the <span style="font-family:var(--mono); font-size:13.8px">meta</span>
+    block of the JSON export, so the version that produced a set of scores can be recovered from a
+    results file. The scoring rules and the normalizer change between versions, and a score is
+    reproducible only against the version that produced it.</p>
+
   <div class="tabs"><span class="tab">BibTeX</span></div>
   <pre class="cite">@misc{park2026eitstudio,
   author = {Park, Hae In},
   title  = {{EIT} {Studio}},
   year   = {2026},
+  version = {1.0},
   note   = {Computer software},
   url    = {https://haeinpark-117.github.io/eit-studio/}
 }</pre>
@@ -193,7 +210,7 @@ Park, H. I. (under 2nd review). <em>Revisiting parallel form equivalence for
 
 <footer><div class="wrap">
   <div>EIT Studio · Hae In Park · Kyung Hee University, Seoul, South Korea</div>
-  <div class="mono">whisper-large-v3-turbo · transformers.js</div>
+  <div class="mono">v1.0 · 2026-08-12 · whisper-large-v3-turbo · transformers.js</div>
 </div></footer>
 
 <script>
