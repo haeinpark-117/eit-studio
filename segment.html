@@ -81,7 +81,7 @@
   /* ---- boundary-mode chooser ---------------------------------------------
      All three options stay on screen: the choice matters for accuracy, and a
      dropdown hides the two the researcher is not currently looking at. */
-  .modes{display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin:6px 0 16px}
+  .modes{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:6px 0 16px}
   .modes label{position:relative; display:block; cursor:pointer; background:#fff;
     border:1px solid var(--line); border-radius:14px; padding:16px 18px 17px;
     transition:border-color .15s, background .15s, box-shadow .15s}
@@ -359,14 +359,10 @@
         <span class="rk" data-i18n="rkSrc"></span>
         <span class="mt" data-i18n="mtSrc"></span>
         <span class="md" data-i18n="mdSrc"></span></label>
-      <label><input type="radio" name="modeR" value="stim">
-        <span class="rk" data-i18n="rkStim"></span>
-        <span class="mt" data-i18n="mtStim"></span>
-        <span class="md" data-i18n="mdStim"></span></label>
-      <label><input type="radio" name="modeR" value="text">
-        <span class="rk" data-i18n="rkText"></span>
-        <span class="mt" data-i18n="mtText"></span>
-        <span class="md" data-i18n="mdText"></span></label>
+      <label><input type="radio" name="modeR" value="grid">
+        <span class="rk" data-i18n="rkGrid"></span>
+        <span class="mt" data-i18n="mtGrid"></span>
+        <span class="md" data-i18n="mdGrid"></span></label>
       <label><input type="radio" name="modeR" value="silence">
         <span class="rk" data-i18n="rkSil"></span>
         <span class="mt" data-i18n="mtSil"></span>
@@ -374,8 +370,8 @@
     </div>
     <!-- kept so the detection code can go on reading a single value -->
     <select id="mode" style="display:none">
-      <option value="source"></option><option value="stim"></option>
-      <option value="text"></option><option value="silence"></option>
+      <option value="source"></option><option value="grid"></option>
+      <option value="silence"></option>
     </select>
     <p class="meta" style="margin:-4px 0 14px" data-i18n="modeHint"></p>
 
@@ -547,10 +543,8 @@ en:{
  fmtSrcFewStim:(k,n)=>"Only "+k+" tones were found and "+n+" items are expected, so the tones were not used. The "+n+" stimulus lengths were measured from the file; choose \u201cTiming grid \u2014 sentence set + stimulus audio\u201d to use them with your sentence list.",
  srcNeedCount:"Set the expected number of items first.",
  thSrcStim:"Stimulus", thSrcTone:"Tone", thSrcWin:"Window", thSrcCycle:"Cycle",
- rkStim:"Measured stimuli", mtStim:"Timing grid — sentence set + stimulus audio",
- mdStim:"Each stimulus is measured from the audio itself rather than estimated, and every item is given a window, including items the participant left silent.",
- rkText:"Less accurate", mtText:"Timing grid — sentence set only",
- mdText:"Every item still gets a window, but stimulus lengths are estimated from syllable counts instead of measured.",
+ rkGrid:"Less accurate", mtGrid:"Timing grid — your sentence set",
+ mdGrid:"Every item is given a window, including items the participant left silent. Add the stimulus audio as well and each sentence's playback length is measured rather than estimated from its syllable count; the pause and the window still come from the settings.",
  rkSil:"Least accurate", mtSil:"Silence in the recording",
  mdSil:"The fallback when the schedule is unknown. Silence cannot distinguish a skipped item from a pause, so one silent item shifts every item number after it.",
  stimIdle:"Drop the stimulus audio files here (one per item), or click to choose",
@@ -568,10 +562,10 @@ en:{
  thNote:"Note",
  noteEmpty:"no speech", 
  fmtNoteOff:d=>(d>0?"+":"")+d.toFixed(2)+" s",
- fmtGridOk:(n,rms)=>n+" windows placed from the timing grid. Mean alignment error "+rms.toFixed(2)+" s against the responses that were detected.",
+ fmtGridOk:(n,rms)=>n+" windows placed from the timing grid, with the stimulus lengths measured from the recordings you supplied. Mean alignment error "+rms.toFixed(2)+" s against the responses that were detected.",
  fmtGridDrift:(n,sp)=>n+" windows placed, but the delay before each response varies by "+sp.toFixed(1)+" s across the task, which is more than a fixed schedule should produce. The recording may have been paused, or the timing constants may not match this administration. Check the later items before exporting.",
  gridNeedText:"Load the sentence set first — each line needs a syllable count.",
- gridNeedStim:"Add the stimulus audio files first.",
+ fmtStimUsed:n=>n+" stimulus recordings loaded; their measured lengths are used instead of the syllable estimate.",
  fmtGridCount:(g,e)=>"The timing source has "+g+" items but "+e+" are expected. Set the expected count to match, or check the source.",
  fmtEstRate:r=>"Stimulus durations were estimated from syllable counts and scaled by "+r.toFixed(2)+" to fit this recording; boundaries are less precise than with the stimulus audio.",
  lblSil:"Min. silence (s):", lblMinLen:"Min. response (s):", lblPad:"Padding (s):",
@@ -1032,9 +1026,10 @@ function applyGrid(){
   TGT=parseTargetLines($("tgtBox").value);
   if(!TGT.length||TGT.some(t=>!t[2])){ setDetect("gridNeedText"); return; }
   syls=TGT.map(t=>t[2]);
-  if(mode==="stim"){
-    if(!STIM.length){ setDetect("gridNeedStim"); return; }
-    if(STIM.length!==TGT.length){ setDetect("fmtGridCount",STIM.length,TGT.length); return; }
+  /* the stimulus recordings are an optional refinement of the same mode: when
+     they are there their measured lengths replace the syllable estimate, and
+     when they are not the estimate stands */
+  if(STIM.length && STIM.length===TGT.length){
     stims=STIM.slice();
   }else{
     /* stimulus duration is not knowable from text; estimate it from syllables
@@ -1232,7 +1227,7 @@ function buildSchedule(name,dur,tones,runs,exp){
   if(tones.length<exp){
     /* Without a tone the moment the window opens cannot be read off the file,
        but the stimulus lengths still can, and those are the part the other
-       modes have to guess at. They are handed to the stimulus-audio mode. */
+       modes have to guess at. They are handed to the timing-grid mode. */
     const cl=splitInto(speech,exp);
     $("srcTableWrap").classList.add("hidden");
     if(cl){ STIM=cl.map(c=>c.e-c.s); paintStimMsg();
@@ -1307,8 +1302,8 @@ $("expected").addEventListener("change",()=>{ if(SRCINFO) setSrc("srcIdle"); });
 function setMode(){
   const m=$("mode").value, grid=m!=="silence";
   $("gridSrc").classList.toggle("hidden",m!=="source");
-  $("gridStim").classList.toggle("hidden",m!=="stim");
-  $("gridText").classList.toggle("hidden",!(m==="stim"||m==="text"));
+  $("gridStim").classList.toggle("hidden",m!=="grid");
+  $("gridText").classList.toggle("hidden",m!=="grid");
   $("gridConst").classList.toggle("hidden",!grid);
   $("silRow").classList.toggle("hidden",grid);
   $("skipRow").classList.toggle("hidden",grid);
