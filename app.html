@@ -923,10 +923,10 @@ $("optNum").onchange=readCfgFromUI;
 $("optContr").onchange=readCfgFromUI;
 $("optRep").onchange=readCfgFromUI;
 $("expCfg").onclick=()=>{
-  dl(new Blob([JSON.stringify({normalizer_version:"configurable-1",
+  dl(new Blob([JSON.stringify({scoring_version:SCORING_VERSION,
     lowercase:true, strip_punctuation:true, keep_possessives:true,
     spell_out_numbers:CFG.numbers, expand_contractions:CFG.contractions,
-    score_self_corrections_as_final:CFG.repairs,
+    collapse_adjacent_self_repetitions:CFG.repairs,
     extra_rules:CFG.rules},null,1)],{type:"application/json"}),"scoring_rules.json");
 };
 $("impCfgBtn").onclick=()=>$("impCfg").click();
@@ -936,7 +936,12 @@ $("impCfg").onchange=async e=>{
     const j=JSON.parse(await f.text());
     $("optNum").checked=!!j.spell_out_numbers;
     $("optContr").checked=!!j.expand_contractions;
-    $("optRep").checked=!!j.score_self_corrections_as_final;
+    /* the key was renamed when the rule's behaviour was pinned down; a file
+       written under the old name is still read, and its value still means
+       "collapse a self-correction", but it will be scored by the current rule */
+    $("optRep").checked = j.collapse_adjacent_self_repetitions!=null
+      ? !!j.collapse_adjacent_self_repetitions
+      : !!j.score_self_corrections_as_final;
     $("ruleBox").value=(j.extra_rules||[]).map(r=>r.from+" => "+r.to).join("\n");
     readCfgFromUI();
     $("ruleDetails").open=true;
@@ -1389,6 +1394,16 @@ function render(){
    so it travels with the file to wherever the methods section is written. */
 const TOOL_NAME="EIT Studio", TOOL_URL="https://haeinpark-117.github.io/eit-studio/";
 const TOOL_VERSION="1.0", TOOL_VER="v1.0";
+/* The scoring code carries its own version, and it is exported with every row.
+   A setting that reads the same but behaves differently is worse than no record
+   at all: the self-correction rule once collapsed a repeated phrase at any
+   distance and now collapses it only where the restart is immediate, and under
+   the old label both readings exported the identical string. Any change to how a
+   score is arrived at — this rule, the normalizer, the alignment — increments
+   this number, so two files that disagree can always be told apart.
+     1  first release
+     2  self-correction collapse restricted to an immediately repeated phrase */
+const SCORING_VERSION=2;
 /* the version is visible before a run as well, since it is what a methods
    section has to report */
 $("foot").textContent=TOOL_VER;
@@ -1549,7 +1564,7 @@ function wireDrawer(){
 /* ---------- export ---------- */
 function rulesSummary(){
   return "numbers="+(CFG.numbers?"on":"off")+"; contractions="+(CFG.contractions?"on":"off")+
-    "; self_corrections="+(CFG.repairs?"final attempt":"verbatim")+
+    "; self_corrections="+(CFG.repairs?"collapse_adjacent_repeats":"off")+
     "; extra="+CFG.rules.map(r=>r.from+">"+r.to).join("|");
 }
 /* The word error rate is not computed on any of the strings the export used to
@@ -1563,14 +1578,14 @@ $("csvBtn").onclick=()=>{
               "transcription_raw","transcription_corrected","transcription_final",
               "reviewed","wer_raw","wer_final","accuracy_pct",
               "confidence","avg_logprob","duration_s","status","error","file","model","rules",
-              "self_corrections_removed"];
+              "self_corrections_removed","tool_version","scoring_version"];
   const rows=[cols.join(",")];
   RESULTS.forEach(r=>rows.push([r.pid,r.item??"",r.target,r.sc?r.sc.gt:"",
     r.text, r.corrected??"", r.sc?r.sc.tr:"",
     r.reviewed?"yes":"no",
     r.scRaw?r.scRaw.wer:"",r.sc?r.sc.wer:"",r.sc?r.sc.acc:"",r.conf??"",r.avgLogprob??"",
     r.dur?r.dur.toFixed(2):"",r.status||"scored",r.err||"",r.name,loadedModel,rulesSummary(),
-    r.sc&&r.sc.rep?r.sc.rep.join(" "):""].map(v=>{
+    r.sc&&r.sc.rep?r.sc.rep.join(" "):"",TOOL_VERSION,SCORING_VERSION].map(v=>{
       v=String(v??""); return (v.includes(",")||v.includes('"'))?'"'+v.replace(/"/g,'""')+'"':v;
     }).join(",")));
   dl(new Blob([rows.join("\n")],{type:"text/csv"}),"eit_scores.csv");
@@ -1579,11 +1594,12 @@ $("jsonBtn").onclick=()=>{
   const pids=[...new Set(RESULTS.map(r=>r.pid))];
   dl(new Blob([JSON.stringify({participants:pids,
     meta:{tool:TOOL_NAME, tool_version:TOOL_VERSION, tool_url:TOOL_URL, cite_as:citePlain(),
+      scoring_version:SCORING_VERSION,
       whisper_model:loadedModel,decoding:"greedy (transformers.js, in-browser)",
       confidence:"mean probability of the tokens Whisper selected; avg_logprob is the raw value",
       scoring_rules:{lowercase:true,strip_punctuation:true,keep_possessives:true,
         spell_out_numbers:CFG.numbers,expand_contractions:CFG.contractions,
-        score_self_corrections_as_final:CFG.repairs,extra_rules:CFG.rules},
+        collapse_adjacent_self_repetitions:CFG.repairs,extra_rules:CFG.rules},
       n_target_items:TGT_N, scored_at:new Date().toISOString(),
       n_items_reviewed:RESULTS.filter(r=>r.reviewed).length,
       n_items_corrected:RESULTS.filter(r=>r.corrected!=null).length},

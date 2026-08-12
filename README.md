@@ -50,7 +50,10 @@ returned, untouched), `transcription_corrected` (a hand correction, empty where 
 and `transcription_final` — the normalized string the rate was actually computed on, after the
 scoring rules and after any self-correction listed in `self_corrections_removed` has been dropped.
 `target_scored` is the target in the same normalized form, so `wer_final` can be recomputed from
-the file alone. A `status` column distinguishes `scored`, `no_speech`, `failed`, and
+the file alone. Every row also carries `tool_version` and `scoring_version`; the latter identifies
+the scoring code itself and is incremented whenever a change alters how a score is arrived at, so
+two files produced under different behaviour can be told apart even when the settings read the
+same. A `status` column distinguishes `scored`, `no_speech`, `failed`, and
 `not_attempted`; a file that failed carries no score rather than a score of zero.
 
 ## How WER is computed
