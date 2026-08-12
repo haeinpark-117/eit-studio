@@ -326,7 +326,7 @@
     <p class="meta" style="margin:-4px 0 14px" data-i18n="modeHint"></p>
 
     <div id="gridStim" class="hidden">
-      <div class="drop" id="stimDrop" style="padding:20px" role="button" tabindex="0" aria-label="Choose the stimulus audio files"><span id="stimMsg"></span>
+      <div class="drop" id="stimDrop" style="padding:20px" role="button" tabindex="0" aria-label="Choose the stimulus audio files"><span id="stimMsg" data-i18n="stimIdle"></span>
         <input type="file" id="stimIn" multiple accept="audio/*" style="display:none">
       </div>
     </div>
@@ -1000,7 +1000,7 @@ async function loadStim(files){
     try{ const ab=await f.arrayBuffer(); const bf=await ac().decodeAudioData(ab); STIM.push(bf.duration); }
     catch(e){}
   }
-  $("stimMsg").textContent=T("fmtStimLoaded")(STIM.length)+" "+T("stimOrder");
+  paintStimMsg();
   if(BUF) applyGrid();
 }
 function setMode(){
@@ -1063,7 +1063,14 @@ document.querySelectorAll('input[name="modeR"]').forEach(function(r){
   });
 });
 $("fitGrid").onclick=applyGrid;
-$("stimMsg").textContent="";
+/* The prompt inside the drop zone was cleared here, which left an empty dashed
+   box with no indication that anything could be dropped into it. */
+function paintStimMsg(){
+  $("stimMsg").textContent = STIM.length
+    ? T("fmtStimLoaded")(STIM.length)+" "+T("stimOrder")
+    : T("stimIdle");
+}
+paintStimMsg();
 
 
 /* ---------- tone detection ----------
