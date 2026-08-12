@@ -155,9 +155,32 @@
     padding:8px 12px; display:inline-block}
   .tally.bad{color:#b91c1c; background:#fef2f2; border-color:#fecaca}
   .src{margin:16px 0 0 34px; font-size:14px; color:#a0a0ae; line-height:1.7}
-  .meter{height:9px; border-radius:6px; background:var(--soft); border:1px solid var(--line);
-    overflow:hidden; width:100%}
-  .meter i{display:block; height:100%; background:var(--cy); width:0%; transition:width .08s}
+  /* ---- input level ---------------------------------------------------------
+     The meter used to be linear in amplitude, so ordinary speech filled about a
+     tenth of the bar and a perfectly usable microphone looked broken. It now
+     reads in dBFS, with the range a recording should sit in marked behind the
+     bar. */
+  .meter{position:relative; height:11px; border-radius:6px; background:#fff;
+    border:1px solid var(--line); overflow:hidden; width:100%}
+  .meter .band{position:absolute; top:0; bottom:0; background:var(--accent-soft)}
+  .meter .hot{position:absolute; top:0; bottom:0; right:0; background:var(--pink-soft)}
+  .meter i{position:absolute; top:0; bottom:0; left:0; background:var(--cy); width:0%;
+    transition:width .08s}
+  .meter i.good{background:var(--accent)}
+  .meter i.over{background:var(--pink)}
+  .meter .hold{position:absolute; top:-2px; bottom:-2px; width:2px; background:var(--ink);
+    opacity:.55; left:0; transition:left .08s}
+  .ticks{position:relative; height:15px; margin:3px 0 0}
+  .ticks span{position:absolute; transform:translateX(-50%); font-family:var(--mono);
+    font-size:11px; color:var(--muted)}
+  .lvlrd{font-family:var(--mono); font-size:14px; color:var(--muted); margin:8px 0 0}
+  .lvlrd b{color:var(--ink)}
+  .verdict{margin:10px 0 0; font-size:15.2px; line-height:1.6; border-radius:9px;
+    padding:9px 13px}
+  .verdict[hidden]{display:none}
+  .verdict.ok{background:var(--accent-soft); border:1px solid var(--accent-line); color:#2c2c6b}
+  .verdict.low{background:var(--cy-soft); border:1px solid var(--cy-line); color:#155e6b}
+  .verdict.bad{background:var(--pink-soft); border:1px solid var(--pink-line); color:var(--sev)}
   .foot{padding:16px 24px; border-top:1px solid var(--line); background:#fafafb;
     display:flex; align-items:center; gap:14px; flex-wrap:wrap}
   .foot .m{font-size:15.2px; color:var(--muted)}
@@ -464,13 +487,17 @@
         <p class="d" data-i18n="s5ad"></p>
         <div class="ln"><label class="fl" for="mic" data-i18n="lblInput"></label>
           <select class="inp" id="mic" style="flex:1"></select></div>
-        <div class="ln"><span class="meter"><i id="lvl"></i></span></div>
-        <p class="d" style="margin:0 0 11px" data-i18n="s5ad2"></p>
+        <div class="meter" id="meter"><span class="band"></span><span class="hot"></span>
+          <i id="lvl"></i><span class="hold" id="lvlHold"></span></div>
+        <div class="ticks" id="lvlTicks"></div>
+        <p class="d" style="margin:11px 0" data-i18n="s5ad2"></p>
         <div class="ln">
           <button class="btn-g" id="btnRec" data-i18n="btnRec"></button>
           <button class="btn-g" id="btnPlay" disabled data-i18n="btnPlay"></button>
         </div>
         <div class="ln"><span id="micInfo"></span></div>
+        <div class="lvlrd" id="lvlRd"></div>
+        <div class="verdict" id="lvlVd" hidden></div>
       </div>
       <div class="sub">
         <p class="k" data-i18n="s5bt"></p>
@@ -674,6 +701,12 @@ const STR={
   fmtPrac:n=>n+" practice items loaded",
   pracMissing:"practice recordings for this language could not be loaded — the session will start without practice",
   fmtMic:(s,r)=>"test.wav · "+s.toFixed(1)+" s · "+Math.round(r/1000)+" kHz",
+  fmtLvl:(pk,sp,nf)=>"peak <b>"+pk+"</b> · speech <b>"+sp+"</b> · noise "+nf,
+  lvlGood:"A good level. Nothing to change.",
+  lvlQuiet:"Quiet, but usable — the recording is well clear of the noise floor and nothing is lost. Raising the input level in your system settings would give more margin.",
+  lvlVeryLow:"Very low. Check that the input selected above is the microphone you mean to use, and raise its input level in your system settings before the participant arrives.",
+  lvlHot:"Too close to the ceiling. Lower the input level in your system settings, or move the microphone further away — a response that clips cannot be recovered.",
+  lvlNoisy:"The background is loud relative to the speech; a quieter room or a closer microphone would help more than any setting.",
   storeOk:"Storage works. Responses will be held safely until you save them.",
   storeOkNP:"Storage works. The browser did not mark it as protected, which is normal — responses are still held safely until you save them, so long as this window stays open.",
   storeBad:"unavailable — a private window, or storage blocked by the browser",
@@ -912,7 +945,22 @@ async function listMics(){
    whole session, where it is not even on screen. Both cost main-thread time that
    the capture callback competes for, so the array is reused and the loop is
    stopped while a session is running. */
-let METER_BUF=null, METER_ON=false;
+let METER_BUF=null, METER_ON=false, HOLD_DB=-99, HOLD_AT=0;
+/* dBFS mapped onto the bar. A recording should peak inside GOOD_LO..GOOD_HI:
+   below that it is quieter than it needs to be, above it there is no headroom
+   left for a loud response. */
+const LVL_FLOOR=-60, LVL_GOOD_LO=-18, LVL_GOOD_HI=-6;
+const dbfs=v=>v>0 ? 20*Math.log10(v) : -99;
+const lvlPct=db=>Math.max(0,Math.min(100,(db-LVL_FLOOR)/(0-LVL_FLOOR)*100));
+const fmtDb=db=>db<=-99 ? "—" : (db<0?"−":"")+Math.abs(db).toFixed(1)+" dBFS";
+function paintMeterScale(){
+  const m=$("meter"); if(!m) return;
+  m.querySelector(".band").style.left=lvlPct(LVL_GOOD_LO)+"%";
+  m.querySelector(".band").style.width=(lvlPct(LVL_GOOD_HI)-lvlPct(LVL_GOOD_LO))+"%";
+  m.querySelector(".hot").style.width=(100-lvlPct(LVL_GOOD_HI))+"%";
+  $("lvlTicks").innerHTML=[-60,-48,-36,-24,-12,0].map(v=>
+    '<span style="left:'+lvlPct(v)+'%">'+v+'</span>').join("");
+}
 function meterLoop(){
   if(!METER_ON) return;
   if(ANALYSER){
@@ -920,12 +968,22 @@ function meterLoop(){
     ANALYSER.getByteTimeDomainData(METER_BUF);
     let peak=0;
     for(let i=0;i<METER_BUF.length;i++) peak=Math.max(peak,Math.abs(METER_BUF[i]-128)/128);
-    const l=$("lvl"); if(l) l.style.width=Math.min(100,Math.round(peak*180))+"%";
+    const db=dbfs(peak), l=$("lvl");
+    if(l){
+      l.style.width=lvlPct(db)+"%";
+      l.className = db>LVL_GOOD_HI ? "over" : (db>=LVL_GOOD_LO ? "good" : "");
+    }
+    /* the highest level of the last two seconds, so a single loud syllable can
+       still be read after it has passed */
+    const now=performance.now();
+    if(db>HOLD_DB || now-HOLD_AT>2000){ HOLD_DB=db; HOLD_AT=now; }
+    const h=$("lvlHold"); if(h) h.style.left=lvlPct(HOLD_DB)+"%";
   }
   requestAnimationFrame(meterLoop);
 }
 function startMeter(){ if(!METER_ON){ METER_ON=true; requestAnimationFrame(meterLoop); } }
 function stopMeter(){ METER_ON=false; }
+paintMeterScale();
 startMeter();
 
 let TESTBLOB=null;
@@ -948,15 +1006,56 @@ $("btnRec").onclick=async()=>{
   CHUNKS=[]; ARM={start:CTX.currentTime,end:CTX.currentTime+5};
   await sleep(5100);
   ARM=null;
-  TESTBLOB=wavBlob(flatten(CHUNKS),SR); CHUNKS=[];
+  const flat=flatten(CHUNKS);
+  TESTBLOB=wavBlob(flat,SR); CHUNKS=[];
   b.disabled=false; b.textContent=T("btnRec"); $("btnPlay").disabled=false;
   $("micInfo").className="mono";
   $("micInfo").textContent=T("fmtMic")(TESTBLOB.size/(SR*2),SR);
+  reportLevel(measureLevel(flat,SR));
   MIC_OK=true;
   $("st5").textContent=STORE_OK?T("stOk"):T("stNotChecked");
   $("st5").className="st"+(STORE_OK?"":" wait");
   paintStart();
 };
+/* ---- what the five-second test says about the input level -----------------
+   A level meter answers "is anything arriving"; it does not answer "is this
+   loud enough to work with". The test recording is measured so that the answer
+   is given in words, and so that the researcher is pointed at the input volume
+   of the operating system, which is where a quiet microphone is actually
+   fixed. */
+function measureLevel(x,rate){
+  if(!x||!x.length) return null;
+  let peak=0;
+  for(let i=0;i<x.length;i++){ const v=Math.abs(x[i]); if(v>peak) peak=v; }
+  const fr=Math.max(1,Math.round(rate*0.02)), rms=[];
+  for(let i=0;i+fr<=x.length;i+=fr){
+    let s=0; for(let j=i;j<i+fr;j++) s+=x[j]*x[j];
+    rms.push(Math.sqrt(s/fr));
+  }
+  if(!rms.length) return {peak:dbfs(peak),speech:-99,noise:-99,snr:0};
+  const sorted=rms.slice().sort((a,b)=>a-b);
+  const floor=sorted[Math.floor(0.10*(sorted.length-1))];
+  /* frames a little above the quietest tenth are taken to be speech */
+  const loud=rms.filter(v=>v>floor*4);
+  let sp=0;
+  if(loud.length){ loud.forEach(v=>sp+=v*v); sp=Math.sqrt(sp/loud.length); }
+  return {peak:dbfs(peak), speech:dbfs(sp), noise:dbfs(floor),
+          snr:(sp>0&&floor>0)?dbfs(sp)-dbfs(floor):0};
+}
+function reportLevel(m){
+  const rd=$("lvlRd"), vd=$("lvlVd");
+  if(!rd||!vd) return;
+  if(!m){ rd.textContent=""; vd.hidden=true; return; }
+  rd.innerHTML=T("fmtLvl")(fmtDb(m.peak),fmtDb(m.speech),fmtDb(m.noise));
+  let key,cls;
+  if(m.peak>LVL_GOOD_HI){ key="lvlHot"; cls="bad"; }
+  else if(m.peak>=LVL_GOOD_LO){ key="lvlGood"; cls="ok"; }
+  else if(m.peak>=-32){ key="lvlQuiet"; cls="low"; }
+  else { key="lvlVeryLow"; cls="bad"; }
+  let msg=T(key);
+  if(m.snr>0 && m.snr<15) msg+=" "+T("lvlNoisy");
+  vd.className="verdict "+cls; vd.textContent=msg; vd.hidden=false;
+}
 $("btnPlay").onclick=()=>{ if(TESTBLOB) new Audio(URL.createObjectURL(TESTBLOB)).play(); };
 $("mic").onchange=async()=>{ try{ await initAudio($("mic").value); }catch(e){} };
 
