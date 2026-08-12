@@ -407,7 +407,7 @@
     </div>
 
     <div class="basis" id="basisBox">
-      <p style="margin:0" data-i18n="basisNote"></p>
+      <p style="margin:0" id="basisMsg"></p>
       <p style="margin:6px 0 0" id="basisAltWrap"><button class="linky" id="basisAlt"></button></p>
     </div>
 
@@ -554,6 +554,7 @@ en:{
  headText:"Target sentences",
  headTextSub:"One item per line: number, sentence, syllables.",
  basisNote:"The most accurate way to segment is to upload both of these — the recording your participants heard and your target sentences. Every item is then placed from the real timing of the session, and an item nobody answered still keeps its own place in the numbering. Upload neither and the recording is cut at its pauses instead; that is not accurate, and you will have to correct the boundaries yourself in step 3.",
+ basisNoteGrid:"The most accurate way to segment is to upload both of these — the recording your participants heard and your target sentences. Every item is then placed from the real timing of the session, and an item nobody answered still keeps its own place in the numbering. With only the sentence set, every item does still keep its place, but how long each sentence took to play has to be estimated from its syllable count; adding the recording removes that last estimate.",
  advTitle:"Advanced settings",
 
 
@@ -603,7 +604,7 @@ en:{
  gridNeedText:"Load the sentence set first — each line needs a syllable count.",
  fmtStimUsed:n=>n+" stimulus recordings loaded; their measured lengths are used instead of the syllable estimate.",
  fmtGridCount:(g,e)=>"The timing source has "+g+" items but "+e+" are expected. Set the expected count to match, or check the source.",
- fmtEstRate:r=>"Stimulus durations were estimated from syllable counts and scaled by "+r.toFixed(2)+" to fit this recording; boundaries are less precise than with the stimulus audio.",
+ fmtEstRate:r=>"Stimulus durations were estimated from syllable counts and scaled by "+r.toFixed(2)+" to fit this recording; the boundaries are less precise than when the recording your participants heard is supplied.",
  lblSil:"Min. silence (s):", lblMinLen:"Min. response (s):", lblPad:"Padding (s):",
  lblSkip:"Ignore before (s):", lblMaxLen:"Max. response (s):",
  btnSkipAuto:"Find task start", btnRedetect:"Detect again", btnAutoFit:"Fit to expected count",
@@ -1362,6 +1363,7 @@ function setMode(){
   $("silRow").classList.toggle("hidden",grid);
   $("skipRow").classList.toggle("hidden",grid);
   $("silHelp").classList.toggle("hidden",grid);
+  $("basisMsg").textContent = T(m==="grid" ? "basisNoteGrid" : "basisNote");
   const alt=$("basisAlt");
   alt.textContent = FORCE_SIL ? T("btnUseSched") : T("btnUseSil");
   $("basisAltWrap").classList.toggle("hidden", !FORCE_SIL && m==="silence");
