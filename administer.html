@@ -1121,7 +1121,17 @@ function foldAdvance(){
     ()=>MIC_OK && STORE_OK
   ];
   const i=done.findIndex(f=>!f());
-  foldOpen(i<0 ? null : FOLDP[i]);
+  /* When every step is satisfied there is nothing left to advance to. Closing
+     the whole setup at that moment takes away the confirmation the researcher
+     has just produced — the storage check reported success and the panel
+     holding that message disappeared under the pointer — so the panel that is
+     open stays open. */
+  if(i<0){
+    const cur=FOLDP.find(p=>!p.classList.contains("fold"));
+    foldOpen(cur||FOLDP[FOLDP.length-1]);
+    return;
+  }
+  foldOpen(FOLDP[i]);
 }
 
 /* ------------------------------------------------------------ the session */
