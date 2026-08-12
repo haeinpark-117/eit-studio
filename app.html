@@ -118,6 +118,7 @@
   .status{font-size:15.7px; color:var(--muted); min-height:20px; margin-top:9px; font-family:var(--mono)}
   .warnbox{background:var(--pink-soft); border:1px solid #fbcfe8; color:var(--sev);
     border-radius:8px; padding:9px 13px; font-size:15.2px; margin-top:10px}
+  .infobox.warn{background:#fff0ec; border-color:#ffd5c9; color:#a2381c}
   .infobox{background:var(--accent-soft); border:1px solid #c7d2fe; color:#3730a3;
     border-radius:8px; padding:9px 13px; font-size:15.2px; margin-top:10px}
   details.more{margin:0 0 12px}
@@ -156,6 +157,7 @@
     background:var(--pink-soft); color:var(--sev); border:1px solid #fbcfe8; vertical-align:2px}
   .badge.rev{background:var(--cy-soft); color:var(--cy-ink); border-color:var(--cy-line)}
   .badge.quiet{background:#f4f4f7; color:var(--muted); border-color:#e2e2ea}
+  .badge.sev{background:#fff0ec; color:#a2381c; border-color:#ffd5c9}
   .wasline{display:block; font-family:var(--mono); font-size:13.4px; color:#8a4a6d; margin-top:4px}
   .werold{color:#b98aa4; text-decoration:line-through; margin-right:6px; font-size:14px}
   /* ---- the correction facility has to be announced once -------------------
@@ -411,6 +413,9 @@
       <button class="btn-g" id="resetBtn" data-i18n="btnReset"></button>
       <div class="prog"><div id="progFill"></div></div>
     </div>
+    <div class="row">
+      <p class="meta" style="margin:2px 0 0" data-i18n="runCaution"></p>
+    </div>
     <div class="status" id="status"></div>
     <div class="warnbox hidden" id="wgpuWarn" data-i18n="wgpuWarn"></div>
     <div class="warnbox hidden" id="dlWarn" data-i18n="dlWarn"></div>
@@ -453,6 +458,7 @@
     </tr></thead><tbody id="sumRows"></tbody></table>
   </div>
 
+  <div class="infobox warn hidden" id="failWarn" style="margin:0 0 18px"></div>
   <div class="panel hidden" id="tabPanel">
     <div class="tip" id="corrTip" hidden>
       <span><b data-i18n="tipCorrB"></b> <span data-i18n="tipCorr"></span>
@@ -566,6 +572,12 @@ en:{
  tipCorrEnd:" marker.",
  tipGot:"Got it",
  bEdited:"edited", bReviewed:"reviewed", whisperWas:"Whisper:",
+ bFailed:"not transcribed", bSkipped:"not attempted",
+ stRecover:"A file could not be read. Reloading the model and trying again…",
+ fmtStopped:(k,n,f)=>"Stopped at file "+k+" of "+n+" ("+f+"). The files after it were not attempted.",
+ fmtStoppedWarn:(rest,failed)=>"The run stopped early. "+failed+" files could not be transcribed and "+rest+" were never attempted; none of them carry a score, and their rows say so. Re-run those files on their own — a run that stops this way is almost always the machine sleeping or the tab being put in the background, not a problem with the audio.",
+ fmtFailed:(k,n)=>k+" of "+n+" files could not be transcribed. Those rows carry no score — they are not zeros. Re-run them on their own before using the results.",
+ runCaution:"A long run needs the tab to stay in front: browsers slow or suspend background tabs, and a suspended run can stop part-way. The screen is kept awake while a run is going.",
  bNoSpeech:"no speech",
  drTarget:"Target", drHeard:"Whisper heard", drCorrected:"Corrected transcription",
  drSave:"Save the correction", drOk:"Whisper was right — mark reviewed",
@@ -1162,11 +1174,32 @@ function foldAdvance(){
   foldOpen(i<0 ? null : FOLDP[i]);
 }
 
+/* A run can be interrupted by something outside the page — the machine sleeping,
+   the tab being backgrounded and throttled, a lost WebGPU context. What must not
+   happen is that the record of it looks like an ordinary result: a file the
+   recognizer never saw is not a response the participant got wrong, and scoring
+   it as one produces a plausible-looking zero that averages in silently. So a
+   file that failed carries no score at all, the run stops rather than grinding
+   through hundreds of failures, and every row says which of the four things
+   happened to it. */
+let WAKE=null;
+async function keepAwake(on){
+  try{
+    if(on){ if(navigator.wakeLock&&!WAKE) WAKE=await navigator.wakeLock.request("screen"); }
+    else if(WAKE){ await WAKE.release(); WAKE=null; }
+  }catch(e){ WAKE=null; }
+}
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="visible" && RUNNING) keepAwake(true);
+});
+let RUNNING=false;
 $("runBtn").onclick=async()=>{
   $("runBtn").disabled=true; RESULTS=[]; $("rows").innerHTML=""; $("sumRows").innerHTML="";
-  confAvailable=true; $("confWarn").classList.add("hidden");
+  confAvailable=true; $("confWarn").classList.add("hidden"); $("failWarn").classList.add("hidden");
   OPEN=null; await loadReview();
   const t0=performance.now();
+  RUNNING=true; await keepAwake(true);
+  let streak=0, recovered=false, stopped=-1, failed=0;
   try{
     await loadModel($("modelSel").value);
     for(let k=0;k<MAP.length;k++){
@@ -1182,24 +1215,67 @@ $("runBtn").onclick=async()=>{
           r=await transcribe(data); err=null; break;
         }catch(e){
           err=String(e&&e.message||e);
-          if(t<2){ setStatus("fmtRetry",k+1,MAP.length,m.name); await sleep(800); }
+          /* a decoder that has lost its context throws on everything after, so
+             the second attempt is made on a fresh one */
+          if(t<2){
+            setStatus("fmtRetry",k+1,MAP.length,m.name);
+            try{ if(DEC_CTX){ DEC_CTX.close(); } }catch(e2){}
+            DEC_CTX=null;
+            await sleep(800);
+          }
         }
       }
       const target=(m.item!=null&&TARGETS[m.item])?TARGETS[m.item]:"";
       const rec={file:m.file,name:m.name,pid:m.pid||T("unassigned"),item:m.item,
         target,text:r.text,dur,err,conf:r.conf,avgLogprob:r.avgLogprob,
         no_speech:!!quiet, level:quiet,
+        status: err ? "failed" : (quiet?"no_speech":"scored"),
         corrected:null,reviewed:false,sc:null,scRaw:null};
-      rescoreRow(rec);
-      rec.restored=applySaved(rec);
+      /* a file that was never transcribed gets no score — not a score of zero */
+      if(!err){ rescoreRow(rec); rec.restored=applySaved(rec); }
       RESULTS.push(rec);
       render();
+
+      if(err){
+        failed++; streak++;
+        if(streak>=3){
+          if(!recovered){
+            /* one attempt to put the run back on its feet */
+            recovered=true; streak=0;
+            setStatus("stRecover");
+            try{ MODEL=null; loadedModel=null; await loadModel($("modelSel").value); }
+            catch(e){ stopped=k; break; }
+          }else{ stopped=k; break; }
+        }
+      }else streak=0;
     }
-    $("progFill").style.width="100%";
-    setStatus("fmtDone",MAP.length,((performance.now()-t0)/1000).toFixed(1),
-      loadedModel.split("/").pop(),hasGPU?"WebGPU":"WASM");
+    if(stopped>=0){
+      /* the files after the stop were never opened; they are listed as such so
+         that nothing is missing from the record and nothing reads as a score */
+      for(let k=stopped+1;k<MAP.length;k++){
+        const m=MAP[k];
+        RESULTS.push({file:m.file,name:m.name,pid:m.pid||T("unassigned"),item:m.item,
+          target:(m.item!=null&&TARGETS[m.item])?TARGETS[m.item]:"",
+          text:"",dur:null,err:null,conf:null,avgLogprob:null,no_speech:false,level:null,
+          status:"not_attempted",corrected:null,reviewed:false,sc:null,scRaw:null});
+      }
+      render();
+      $("progFill").style.width="100%";
+      setStatus("fmtStopped",stopped+1,MAP.length,MAP[stopped].name);
+      $("failWarn").textContent=T("fmtStoppedWarn")(MAP.length-stopped-1,failed);
+      $("failWarn").classList.remove("hidden");
+    }else{
+      $("progFill").style.width="100%";
+      setStatus("fmtDone",MAP.length,((performance.now()-t0)/1000).toFixed(1),
+        loadedModel.split("/").pop(),hasGPU?"WebGPU":"WASM");
+      if(failed){
+        $("failWarn").textContent=T("fmtFailed")(failed,MAP.length);
+        $("failWarn").classList.remove("hidden");
+      }
+    }
     if(!confAvailable) $("confWarn").classList.remove("hidden");
   }catch(e){ setStatusRaw(T("errPrefix")+(e&&e.message||e)); }
+  RUNNING=false; await keepAwake(false);
   $("runBtn").disabled=false;
 };
 $("resetBtn").onclick=()=>{
@@ -1269,6 +1345,8 @@ function render(){
       "<td class='c-tgt'>"+esc(r.sc?r.sc.gt:"")+"</td>"+
       "<td class='c-hyp'><span class='tgt-inline'>"+esc(r.sc?r.sc.gt:"")+"</span>"+
         (r.err?"<span class='errcell'>"+esc(r.err)+"</span>":diffHtml(r.sc,effectiveText(r)))+
+        (r.status==="failed"?"<span class='badge sev'>"+T("bFailed")+"</span>":"")+
+        (r.status==="not_attempted"?"<span class='badge quiet'>"+T("bSkipped")+"</span>":"")+
         (r.no_speech?"<span class='badge quiet'>"+T("bNoSpeech")+"</span>":"")+
         (edited?"<span class='badge'>"+T("bEdited")+"</span>":
           (r.reviewed?"<span class='badge rev'>"+T("bReviewed")+"</span>":""))+
@@ -1470,13 +1548,13 @@ function rulesSummary(){
 $("csvBtn").onclick=()=>{
   const cols=["participant","item","target","transcription_raw","transcription_final",
               "reviewed","wer_raw","wer_final","accuracy_pct",
-              "confidence","avg_logprob","duration_s","no_speech","file","model","rules",
+              "confidence","avg_logprob","duration_s","status","error","file","model","rules",
               "self_corrections_removed"];
   const rows=[cols.join(",")];
   RESULTS.forEach(r=>rows.push([r.pid,r.item??"",r.target,r.text,effectiveText(r),
     r.reviewed?"yes":"no",
     r.scRaw?r.scRaw.wer:"",r.sc?r.sc.wer:"",r.sc?r.sc.acc:"",r.conf??"",r.avgLogprob??"",
-    r.dur?r.dur.toFixed(2):"",r.no_speech?"yes":"no",r.name,loadedModel,rulesSummary(),
+    r.dur?r.dur.toFixed(2):"",r.status||"scored",r.err||"",r.name,loadedModel,rulesSummary(),
     r.sc&&r.sc.rep?r.sc.rep.join(" "):""].map(v=>{
       v=String(v??""); return (v.includes(",")||v.includes('"'))?'"'+v.replace(/"/g,'""')+'"':v;
     }).join(",")));
@@ -1498,7 +1576,7 @@ $("jsonBtn").onclick=()=>{
       transcription_raw:r.text,transcription_corrected:r.corrected,
       wer:r.sc?r.sc.wer:null,wer_raw:r.scRaw?r.scRaw.wer:null,
       accuracy_pct:r.sc?r.sc.acc:null,
-      confidence:r.conf,avg_logprob:r.avgLogprob,no_speech:!!r.no_speech,
+      confidence:r.conf,avg_logprob:r.avgLogprob,status:r.status||"scored",error:r.err||null,
       ops:r.sc?r.sc.ops:null,
       transcription_scored:r.sc?r.sc.tr:null,
       self_corrections_removed:r.sc?r.sc.rep:null,
