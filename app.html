@@ -155,6 +155,7 @@
     text-transform:uppercase; border-radius:999px; padding:2px 8px; margin-left:6px;
     background:var(--pink-soft); color:var(--sev); border:1px solid #fbcfe8; vertical-align:2px}
   .badge.rev{background:var(--cy-soft); color:var(--cy-ink); border-color:var(--cy-line)}
+  .badge.quiet{background:#f4f4f7; color:var(--muted); border-color:#e2e2ea}
   .wasline{display:block; font-family:var(--mono); font-size:13.4px; color:#8a4a6d; margin-top:4px}
   .werold{color:#b98aa4; text-decoration:line-through; margin-right:6px; font-size:14px}
   /* ---- the correction facility has to be announced once -------------------
@@ -565,6 +566,7 @@ en:{
  tipCorrEnd:" marker.",
  tipGot:"Got it",
  bEdited:"edited", bReviewed:"reviewed", whisperWas:"Whisper:",
+ bNoSpeech:"no speech",
  drTarget:"Target", drHeard:"Whisper heard", drCorrected:"Corrected transcription",
  drSave:"Save the correction", drOk:"Whisper was right — mark reviewed",
  drUndo:"Remove the correction", drCancel:"Cancel",
@@ -936,6 +938,34 @@ async function decodeTo16k(file){
   const out=await off.startRendering();
   return {data:out.getChannelData(0),dur:audio.duration};
 }
+/* Given silence, Whisper does not return nothing; it returns a plausible short
+   phrase, most often a polite one such as "thank you". Left alone, an item the
+   participant never answered would therefore be scored against an invented
+   response. A clip with no speech in it is not sent to the recognizer at all.
+
+   The test is relative, so it does not depend on the recording level: frame
+   energies are compared with the clip's own noise floor. Steady room tone has a
+   peak close to its floor and no frame far above it; any spoken response, however
+   quiet, rises well clear of both. */
+function speechInClip(x,rate){
+  const hop=Math.max(1,Math.round((rate||16000)*0.02)), n=Math.floor(x.length/hop);
+  if(n<4) return {voiced:0,ratio:0,peak:0};
+  const e=new Float32Array(n);
+  for(let i=0;i<n;i++){
+    let s=0; const a=i*hop, b=a+hop;
+    for(let j=a;j<b;j++) s+=x[j]*x[j];
+    e[i]=Math.sqrt(s/hop);
+  }
+  const srt=Float32Array.from(e).sort();
+  const fl=srt[Math.floor(n*0.15)], pk=srt[Math.floor(n*0.98)];
+  const thr=Math.max(fl*3, fl+(pk-fl)*0.06);
+  let v=0; for(let i=0;i<n;i++) if(e[i]>thr) v++;
+  return {voiced:+(v*hop/(rate||16000)).toFixed(3),
+          ratio: fl>0 ? +(pk/fl).toFixed(2) : (pk>0?99:0), peak:+pk.toFixed(5)};
+}
+/* less than an eighth of a second above the clip's own floor, or a peak that
+   never leaves the floor, is not a response */
+function noSpeech(m){ return m.peak<0.0015 || m.ratio<2.2 || m.voiced<0.12; }
 const MAX_TRIES=5;
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 /* navigator.gpu being present does not mean WebGPU can be used: a browser can
@@ -1143,10 +1173,12 @@ $("runBtn").onclick=async()=>{
       const m=MAP[k];
       setStatus("fmtRun",k+1,MAP.length,m.name);
       $("progFill").style.width=(k/MAP.length*100)+"%";
-      let r={text:"",avgLogprob:null,conf:null}, dur=null, err=null;
+      let r={text:"",avgLogprob:null,conf:null}, dur=null, err=null, quiet=null;
       for(let t=1;t<=2;t++){
         try{
           const {data,dur:d}=await decodeTo16k(m.file); dur=d;
+          const lvl=speechInClip(data,16000);
+          if(noSpeech(lvl)){ quiet=lvl; r={text:"",avgLogprob:null,conf:null}; err=null; break; }
           r=await transcribe(data); err=null; break;
         }catch(e){
           err=String(e&&e.message||e);
@@ -1156,6 +1188,7 @@ $("runBtn").onclick=async()=>{
       const target=(m.item!=null&&TARGETS[m.item])?TARGETS[m.item]:"";
       const rec={file:m.file,name:m.name,pid:m.pid||T("unassigned"),item:m.item,
         target,text:r.text,dur,err,conf:r.conf,avgLogprob:r.avgLogprob,
+        no_speech:!!quiet, level:quiet,
         corrected:null,reviewed:false,sc:null,scRaw:null};
       rescoreRow(rec);
       rec.restored=applySaved(rec);
@@ -1236,6 +1269,7 @@ function render(){
       "<td class='c-tgt'>"+esc(r.sc?r.sc.gt:"")+"</td>"+
       "<td class='c-hyp'><span class='tgt-inline'>"+esc(r.sc?r.sc.gt:"")+"</span>"+
         (r.err?"<span class='errcell'>"+esc(r.err)+"</span>":diffHtml(r.sc,effectiveText(r)))+
+        (r.no_speech?"<span class='badge quiet'>"+T("bNoSpeech")+"</span>":"")+
         (edited?"<span class='badge'>"+T("bEdited")+"</span>":
           (r.reviewed?"<span class='badge rev'>"+T("bReviewed")+"</span>":""))+
         (edited?"<span class='wasline'>"+T("whisperWas")+" "+esc(r.text)+"</span>":"")+
@@ -1436,13 +1470,13 @@ function rulesSummary(){
 $("csvBtn").onclick=()=>{
   const cols=["participant","item","target","transcription_raw","transcription_final",
               "reviewed","wer_raw","wer_final","accuracy_pct",
-              "confidence","avg_logprob","duration_s","file","model","rules",
+              "confidence","avg_logprob","duration_s","no_speech","file","model","rules",
               "self_corrections_removed"];
   const rows=[cols.join(",")];
   RESULTS.forEach(r=>rows.push([r.pid,r.item??"",r.target,r.text,effectiveText(r),
     r.reviewed?"yes":"no",
     r.scRaw?r.scRaw.wer:"",r.sc?r.sc.wer:"",r.sc?r.sc.acc:"",r.conf??"",r.avgLogprob??"",
-    r.dur?r.dur.toFixed(2):"",r.name,loadedModel,rulesSummary(),
+    r.dur?r.dur.toFixed(2):"",r.no_speech?"yes":"no",r.name,loadedModel,rulesSummary(),
     r.sc&&r.sc.rep?r.sc.rep.join(" "):""].map(v=>{
       v=String(v??""); return (v.includes(",")||v.includes('"'))?'"'+v.replace(/"/g,'""')+'"':v;
     }).join(",")));
@@ -1464,7 +1498,8 @@ $("jsonBtn").onclick=()=>{
       transcription_raw:r.text,transcription_corrected:r.corrected,
       wer:r.sc?r.sc.wer:null,wer_raw:r.scRaw?r.scRaw.wer:null,
       accuracy_pct:r.sc?r.sc.acc:null,
-      confidence:r.conf,avg_logprob:r.avgLogprob,ops:r.sc?r.sc.ops:null,
+      confidence:r.conf,avg_logprob:r.avgLogprob,no_speech:!!r.no_speech,
+      ops:r.sc?r.sc.ops:null,
       transcription_scored:r.sc?r.sc.tr:null,
       self_corrections_removed:r.sc?r.sc.rep:null,
       duration_s:r.dur?+r.dur.toFixed(2):null,flag:"",file:r.name,

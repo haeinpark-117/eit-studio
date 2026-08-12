@@ -530,6 +530,7 @@ en:{
  stimOrder:"Files are ordered by name, so item numbering follows the file names.",
  textHelp:"Load the target sentence set: one item per line as “number, sentence, syllables”. Paste the rows in, or upload a sheet saved as CSV. This is the same list you load in the scoring tool.",
  lblToneHz:"Beep (Hz):",
+ fmtTailLeft:(n,k,t)=>n+" segments found, but "+k+" further stretches of speech, "+t.toFixed(1)+" s in all, come after the last of them. If the session ran on a fixed schedule, use one of the timing-grid modes instead: those place every item from the schedule, including items the participant did not answer.",
  fmtGridTone:(n,rms)=>n+" windows placed, anchored on the beep that starts each response window. Mean offset of the detected responses is "+rms.toFixed(2)+" s.",
  lblPause:"Pause (s):", lblTone:"Tone (s):", lblBase:"Window base (s):",
  lblPer:"Per syllable (s):", lblThr:"Base syllables:",
@@ -760,12 +761,27 @@ function gapStats(list){
   return {max:Math.max.apply(null,g), med:srt[Math.floor(srt.length/2)],
           cv: mean>0 ? sd/mean : 9};
 }
+/* Regularity alone is the wrong test for an elicited imitation task. The
+   response window grows with the length of the sentence, so the true cadence is
+   deliberately uneven — it runs from about nine seconds at the short items to
+   nearly twenty at the long ones — while a window that has split several early
+   responses into fragments looks far more regular than the real thing. Left at
+   that, the search settles on a stretch of fragments near the front and abandons
+   the rest of the recording.
+
+   Speech left after the last chosen response is therefore counted as well. A
+   session may open with instructions and practice items, so a long preamble is
+   expected and costs nothing; it does not usually close with several minutes of
+   talk, so responses left stranded at the end are evidence that the wrong
+   stretch was chosen. */
+const TAIL_COST=0.02;
 function bestWindow(list,exp){
   if(list.length<exp) return null;
   let best=null;
   for(let i=0;i+exp<=list.length;i++){
     const win=list.slice(i,i+exp), st=gapStats(win);
-    const score=st.cv;                      /* most regular cadence wins */
+    const after=list.length-i-exp;
+    const score=st.cv+TAIL_COST*after;
     if(!best||score<best.score) best={score,win};
   }
   return best;
@@ -791,7 +807,10 @@ function autoFit(){
      happens to yield the expected count: a fixed-schedule task produces evenly
      spaced responses, so prefer the candidate whose spacing is most regular. */
   let best=null, fallback=null;
-  for(const sil of [0.4,0.5,0.6,0.7,0.8,1.0,1.2,1.5,2.0]){
+  /* Long pauses inside one response are common — a participant restarts, or
+     thinks mid-sentence — so the search has to reach silences of a few seconds
+     before it will treat the pieces as one answer. */
+  for(const sil of [0.4,0.5,0.6,0.7,0.8,1.0,1.2,1.5,2.0,2.5,3.0]){
     for(const ml of [0.8,0.5,0.3,1.2]){
       for(const mul of [2,2.5,3,4,5,6,8]){
         const segs=segment(sil,ml,padS,mul);
@@ -814,8 +833,16 @@ function autoFit(){
     $("skipS").value=t.toFixed(1);
   }
   draw(); renderTable();
-  if(SEGS.length===exp) report("fmtFoundOk",SEGS.length);
-  else setDetect("fitFail");
+  if(SEGS.length!==exp){ setDetect("fitFail"); return; }
+  /* Silence alone cannot tell a response apart from any other speech, so it is
+     worth saying plainly when a stretch of the recording has been left out: on a
+     fixed schedule that is a sign the wrong stretch was chosen, and a timing
+     grid will place the items where silence detection cannot. */
+  const end=SEGS[SEGS.length-1].e;
+  const rest=segment(0.5,0.4,0,3,{from:0,maxLen:1e9}).filter(x=>x.s>end+0.5);
+  const tail=rest.reduce((a,x)=>a+(x.e-x.s),0);
+  if(tail>2) setDetect("fmtTailLeft",SEGS.length,rest.length,tail);
+  else report("fmtFoundOk",SEGS.length);
 }
 $("skipAuto").onclick=()=>{
   if(!BUF) return;
