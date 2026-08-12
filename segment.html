@@ -546,6 +546,7 @@ en:{
  headText:"Your sentence set <span class=\"opt\">optional</span>",
  headStim:"Stimulus audio, one file per item <span class=\"opt\">optional</span>",
  basisSrc:"Boundaries will be placed from the schedule measured in the recording that was played. Nothing is estimated.",
+ srcStimIdle:"The stimulus recordings you loaded are not used for this and can be left out.",
  basisGridStim:"Boundaries will be placed from a timing grid, with each stimulus length measured from the recordings you supplied. The pause and the response window come from the settings below.",
  basisGridEst:"Boundaries will be placed from a timing grid. Stimulus lengths are estimated from syllable counts, and the pause and the response window come from the settings below.",
  basisSil:"Boundaries will be placed where the recording falls silent. Silence cannot tell a skipped item from a pause, so one unanswered item shifts every item number after it. Add the recording that was played, or a sentence set with syllable counts, and the schedule will be used instead.",
@@ -1348,6 +1349,10 @@ function setMode(){
   const m=basis(), grid=m!=="silence";
   $("mode").value=m;
   $("gridConst").classList.toggle("hidden",m!=="grid");
+  /* with the schedule measured, the per-item stimulus recordings add nothing —
+     their only job is to replace the syllable estimate, and there is no estimate
+     left to replace */
+  $("gridStim").classList.toggle("hidden",m==="source");
   $("silRow").classList.toggle("hidden",grid);
   $("skipRow").classList.toggle("hidden",grid);
   $("silHelp").classList.toggle("hidden",grid);
@@ -1355,7 +1360,8 @@ function setMode(){
   $("basisMsg").textContent = T(
     m==="source" ? "basisSrc" :
     m==="grid"   ? (measured?"basisGridStim":"basisGridEst") :
-    FORCE_SIL    ? "basisForced" : "basisSil");
+    FORCE_SIL    ? "basisForced" : "basisSil")
+    + (m==="source"&&STIM.length ? " "+T("srcStimIdle") : "");
   const alt=$("basisAlt");
   alt.textContent = FORCE_SIL ? T("btnUseSched") : T("btnUseSil");
   alt.classList.toggle("hidden", !FORCE_SIL && m==="silence");
