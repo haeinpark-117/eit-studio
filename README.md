@@ -26,7 +26,10 @@ files are never uploaded to a server.
    Ortega et al. (2002) is included as a preset.
 4. **Scoring rules.** Configure text normalization before comparison: number-to-word expansion,
    contraction expansion (possessive `'s` is preserved), scoring a self-correction on its final
-   attempt, and a user-editable list of lexical variants in `from => to` form. Rule sets can be
+   attempt, and a user-editable list of lexical variants in `from => to` form. The self-correction
+   rule fires only where a stretch of two or more words is repeated *immediately* — a phrase that
+   recurs later in the sentence is left alone, since at a distance that is ordinarily syntax rather
+   than a disfluency — and never where the repeated stretch also occurs in the target sentence. Rule sets can be
    exported and imported as JSON so that the exact scoring configuration can be archived with a
    study or shared with collaborators.
 5. **Recording files.** Drop in the response audio. Files named `participantID_itemNN.ext` are

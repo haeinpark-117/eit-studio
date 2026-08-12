@@ -529,8 +529,8 @@ en:{
  s2Help:"These rules are applied identically to the target sentence and to Whisper's output before they are compared. Both are always lowercased and stripped of punctuation; possessive ’s is always kept.",
  optNum:"Spell out numbers (3 → three, 11:30 → eleven thirty)",
  optContr:"Expand contractions (I'm → I am, can't → cannot)",
- optRep:"Score a self-correction as the final attempt (drop the restarted stretch)",
- repHelp:"On by default. Applied to Whisper's output only, never to the target sentence: where a stretch of words is restarted — “the boy was the boy is late” — the first attempt is removed and only the repair is scored. Removed words stay visible in the output table, struck through, and are listed in both exports. A stretch that also occurs in the target sentence is never removed. The rule cannot distinguish every self-correction from a genuine repetition, so items scored under it still warrant review.",
+ optRep:"Score a self-correction as the final attempt (drop the immediately restarted stretch)",
+ repHelp:"On by default. Applied to Whisper's output only, never to the target sentence: where a stretch of words is restarted immediately — “the boy was the boy is late” — the first attempt is removed and only the repair is scored. The restart has to be immediate; a phrase that recurs later in the sentence is left alone, because at a distance that is usually how English is built (“it is possible that it is raining”) rather than a disfluency. A stretch that also occurs in the target sentence is never removed either. Removed words stay visible in the output table, struck through, and are listed in both exports. The rule still cannot distinguish every self-correction from a genuine repetition, so items scored under it warrant review.",
  repTitle:"self-correction, not scored",
  ruleSummary:"Additional replacements and export",
  ruleHelp:"One rule per line, written as “from => to”. Applied after punctuation is removed, longest phrase first. Use this for spelling variants that should count as the same word.",
@@ -718,14 +718,23 @@ function normalize(s){
 /* ---------- self-correction (repair) handling ----------
    Optional, and applied to the hypothesis only — never to the target sentence.
    Where a stretch of words is restarted, the first attempt (the reparandum) is
-   removed and only the repair is scored. Two guards keep the heuristic
-   conservative: an onset of at least two words is required before any stretch is
-   cut, and a stretch that also occurs in the target sentence is never cut, so
-   legitimate repetition in the stimulus is left intact. The final word of a
-   reparandum may be a fragment of its repair ("he go he goes"), but a single
-   word is never treated as a fragment on its own, because most such matches in
-   running text are ordinary words ("we went"). */
-const REP_KMAX=5, REP_DMAX=6;
+   removed and only the repair is scored.
+
+   The restart has to be immediate: the second occurrence of the stretch must
+   begin exactly where the first one ends. An earlier version looked for the
+   stretch anywhere within the next few words, which is not a restart but a
+   description of ordinary English — "it is possible that it is raining" repeats
+   "it is" at a distance because that is how the sentence is built, and cutting
+   between the two occurrences threw away four correct words. Requiring the
+   repetition to be adjacent separates a disfluency from syntax.
+
+   Two further guards keep the heuristic conservative: an onset of at least two
+   words is required before any stretch is cut, and a stretch that also occurs in
+   the target sentence is never cut, so legitimate repetition in the stimulus is
+   left intact. The final word of a reparandum may be a fragment of its repair
+   ("he go he goes"), but a single word is never treated as a fragment on its
+   own, because most such matches in running text are ordinary words. */
+const REP_KMAX=5;
 function stripRepairs(hypW,refW){
   const ref=" "+refW.join(" ")+" ";
   const inRef=seq=>ref.indexOf(" "+seq.join(" ")+" ")>=0;
@@ -735,19 +744,17 @@ function stripRepairs(hypW,refW){
   while(i<hypW.length){
     let cut=0;
     for(let k=Math.min(REP_KMAX,hypW.length-i); k>=2 && !cut; k--){
-      for(let d=1; d<=REP_DMAX && !cut; d++){
-        const j=i+d;
-        if(j+k>hypW.length) break;
-        let ok=true, exact=true;
-        for(let t=0;t<k;t++){
-          if(hypW[i+t]===hypW[j+t]) continue;
-          if(t===k-1 && hypW[i+t].length>=2 && hypW[j+t].indexOf(hypW[i+t])===0){ exact=false; continue; }
-          ok=false; break;
-        }
-        if(!ok) continue;
-        if(exact && inRef(hypW.slice(i,j+k))) continue;
-        cut=d;
+      const j=i+k;                       /* the repeat starts where the first ends */
+      if(j+k>hypW.length) continue;
+      let ok=true, exact=true;
+      for(let t=0;t<k;t++){
+        if(hypW[i+t]===hypW[j+t]) continue;
+        if(t===k-1 && hypW[i+t].length>=2 && hypW[j+t].indexOf(hypW[i+t])===0){ exact=false; continue; }
+        ok=false; break;
       }
+      if(!ok) continue;
+      if(exact && inRef(hypW.slice(i,j+k))) continue;
+      cut=k;
     }
     if(!cut && i+1<hypW.length && hypW[i]===hypW[i+1] && !inRef([hypW[i],hypW[i]])) cut=1;
     if(cut){ for(let t=0;t<cut;t++) drop(hypW[i+t]); i+=cut; }
