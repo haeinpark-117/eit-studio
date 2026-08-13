@@ -225,8 +225,6 @@
   .w-ins{background:#fbcfe8; border-radius:3px; padding:0 3px}
   .w-om{color:#db2777; font-weight:700}
   .w-rep{color:#9c9cae; text-decoration:line-through; text-decoration-thickness:1px}
-  .foot{font-size:14px; color:var(--muted); padding:11px 22px;
-    border-top:1px solid var(--line); background:#fafafb; font-family:var(--mono)}
   .maptab td{padding:6px 10px}
   .maptab input[type=text]{width:100%; padding:4px 8px; font-size:15.2px}
   .maptab .unmatched td{background:var(--pink-soft)}
@@ -491,7 +489,6 @@
       <th style="width:112px; text-align:right" data-i18n="thConf"></th>
       <th style="width:58px; text-align:center" data-i18n="thAudio"></th>
     </tr></thead><tbody id="rows"></tbody></table>
-    <div class="foot" id="foot"></div>
   </div>
 </div>
 
@@ -1483,7 +1480,6 @@ function render(){
     tr.onclick=()=>{ const n=tr.getAttribute("data-f"); OPEN = OPEN===n ? null : n; render(); };
   });
   wireDrawer();
-  $("foot").textContent=(loadedModel?TOOL_VER+" · "+loadedModel:TOOL_VER);
   paintRestored();
   paintHallu();
   paintTip();
@@ -1505,9 +1501,6 @@ const TOOL_VERSION="1.0", TOOL_VER="v1.0";
      2  self-correction collapse restricted to an immediately repeated phrase
      3  known no-speech artifacts ("Thank you.", "you") scored as no response */
 const SCORING_VERSION=3;
-/* the version is visible before a run as well, since it is what a methods
-   section has to report */
-$("foot").textContent=TOOL_VER;
 function citePlain(){ return T("citeA")+" "+T("citeT")+" "+T("citeB"); }
 $("citeCopy").onclick=async()=>{
   const b=$("citeCopy");
