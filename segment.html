@@ -230,8 +230,6 @@
   .chip.mid{background:#fff4e5; color:#8a5a00}
   .chip.low{background:#fff0ec; color:#a2381c}
   .hidden{display:none}
-  .foot{font-size:14px; color:var(--muted); padding:11px 22px; border-top:1px solid var(--line);
-    background:#fafafb; font-family:var(--mono)}
   /* ---------- read-me-first guide ---------- */
   .panel.gpanel{background:var(--accent-soft); border-color:var(--accent-line)}
   .panel.gpanel .pad{padding:18px 22px}
@@ -509,7 +507,6 @@
        color:var(--accent); text-decoration:none" data-i18n="toApp"></a></p>
   </div></div>
 
-  <div class="panel"><div class="foot" id="foot"></div></div>
 </div>
 
 <script>
@@ -1977,7 +1974,6 @@ $("exportBtn").onclick=async()=>{
 $("resetBtn").onclick=()=>location.reload();
 
 /* ---------- init ---------- */
-$("foot").textContent="v1.0 · 2026-08-12 · silence detection · beep alignment · fixed-schedule timing grid · no network, no upload";
 applyLang(); setMode();
 </script>
 </body>
