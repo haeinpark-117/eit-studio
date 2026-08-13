@@ -265,6 +265,14 @@
           a level meter alone will not catch a muted headset microphone or a browser writing
           silence. The storage check writes and deletes one test record, which is what catches a
           private browsing window before the participant arrives rather than after.</p>
+        <p>Where the input cannot be turned up far enough at the desk, a fixed gain of up to
+          +24 dB can be applied on the way in. It is a constant multiplication applied before the
+          file is written, so it raises the noise by exactly as much as the speech: it makes a
+          quiet recording louder, not cleaner, and the input at the interface is still the place
+          to start. The browser's automatic gain control is left off throughout, because it moves
+          during a response and would leave amplitude and duration unreadable. The setting is
+          written into the session log, together with the peak level and any clipped samples for
+          each response, so a level can be read against it afterwards.</p>
         <figure><img src="adm-check.png" alt="The recording panel, with a microphone test on the left and a storage check on the right">
           <figcaption>Neither failure can be undone once a session is running, so both are checked
             beforehand.</figcaption></figure>

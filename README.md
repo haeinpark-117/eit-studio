@@ -15,8 +15,13 @@ files are never uploaded to a server.
 
 1. **Administer.** Present a sentence set on a fixed schedule and record one response file per
    item. Three practice items precede the scored set. The microphone and the browser storage are
-   tested before a session begins, and the session stops immediately if the microphone is lost,
-   the audio context is interrupted, or the tab is backgrounded.
+   tested before a session begins, and the session stops immediately if the microphone is lost or
+   the audio context is interrupted; leaving the window for more than a few seconds also stops it,
+   since the participant reads the instructions off that window, but a brief switch away is
+   tolerated because the schedule is kept on the audio clock. A fixed input gain of up to +24 dB
+   is available for an interface that cannot be turned up far enough; automatic gain control is
+   left off throughout, and the gain used, the peak level of each response, and any clipped
+   samples are written into the session log.
 2. **Segment.** Split one continuous recording of a whole session into one file per item.
    Boundaries are proposed from a timing grid (stimulus audio or syllable counts) or from the
    silences, and can be adjusted by hand.

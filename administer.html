@@ -487,6 +487,14 @@
         <p class="d" data-i18n="s5ad"></p>
         <div class="ln"><label class="fl" for="mic" data-i18n="lblInput"></label>
           <select class="inp" id="mic" style="flex:1"></select></div>
+        <div class="ln"><label class="fl" for="gainSel" data-i18n="lblGain"></label>
+          <select class="inp sm" id="gainSel">
+            <option value="0" data-i18n="gain0"></option>
+            <option value="6">+6 dB</option>
+            <option value="12">+12 dB</option>
+            <option value="18">+18 dB</option>
+            <option value="24">+24 dB</option>
+          </select></div>
         <div class="meter" id="meter"><span class="band"></span><span class="hot"></span>
           <i id="lvl"></i><span class="hold" id="lvlHold"></span></div>
         <div class="ticks" id="lvlTicks"></div>
@@ -496,6 +504,7 @@
           <button class="btn-g" id="btnPlay" disabled data-i18n="btnPlay"></button>
         </div>
         <div class="ln"><span id="micInfo"></span></div>
+        <p class="d" style="margin:6px 0 0" id="gainNote"></p>
         <div class="lvlrd" id="lvlRd"></div>
         <div class="verdict" id="lvlVd" hidden></div>
       </div>
@@ -512,6 +521,7 @@
         <p class="d" style="margin:0 0 11px" data-i18n="s5cd2"></p>
         <div class="ln"><button class="btn-g" id="btnWake" data-i18n="btnWake"></button></div>
         <div class="ln"><span id="wakeInfo"></span></div>
+
       </div>
     </div>
   </div></div>
@@ -657,6 +667,10 @@ const STR={
   s5at:"Microphone", s5ad:"Browser permission is requested now rather than mid-session.",
   s5ad2:"A level meter shows only that something is arriving. Record, play it back, and listen — that is what catches a muted headset microphone or a browser writing silence.",
   lblInput:"Input", btnRec:"● Record 5 s", btnRecing:"● Recording…", btnPlay:"▶ Play back",
+  lblGain:"Gain", gain0:"None (0 dB)",
+  fmtGainOn:(db,x)=>"Responses are being captured at +"+db+" dB (×"+x+"). This is a constant multiplication applied before the file is written: it raises the noise as much as the speech, so it makes a quiet recording louder, not cleaner. Raise the input at the interface first where you can, and use this for what is left. The setting is written into the session log.",
+  fmtGainTip:db=>"Try the gain at +"+db+" dB and record again.",
+  lvlClip:"The peak is at the ceiling — the loudest parts are being cut off. Lower the gain.",
   s5ct:"Screen and window",
   s5cd:"A session runs for several minutes with nothing to click, so the display can sleep. It is held awake while the session runs.",
   s5cd2:"Keep this window in front once the session has started: the participant is reading the instructions off it. Switching away for a moment is tolerated — the schedule is kept on the audio clock and picks up where it was — but an absence of more than a few seconds stops the session rather than letting it run on a screen nobody can see.",
@@ -897,6 +911,8 @@ function hhmm(s){const m=Math.floor(s/60);return m+" min "+String(Math.round(s-m
 
 /* ---------------------------------------------------------- audio capture */
 let CTX=null, STREAM=null, PROC=null, ANALYSER=null, ARM=null, CHUNKS=[], SR=48000;
+/* the gain applied to the input, as a multiplier and in dB; 1 (0 dB) is off */
+let GAIN=null, INPUT_GAIN=1, INPUT_GAIN_DB=0;
 const CAP_GRACE=0.14;            /* held open one buffer past the window, so a late
                                     callback still arrives while ARM is set */
 let MIC_OK=false, STORE_OK=false;
@@ -910,12 +926,21 @@ async function initAudio(deviceId){
       {deviceId:{exact:deviceId},echoCancellation:false,noiseSuppression:false,autoGainControl:false}:
       {echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
   const src=CTX.createMediaStreamSource(STREAM);
-  ANALYSER=CTX.createAnalyser(); ANALYSER.fftSize=1024; src.connect(ANALYSER);
+  /* A fixed gain on the way in, for an interface that cannot be turned up far
+     enough at the desk. It is a constant multiplication and nothing else: it
+     raises the noise by exactly as much as the speech, so it makes a quiet file
+     louder without making it cleaner. The browser's own automatic gain control
+     stays off, because it moves during a response and would leave amplitude
+     and duration unreadable. The meter is read after the gain, so what is shown
+     during the check is what is written to disk. */
+  GAIN=CTX.createGain(); GAIN.gain.value=INPUT_GAIN;
+  src.connect(GAIN);
+  ANALYSER=CTX.createAnalyser(); ANALYSER.fftSize=1024; GAIN.connect(ANALYSER);
   /* ScriptProcessor is deprecated but is the one capture node available in every
      browser this tool is likely to meet; the audio clock it reads is the same
      one the stimuli are scheduled against, so frames and schedule stay aligned. */
   PROC=CTX.createScriptProcessor(4096,1,1);
-  src.connect(PROC);
+  GAIN.connect(PROC);
   const mute=CTX.createGain(); mute.gain.value=0; PROC.connect(mute); mute.connect(CTX.destination);
   PROC.onaudioprocess=e=>{
     if(!ARM) return;
@@ -1054,10 +1079,42 @@ function reportLevel(m){
   else { key="lvlVeryLow"; cls="bad"; }
   let msg=T(key);
   if(m.snr>0 && m.snr<15) msg+=" "+T("lvlNoisy");
+  /* A level that is merely low is a gain problem and can be said so plainly.
+     The step suggested is the one that would put the peak near −12 dBFS, in the
+     middle of the band, and it is absolute rather than added to what is set. */
+  if(m.peak<LVL_GOOD_LO && m.peak>-99){
+    const want=INPUT_GAIN_DB+Math.round(-12-m.peak);
+    const steps=[0,6,12,18,24].filter(v=>v<=Math.min(24,want));
+    const pick=steps[steps.length-1];
+    if(pick>INPUT_GAIN_DB) msg+=" "+T("fmtGainTip")(pick);
+  }
+  if(m.peak>=-0.2) msg+=" "+T("lvlClip");
   vd.className="verdict "+cls; vd.textContent=msg; vd.hidden=false;
 }
 $("btnPlay").onclick=()=>{ if(TESTBLOB) new Audio(URL.createObjectURL(TESTBLOB)).play(); };
 $("mic").onchange=async()=>{ try{ await initAudio($("mic").value); }catch(e){} };
+/* The gain takes effect at once, so the meter can be watched while it is set.
+   The test recording made before the change was made at the old setting, and
+   its reading no longer describes what would be captured now. */
+$("gainSel").onchange=()=>{
+  INPUT_GAIN_DB=+$("gainSel").value||0;
+  INPUT_GAIN=Math.pow(10,INPUT_GAIN_DB/20);
+  if(GAIN) GAIN.gain.value=INPUT_GAIN;
+  try{ localStorage.setItem("eitGainDb",String(INPUT_GAIN_DB)); }catch(e){}
+  if(TESTBLOB){ TESTBLOB=null; $("btnPlay").disabled=true;
+    $("micInfo").textContent=""; reportLevel(null); }
+  paintGain();
+};
+function paintGain(){
+  const n=$("gainNote"); if(!n) return;
+  n.textContent = INPUT_GAIN_DB ? T("fmtGainOn")(INPUT_GAIN_DB,INPUT_GAIN.toFixed(2)) : "";
+}
+(function restoreGain(){
+  let d=0; try{ d=+localStorage.getItem("eitGainDb")||0; }catch(e){}
+  if([0,6,12,18,24].indexOf(d)<0) d=0;
+  INPUT_GAIN_DB=d; INPUT_GAIN=Math.pow(10,d/20);
+  $("gainSel").value=String(d);
+})();
 
 /* ------------------------------------------------------------- WAV / ZIP */
 function flatten(chunks){
@@ -1363,8 +1420,17 @@ async function runItem(item,idx,total,isPractice){
      stored file is cut back to exactly the window here. */
   const want=Math.round(win*SR);
   const samples=raw.subarray(0,Math.min(raw.length,want));
+  /* Recorded with the response, so that a file too quiet to read, or one driven
+     into the ceiling by too much gain, can be found without opening the audio. */
+  let pk=0, clip=0;
+  for(let i=0;i<samples.length;i++){
+    const a=Math.abs(samples[i]);
+    if(a>pk) pk=a;
+    if(a>=0.999) clip++;
+  }
   return {blob:wavBlob(samples,SR),win,dur:item.dur,
-          captured_s:+(samples.length/SR).toFixed(3)};
+          captured_s:+(samples.length/SR).toFixed(3),
+          peak_dbfs:+dbfs(pk).toFixed(1), clipped_samples:clip};
 }
 
 $("btnEnd").onclick=()=>{ if(confirm(T("confirmEnd"))){ STOPPED_BY=""; ABORT=true; } };
@@ -1456,7 +1522,8 @@ $("btnStart").onclick=async()=>{
     const rec={n:i+1,name,target:TGT[i]?TGT[i][1]:"",syl,
                stimulus:STIM[i].name,stimulus_s:+STIM[i].dur.toFixed(3),
                window_s:+r.win.toFixed(3),
-               captured_s:r.captured_s};
+               captured_s:r.captured_s,
+               peak_dbfs:r.peak_dbfs, clipped_samples:r.clipped_samples};
     RESULTS.push({...rec,blob:r.blob});
     SESSION.items.push(rec);
     try{ await idbPut({id:"item-"+String(i+1).padStart(2,"0"),...rec,blob:r.blob}); }catch(e){}
@@ -1471,6 +1538,10 @@ $("btnStart").onclick=async()=>{
   SESSION.stopped_by=STOPPED_BY||null;
   SESSION.total_items=STIM.length; SESSION.recorded=RESULTS.length;
   SESSION.sample_rate=SR;
+  /* the gain the responses were captured through, so that a level can be read
+     against it afterwards */
+  SESSION.input_gain_db=INPUT_GAIN_DB;
+  SESSION.automatic_gain_control=false;
   try{ await idbPut({id:"meta",...SESSION,targets:TGT,in_progress:false}); }catch(e){}
   finish();
 };
@@ -1575,6 +1646,7 @@ $("recDrop").onclick=async()=>{
 /* -------------------------------------------------------------- start-up */
 (async()=>{
   applyLang();
+  paintGain();
   await loadPractice();
   await listMics();
   paintSchedule(); paintTally(); paintStart();
