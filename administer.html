@@ -659,14 +659,14 @@ const STR={
   lblInput:"Input", btnRec:"● Record 5 s", btnRecing:"● Recording…", btnPlay:"▶ Play back",
   s5ct:"Screen and window",
   s5cd:"A session runs for several minutes with nothing to click, so the display can sleep. It is held awake while the session runs.",
-  s5cd2:"Keep this window in front once the session has started. The schedule only advances while it is, so leaving it stops the session rather than letting it drift.",
+  s5cd2:"Keep this window in front once the session has started: the participant is reading the instructions off it. Switching away for a moment is tolerated — the schedule is kept on the audio clock and picks up where it was — but an absence of more than a few seconds stops the session rather than letting it run on a screen nobody can see.",
   btnWake:"Check", wakeOk:"The screen can be held awake for the session.",
   wakeNo:"This browser cannot hold the screen awake. Set the display not to sleep before starting.",
   sTitle:"Session stopped",
   fmtStopped:(why,at,n,p)=>({
       mic:"The microphone stopped during item "+at+". The input device was disconnected or taken by another application, so nothing was being recorded.",
       audio:"Audio was interrupted during item "+at+", so nothing was being recorded.",
-      hidden:"This window was left during item "+at+". The schedule only advances while it is in front."
+      hidden:"This window was left during item "+at+" for longer than a moment. The participant reads the instructions off it, so the session was stopped rather than run on."
     }[why]||"The session was stopped during item "+at+".")
     +" Item "+at+" was discarded. "+(n===1?"1 response":n+" responses")+" recorded for "+p
     +(n?" "+(n===1?"is":"are")+" saved — download "+(n===1?"it":"them")+" now.":" — nothing was saved."),
@@ -1279,6 +1279,8 @@ function gate(labelKey,headHtml,subKey,btnKey,footKey){
   });
 }
 let GATE_RELEASE=null;
+/* set while an item is running, so a stop does not wait out the window */
+let ITEM_RELEASE=null;
 
 /* One item: stimulus → pause → ring tone → response window.
    Every boundary is placed on the audio clock, so the schedule does not drift
@@ -1306,8 +1308,32 @@ async function runItem(item,idx,total,isPractice){
 
   let mode="";
   await new Promise(res=>{
+    let done=false;
+    const stopSources=()=>{ try{src.stop();osc.stop();}catch(e){} };
+    const finishItem=()=>{
+      if(done) return;
+      done=true; ITEM_RELEASE=null;
+      try{ clk.onended=null; clk.stop(); }catch(e){}
+      res();
+    };
+    /* The end of the window is taken from the audio thread rather than from a
+       frame callback. requestAnimationFrame does not run while the window is
+       behind another one, and a timer is throttled there, so either would leave
+       the item hanging while the stimuli — which are scheduled on this same
+       clock — went on playing. A silent oscillator stopped at tEnd fires within
+       about a millisecond of the boundary whatever the window is doing. */
+    const clk=CTX.createOscillator(), clkG=CTX.createGain();
+    clkG.gain.value=0; clk.connect(clkG); clkG.connect(CTX.destination);
+    clk.onended=finishItem;
+    clk.start(); clk.stop(tEnd);
+    /* a run stopped mid-item must not wait for the window to run out */
+    ITEM_RELEASE=()=>{ stopSources(); finishItem(); };
+    if(ABORT){ ITEM_RELEASE(); return; }
+    /* The frame loop now only paints. It stops while the window is hidden and
+       picks the phase up again from the clock when the window comes back. */
     (function tick(){
-      if(ABORT){ try{src.stop();osc.stop();}catch(e){} return res(); }
+      if(done) return;
+      if(ABORT){ stopSources(); return finishItem(); }
       const now=CTX.currentTime;
       if(now<tOpen){
         if(mode!=="listen"){ mode="listen";
@@ -1321,10 +1347,12 @@ async function runItem(item,idx,total,isPractice){
         const fill=$("rFill"); if(fill) fill.style.width=(100*(1-left/win))+"%";
         const secs=$("rSecs"); if(secs) secs.textContent=T("secs")(left);
       }
-      if(now>=tEnd) return res();
       requestAnimationFrame(tick);
     })();
   });
+  /* A timer held back in a hidden window can leave the grace unenforced, so it
+     is checked again here: an absence can cost at most the item it began in. */
+  if(document.hidden && hiddenTooLong()) stopRun("hidden");
   if(!ABORT) await sleep(CAP_GRACE*1000);
   ARM=null;
   const raw=flatten(CHUNKS); CHUNKS=[];
@@ -1350,13 +1378,40 @@ function stopRun(reason){
   if(!RUNNING || ABORT) return;
   STOPPED_BY=reason; ABORT=true;
   if(GATE_RELEASE){ const r=GATE_RELEASE; GATE_RELEASE=null; r(); }
+  if(ITEM_RELEASE){ const r=ITEM_RELEASE; ITEM_RELEASE=null; r(); }
 }
 function watchStream(){
   if(!STREAM) return;
   STREAM.getTracks().forEach(t=>{ t.onended=()=>stopRun("mic"); });
 }
+/* ---- leaving the window ----------------------------------------------------
+   Switching away used to end the session at once. That is right for a window
+   that has been left, but it also caught the case this tool meets far more
+   often: another application is brought up for a moment, or the browser is
+   briefly covered — which some systems report as hidden even though audio and
+   capture never stopped. The schedule now runs off the audio clock, so a short
+   absence costs nothing and the session picks up where it was. A longer one
+   still ends the session, because the participant is reading the instructions
+   off this window and cannot follow the task without it. */
+const HIDE_GRACE=3000;
+let HIDE_AT=0, HIDE_T=null;
+function hiddenTooLong(){ return HIDE_AT>0 && Date.now()-HIDE_AT>HIDE_GRACE; }
 document.addEventListener("visibilitychange",()=>{
-  if(document.hidden) stopRun("hidden");
+  if(!RUNNING || ABORT) return;
+  if(document.hidden){
+    HIDE_AT=Date.now();
+    /* a timer in a hidden window can be held back, so its firing is only one of
+       the three ways the grace is enforced */
+    HIDE_T=setTimeout(()=>{ if(document.hidden && RUNNING) stopRun("hidden"); },HIDE_GRACE);
+  }else{
+    if(HIDE_T){ clearTimeout(HIDE_T); HIDE_T=null; }
+    const over=hiddenTooLong();
+    HIDE_AT=0;
+    if(over) stopRun("hidden");
+    /* the screen lock is dropped by the browser on leaving and cannot be taken
+       again until the window is back */
+    else holdScreenAwake();
+  }
 });
 async function holdScreenAwake(){
   try{ if(navigator.wakeLock) WAKE=await navigator.wakeLock.request("screen"); }
@@ -1407,7 +1462,9 @@ $("btnStart").onclick=async()=>{
     try{ await idbPut({id:"item-"+String(i+1).padStart(2,"0"),...rec,blob:r.blob}); }catch(e){}
   }
   ARM=null;
-  RUNNING=false; GATE_RELEASE=null; releaseScreen();
+  RUNNING=false; GATE_RELEASE=null; ITEM_RELEASE=null;
+  if(HIDE_T){ clearTimeout(HIDE_T); HIDE_T=null; } HIDE_AT=0;
+  releaseScreen();
   try{ CTX.onstatechange=null; }catch(e){}
   SESSION.ended=new Date().toISOString();
   SESSION.ended_early=!!ABORT; SESSION.ended_at_item=ENDED_AT;
