@@ -752,8 +752,12 @@ function halluHit(r){
   if(!CFG.hallu || !r || r.corrected!=null || r.reviewed) return false;
   const k=halluKey(r.text);
   if(!k || !CFG.halluSet.has(k)) return false;
-  if(r.avgLogprob==null) return true;          /* no confidence to weigh */
-  return Math.exp(r.avgLogprob) < CFG.halluConf/100;
+  /* No confidence to weigh — which includes a value that is not a number, as
+     happens when a transcription came back with no tokens to average over.
+     Comparing NaN would answer false and quietly keep the artifact. */
+  const c=Math.exp(r.avgLogprob);
+  if(r.avgLogprob==null || !isFinite(c)) return true;
+  return c < CFG.halluConf/100;
 }
 
 function compileRules(text){
@@ -1530,8 +1534,10 @@ const TOOL_VERSION="1.0", TOOL_VER="v1.0";
      3  known no-speech artifacts ("Thank you.", "you") scored as no response
      4  a clock time is read as one when written 11:30pm, 11pm or 1130, and the
         ordinals above thirteenth are spelled as ordinals
-     5  "a.m." and "p.m." are read as one word wherever they stand */
-const SCORING_VERSION=5;
+     5  "a.m." and "p.m." are read as one word wherever they stand
+     6  a confidence that is not a number counts as no confidence, so an
+        artifact is filtered on the phrase match rather than kept */
+const SCORING_VERSION=6;
 function citePlain(){ return T("citeA")+" "+T("citeT")+" "+T("citeB"); }
 $("citeCopy").onclick=async()=>{
   const b=$("citeCopy");
