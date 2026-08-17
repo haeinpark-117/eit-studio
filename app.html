@@ -786,6 +786,11 @@ function normalize(s){
        digits, 1500 has no valid hour. A four-digit year that does parse as a
        time, or a quantity written "1130", would still be misread; a sentence
        set where that is possible should turn the number rules off. */
+    /* "p.m." loses its periods later and would be left as two tokens, "p m".
+       The period is what makes this safe: the bare word "am" is far more often
+       the verb — "the person I am dating", once contractions are expanded — and
+       is never touched. */
+    s=s.replace(/\b([ap])\.\s?m\.?(?=\W|$)/gi,"$1m");
     s=s.replace(/\b(\d{1,2})([:.])(\d{2})\s*([ap])\.?\s?m\.?\b/gi,"$1$2$3 $4m");
     s=s.replace(/\b(\d{1,2})\s*([ap])\.?\s?m\.?\b/gi,"$1 $2m");
     s=s.replace(/\b(\d{2})(\d{2})\b/g,(m,h,mn)=>
@@ -1524,8 +1529,9 @@ const TOOL_VERSION="1.0", TOOL_VER="v1.0";
      2  self-correction collapse restricted to an immediately repeated phrase
      3  known no-speech artifacts ("Thank you.", "you") scored as no response
      4  a clock time is read as one when written 11:30pm, 11pm or 1130, and the
-        ordinals above thirteenth are spelled as ordinals */
-const SCORING_VERSION=4;
+        ordinals above thirteenth are spelled as ordinals
+     5  "a.m." and "p.m." are read as one word wherever they stand */
+const SCORING_VERSION=5;
 function citePlain(){ return T("citeA")+" "+T("citeT")+" "+T("citeB"); }
 $("citeCopy").onclick=async()=>{
   const b=$("citeCopy");

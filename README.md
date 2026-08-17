@@ -31,7 +31,8 @@ files are never uploaded to a server.
    Ortega et al. (2002) is included as a preset.
 4. **Scoring rules.** Configure text normalization before comparison: number-to-word expansion
    (including clock times, which a recognizer may write as `11:30`, `11:30pm`, `11pm` or `1130`
-   and a transcriber may type as words — all of which normalize to the same thing),
+   and a transcriber may type as words, and `a.m.`/`p.m.` with or without their periods — all of
+   which normalize to the same thing),
    contraction expansion (possessive `'s` is preserved), collapsing an immediately repeated stretch
    of words to its final attempt, and a user-editable list of lexical variants in `from => to` form. The self-correction
    rule fires only where a stretch of two or more words is repeated *immediately* — a phrase that
