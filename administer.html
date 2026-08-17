@@ -1300,6 +1300,9 @@ let ABORT=false, RESULTS=[], SESSION=null, ENDED_AT=null;
    machine-side fault that was detected while it was running. */
 let STOPPED_BY="";
 let RUNNING=false, WAKE=null;
+/* the audio-clock time the next stimulus should start at: the moment the last
+   response window closed, so that items follow one another without a gap */
+let NEXT_T0=0;
 /* Whether the responses for the participant just finished have been saved.
    Starting the next participant clears RESULTS and the stored responses,
    so the button that does so stays disabled until this is true. */
@@ -1349,10 +1352,17 @@ let ITEM_RELEASE=null;
 async function runItem(item,idx,total,isPractice){
   const c=consts();
   const win=windowFor(item.dur,item.syl);
-  const t0=CTX.currentTime+0.25;
+  /* The recording this task is taken from runs its items back to back: summing
+     the thirty cycles of EIT A gives 455.0 s against a file of 454.0 s, which
+     leaves no room for a gap between them. The next stimulus is therefore
+     scheduled at the moment the last window closed, and only moves later when
+     the machine could not be ready by then — the lead-in below is the least a
+     stimulus can be scheduled ahead of now and still start cleanly. */
+  const t0=Math.max(CTX.currentTime+0.08, NEXT_T0);
   const tTone=t0+item.dur+c.pause;
   const tOpen=tTone+c.tone;
   const tEnd=tOpen+win;
+  NEXT_T0=tEnd;
 
   const src=CTX.createBufferSource(); src.buffer=item.buf;
   src.connect(CTX.destination); src.start(t0);
@@ -1414,7 +1424,14 @@ async function runItem(item,idx,total,isPractice){
   /* A timer held back in a hidden window can leave the grace unenforced, so it
      is checked again here: an absence can cost at most the item it began in. */
   if(document.hidden && hiddenTooLong()) stopRun("hidden");
-  if(!ABORT) await sleep(CAP_GRACE*1000);
+  /* Capture is held open past the window so that the buffer straddling its end
+     still arrives. Waiting a fixed time for it would spend that time on every
+     item; the wait instead ends as soon as the window's worth of samples is
+     there, which on most items is sooner, and CAP_GRACE is only the cap. */
+  const need=Math.round(win*SR);
+  const have=()=>{ let n=0; for(const c2 of CHUNKS) n+=c2.length; return n; };
+  for(let waited=0; !ABORT && have()<need && waited<CAP_GRACE*1000; waited+=25)
+    await sleep(25);
   ARM=null;
   const raw=flatten(CHUNKS); CHUNKS=[];
   /* A window cut short by the researcher would look like an omission once it is
@@ -1491,6 +1508,7 @@ function releaseScreen(){ try{ if(WAKE) WAKE.release(); }catch(e){} WAKE=null; }
 
 $("btnStart").onclick=async()=>{
   ABORT=false; RESULTS=[]; ENDED_AT=null; STOPPED_BY="";
+  NEXT_T0=0;
   const pid=$("pid").value.trim().replace(/[^\w.-]+/g,"_");
   SESSION={pid,started:new Date().toISOString(),
            schedule:consts(),practice:$("pracLang").value,items:[]};
