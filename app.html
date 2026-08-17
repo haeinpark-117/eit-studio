@@ -674,9 +674,15 @@ function n2w(n){
   if(n<1000000) return n2w(Math.floor(n/1000))+" thousand"+(n%1000?" "+n2w(n%1000):"");
   return n2w(Math.floor(n/1000000))+" million"+(n%1000000?" "+n2w(n%1000000):"");
 }
+/* The ordinals that are not formed by adding "th" to the cardinal. The table
+   used to stop at thirteenth, so "18th" fell through to the cardinal rule and
+   was read as "eighteen" rather than "eighteenth". */
 const ORD={"1st":"first","2nd":"second","3rd":"third","4th":"fourth","5th":"fifth",
 "6th":"sixth","7th":"seventh","8th":"eighth","9th":"ninth","10th":"tenth",
-"11th":"eleventh","12th":"twelfth","13th":"thirteenth","20th":"twentieth","21st":"twenty first"};
+"11th":"eleventh","12th":"twelfth","13th":"thirteenth","14th":"fourteenth",
+"15th":"fifteenth","16th":"sixteenth","17th":"seventeenth","18th":"eighteenth",
+"19th":"nineteenth","20th":"twentieth","21st":"twenty first","22nd":"twenty second",
+"23rd":"twenty third","30th":"thirtieth","31st":"thirty first"};
 const CONTR={
  "i'm":"i am","you're":"you are","we're":"we are","they're":"they are",
  "i've":"i have","you've":"you have","we've":"we have","they've":"they have",
@@ -767,6 +773,23 @@ function esc4re(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"); }
 function normalize(s){
   s=String(s).toLowerCase().replace(/[‘’]/g,"'");
   if(CFG.numbers){
+    /* A clock time is only read as one when it is written with a colon and
+       nothing attached, which is not how a recognizer always writes it. Given
+       "11:30pm" the rule below saw "11" and left "30pm" standing; given "1130"
+       it read a cardinal and returned "one thousand one hundred thirty" where
+       the sentence says "eleven thirty". The three steps here put those forms
+       into the shape the rule expects, before it runs.
+         The last of them is deliberately narrow. It fires on four digits only,
+       and only where they read as a time — one to twelve hours and no more
+       than fifty-nine minutes — so that a year, a room number of three digits
+       or a quantity is left alone: 1999 has no valid minute, 100 is not four
+       digits, 1500 has no valid hour. A four-digit year that does parse as a
+       time, or a quantity written "1130", would still be misread; a sentence
+       set where that is possible should turn the number rules off. */
+    s=s.replace(/\b(\d{1,2})([:.])(\d{2})\s*([ap])\.?\s?m\.?\b/gi,"$1$2$3 $4m");
+    s=s.replace(/\b(\d{1,2})\s*([ap])\.?\s?m\.?\b/gi,"$1 $2m");
+    s=s.replace(/\b(\d{2})(\d{2})\b/g,(m,h,mn)=>
+      (+h>=1 && +h<=12 && +mn<=59) ? h+":"+mn : m);
     s=s.replace(/\b(\d{1,2}):(\d{2})\b/g,(m,h,mn)=>{
       h=parseInt(h,10); mn=parseInt(mn,10);
       if(mn===0) return n2w(h)+" o'clock";
@@ -1499,8 +1522,10 @@ const TOOL_VERSION="1.0", TOOL_VER="v1.0";
    this number, so two files that disagree can always be told apart.
      1  first release
      2  self-correction collapse restricted to an immediately repeated phrase
-     3  known no-speech artifacts ("Thank you.", "you") scored as no response */
-const SCORING_VERSION=3;
+     3  known no-speech artifacts ("Thank you.", "you") scored as no response
+     4  a clock time is read as one when written 11:30pm, 11pm or 1130, and the
+        ordinals above thirteenth are spelled as ordinals */
+const SCORING_VERSION=4;
 function citePlain(){ return T("citeA")+" "+T("citeT")+" "+T("citeB"); }
 $("citeCopy").onclick=async()=>{
   const b=$("citeCopy");
