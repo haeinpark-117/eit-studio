@@ -885,16 +885,20 @@ function consts(){return{pause:num("cPause"),tone:num("cTone"),hz:num("cHz"),
                          base:num("cBase"),per:num("cPer"),thr:num("cThr")};}
 function windowFor(dur,syl){
   const c=consts();
-  return Math.max(0.5,(dur||0)+c.base+c.per*((syl||c.thr)-c.thr));
+  /* The per-syllable term adds time to items longer than the reference and takes
+     none away from items shorter than it. Without the floor a six-syllable
+     practice sentence was given half a second less than the base, which is not
+     what the rule says and not what the online version of the task does. */
+  return Math.max(0.5,(dur||0)+c.base+c.per*Math.max(0,(syl||c.thr)-c.thr));
 }
 function paintSchedule(){
   const c=consts(), rows=[];
   const mk=(y,note)=>"<tr><td>"+y+" "+"syllables"+"</td><td>"+note+
-      "</td><td>"+"stimulus"+" + "+(c.base+c.per*(y-c.thr)).toFixed(1)+" s</td></tr>";
+      "</td><td>"+"stimulus"+" + "+(c.base+c.per*Math.max(0,y-c.thr)).toFixed(1)+" s</td></tr>";
   const ys=TGT.length?[...new Set(TGT.map(r=>r[2]))].sort((a,b)=>a-b):[7,13,19];
   const pick=[ys[0],ys[Math.floor(ys.length/2)],ys[ys.length-1]];
   pick.forEach((y,i)=>rows.push(mk(y,i===0?"= "+"base syllables"
-      :"+ "+(y-c.thr)+" × "+c.per+" s")));
+      :"+ "+Math.max(0,y-c.thr)+" × "+c.per+" s")));
   $("pwRows").innerHTML=rows.join("");
 }
 ["cPause","cTone","cHz","cBase","cPer","cThr"].forEach(id=>
