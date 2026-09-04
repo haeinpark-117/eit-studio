@@ -1423,7 +1423,7 @@ async function runItem(item,idx,total,isPractice){
   });
   /* A timer held back in a hidden window can leave the grace unenforced, so it
      is checked again here: an absence can cost at most the item it began in. */
-  if(document.hidden && hiddenTooLong()) stopRun("hidden");
+  if(STOP_WHEN_HIDDEN && document.hidden && hiddenTooLong()) stopRun("hidden");
   /* Capture is held open past the window so that the buffer straddling its end
      still arrives. Waiting a fixed time for it would spend that time on every
      item; the wait instead ends as soon as the window's worth of samples is
@@ -1478,9 +1478,9 @@ function watchStream(){
    briefly covered — which some systems report as hidden even though audio and
    capture never stopped. The schedule now runs off the audio clock, so a short
    absence costs nothing and the session picks up where it was. A longer one
-   still ends the session, because the participant is reading the instructions
-   off this window and cannot follow the task without it. */
-const HIDE_GRACE=3000;
+   no longer ends it either: STOP_WHEN_HIDDEN is false, so an absence of any length
+   is tolerated. Set STOP_WHEN_HIDDEN to true to restore the old behaviour. */
+const STOP_WHEN_HIDDEN=false; const HIDE_GRACE=3000;
 let HIDE_AT=0, HIDE_T=null;
 function hiddenTooLong(){ return HIDE_AT>0 && Date.now()-HIDE_AT>HIDE_GRACE; }
 document.addEventListener("visibilitychange",()=>{
@@ -1489,10 +1489,10 @@ document.addEventListener("visibilitychange",()=>{
     HIDE_AT=Date.now();
     /* a timer in a hidden window can be held back, so its firing is only one of
        the three ways the grace is enforced */
-    HIDE_T=setTimeout(()=>{ if(document.hidden && RUNNING) stopRun("hidden"); },HIDE_GRACE);
+    if(STOP_WHEN_HIDDEN) HIDE_T=setTimeout(()=>{ if(document.hidden && RUNNING) stopRun("hidden"); },HIDE_GRACE);
   }else{
     if(HIDE_T){ clearTimeout(HIDE_T); HIDE_T=null; }
-    const over=hiddenTooLong();
+    const over=STOP_WHEN_HIDDEN && hiddenTooLong();
     HIDE_AT=0;
     if(over) stopRun("hidden");
     /* the screen lock is dropped by the browser on leaving and cannot be taken
