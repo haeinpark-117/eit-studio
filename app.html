@@ -596,7 +596,7 @@ en:{
  fmtStoppedWarn:(rest,failed)=>"The run stopped early. "+failed+" files could not be transcribed and "+rest+" were never attempted; none of them carry a score, and their rows say so. Re-run those files on their own — a run that stops this way is almost always the machine sleeping or the tab being put in the background, not a problem with the audio.",
  fmtFailed:(k,n)=>k+" of "+n+" files could not be transcribed. Those rows carry no score — they are not zeros. Re-run them on their own before using the results.",
  runCaution:"A long run needs the tab to stay in front: browsers slow or suspend background tabs, and a suspended run can stop part-way. The screen is kept awake while a run is going.",
- bNoSpeech:"no speech", bHallu:"filtered as hallucination", halluWas:"Whisper produced:",
+ bNoSpeech:"no speech", bHallu:"filtered as hallucination", bNonLatin:"non-Latin script", halluWas:"Whisper produced:",
  fmtHallu:(n,t)=>n+" of "+t+" items were scored as no response because Whisper's whole output was one of the phrases it returns for audio without speech. The original output is kept in the table and in the transcription_raw column. Listen to those items before reporting them: the filter is a heuristic, and it is the one decision here the tool makes on its own.",
  drTarget:"Target", drHeard:"Whisper heard", drCorrected:"Corrected transcription",
  drHalluNote:"This output is one of the phrases Whisper returns for audio without speech, so the item is being scored as no response. Listen to the recording: if a response was in fact produced, type it below, and if Whisper's line was right after all, mark the item reviewed — either overrides the filter for this item.",
@@ -1121,6 +1121,17 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
    expose the object and still hand back no adapter (headless, a blocked driver,
    a machine with no suitable GPU). Asking for the adapter is the real test, and
    it is what decides whether the model is loaded onto the GPU or the CPU. */
+/* Recorded with every export. The same model can decode differently on a
+   machine that runs it on the GPU and one that falls back to the CPU, so a
+   disagreement between two raters can be traced rather than guessed at. */
+function computeBackend(){ return hasGPU ? "webgpu" : "wasm"; }
+/* Whisper is multilingual and occasionally returns another script on audio
+   that carries little speech, even with the decoder pinned to English. The
+   normalizer strips those characters before scoring, so the rate is computed
+   on whatever survives; the row is marked here rather than failing silently. */
+function nonLatin(s){ s=String(s==null?"":s);
+  for(let i=0;i<s.length;i++) if(s.charCodeAt(i)>127) return true;
+  return false; }
 let hasGPU=false;
 $("gpuBadge").textContent="…";
 const gpuReady=(async()=>{
@@ -1487,6 +1498,7 @@ function render(){
         (r.status==="not_attempted"?"<span class='badge quiet'>"+T("bSkipped")+"</span>":"")+
         (r.no_speech?"<span class='badge quiet'>"+T("bNoSpeech")+"</span>":"")+
         (r.hallu?"<span class='badge sev'>"+T("bHallu")+"</span>":"")+
+        (nonLatin(r.text)?"<span class='badge sev'>"+T("bNonLatin")+"</span>":"")+
         (edited?"<span class='badge'>"+T("bEdited")+"</span>":
           (r.reviewed?"<span class='badge rev'>"+T("bReviewed")+"</span>":""))+
         (edited?"<span class='wasline'>"+T("whisperWas")+" "+esc(r.text)+"</span>":"")+
@@ -1729,7 +1741,8 @@ $("csvBtn").onclick=()=>{
               "reviewed","wer_raw","wer_final","accuracy_pct",
               "confidence","avg_logprob","duration_s","status","no_speech_artifact_filtered",
               "error","file","model","rules",
-              "self_corrections_removed","tool_version","scoring_version"];
+              "self_corrections_removed","tool_version","scoring_version",
+              "compute_backend","non_latin_output"];
   const rows=[cols.join(",")];
   RESULTS.forEach(r=>rows.push([r.pid,r.item??"",r.target,r.sc?r.sc.gt:"",
     r.text, r.corrected??"", r.sc?r.sc.tr:"",
@@ -1737,7 +1750,7 @@ $("csvBtn").onclick=()=>{
     r.scRaw?r.scRaw.wer:"",r.sc?r.sc.wer:"",r.sc?r.sc.acc:"",r.conf??"",r.avgLogprob??"",
     r.dur?r.dur.toFixed(2):"",r.status||"scored",r.hallu?"yes":"no",
     r.err||"",r.name,loadedModel,rulesSummary(),
-    r.sc&&r.sc.rep?r.sc.rep.join(" "):"",TOOL_VERSION,SCORING_VERSION].map(v=>{
+    r.sc&&r.sc.rep?r.sc.rep.join(" "):"",TOOL_VERSION,SCORING_VERSION,computeBackend(),nonLatin(r.text)?"yes":"no"].map(v=>{
       v=String(v??""); return (v.includes(",")||v.includes('"'))?'"'+v.replace(/"/g,'""')+'"':v;
     }).join(",")));
   dl(new Blob([rows.join("\n")],{type:"text/csv"}),"eit_scores.csv");
@@ -1747,7 +1760,7 @@ $("jsonBtn").onclick=()=>{
   dl(new Blob([JSON.stringify({participants:pids,
     meta:{tool:TOOL_NAME, tool_version:TOOL_VERSION, tool_url:TOOL_URL, cite_as:citePlain(),
       scoring_version:SCORING_VERSION,
-      whisper_model:loadedModel,decoding:"greedy (transformers.js, in-browser)",
+      whisper_model:loadedModel,decoding:"greedy (transformers.js, in-browser)",compute_backend:computeBackend(),
       confidence:"mean probability of the tokens Whisper selected; avg_logprob is the raw value",
       scoring_rules:{lowercase:true,strip_punctuation:true,keep_possessives:true,
         spell_out_numbers:CFG.numbers,expand_contractions:CFG.contractions,
